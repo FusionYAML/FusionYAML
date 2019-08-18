@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group 'me.brokenearthdev'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // snakeyaml
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'
+
+    // Google Guava's library
+    compile group: 'com.google.guava', name: 'guava', version: '17.0'
+
+    // Apache IO commons library
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+
+    // JetBrains annotations library
+    compile group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
+}
