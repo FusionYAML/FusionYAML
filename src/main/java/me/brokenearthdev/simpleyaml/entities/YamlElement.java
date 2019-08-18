@@ -57,7 +57,7 @@ public class YamlElement {
      * the key is the highest in the hierarchy containing a value. The value may contain
      * nodes.
      * <p>
-     * Using separators to represent a decent in hierarchy will not work. Instead, pass in
+     * Using separators to represent a descent in hierarchy will not work. Instead, pass in
      * a map as the value.
      *
      * @param key The key that contains a value
@@ -79,7 +79,7 @@ public class YamlElement {
      * the key is the highest in the hierarchy containing a value. The value may contain
      * nodes.
      * <p>
-     * Using separators to represent a decent in hierarchy will not work. Instead, pass in
+     * Using separators to represent a descent in hierarchy will not work. Instead, pass in
      * a map as the value.
      *
      * @param key The key that contains a value
