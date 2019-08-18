@@ -45,3 +45,5 @@ build/docs/
 # Project exclude paths
 /build/
 .idea/*
+
+src/main/java/me/brokenearthdev/simpleyaml/Test.java
