@@ -15,11 +15,15 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.entities;
 
+import com.google.common.collect.ImmutableList;
+
 import java.io.File;
+
 
 public class YamlFile {
 
     private File file;
+    private ImmutableList<YamlElement> elements;
 
     public YamlFile(File file) {
         this.file = file;

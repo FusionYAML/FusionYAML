@@ -18,10 +18,10 @@ package me.brokenearthdev.simpleyaml.entities;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * YamlElement is an immutable class that houses key-value pair(s). A value in this class can be a map that also
@@ -62,8 +62,8 @@ public class YamlElement {
      *
      * @param key The key that contains a value
      * @param value The value that its key contains
-     * @param options Contains convenient options that adjust styles in yaml to meet your
-     *                preferences
+     * @param options A {@link DumperOptions} instance which contains convenient options t
+     *                hat adjust styles in yaml to meet your preferences
      */
     public YamlElement(@NotNull String key, @NotNull Object value, DumperOptions options) {
         Yaml yaml = (options != null) ? new Yaml(options) : new Yaml();
@@ -87,6 +87,46 @@ public class YamlElement {
      */
     public YamlElement(@NotNull String key, @NotNull Object value) {
         this(key, value, null);
+    }
+
+    /**
+     * This constructor requires a map that contains data. The map will be converted to {@code YAML}
+     * upon initialization. Please note that the size of the map passed in should never exceed or be
+     * less than {@code 1}
+     * <p>
+     * The value in the map can also contain another map, creating a tree. Using separators to represent
+     * a descent in hierarchy will not work.
+     *
+     * @param map The map that contains key-value information
+     * @param options A {@link DumperOptions} instance which contains convenient options that adjust
+     *                styles in yaml to meet your preferences
+     */
+    public YamlElement(@NotNull Map<Object, Object> map, DumperOptions options) {
+        if (map.size() != 1)
+            throw new YAMLException("The size of the map passed in is not equal to one");
+        for (Map.Entry entry : map.entrySet()) {
+            this.key = entry.getKey().toString();
+            this.value = entry.getValue();
+        }
+        if (key == null || value == null)
+            throw new YAMLException("One of the objects in the map is null");
+        this.map = map;
+        Yaml yaml = (options != null) ? new Yaml(options) : new Yaml();
+        this.yaml = yaml.dump(map);
+    }
+
+    /**
+     * This constructor requires a map that contains data. The map will be converted to {@code YAML}
+     * upon initialization. Please note that the size of the map passed in should never exceed or be
+     * less than {@code 1}
+     * <p>
+     * The value in the map can also contain another map, creating a tree. Using separators to represent
+     * a descent in hierarchy will not work.
+     *
+     * @param map The map that contains key-value information
+     */
+    public YamlElement(@NotNull Map<Object, Object> map) {
+        this(map, null);
     }
 
     /**

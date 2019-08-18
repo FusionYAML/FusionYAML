@@ -24,4 +24,8 @@ dependencies {
 
     // JetBrains annotations library
     compile group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
+
+    // Apache commons collections library
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2.2'
+
 }
