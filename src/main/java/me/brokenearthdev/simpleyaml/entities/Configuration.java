@@ -16,21 +16,42 @@ limitations under the License.
 package me.brokenearthdev.simpleyaml.entities;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import java.util.List;
+import java.util.Map;
 
 public interface Configuration {
 
     void set(String key, Object value);
     void removeKey(String key);
 
+    byte getByte(String path, byte defaultValue);
     byte getByte(String path);
+    short getShort(String path, short defaultValue);
     short getShort(String path);
+    int getInt(String path, int defaultValue);
     int getInt(String path);
+    float getFloat(String path, float defaultValue);
     float getFloat(String path);
+    double getDouble(String path, double defaultValue);
     double getDouble(String path);
+    long getLong(String path, long defaultValue);
     long getLong(String path);
-    String getList();
 
+    Object getObject(String path, Object defaultValue);
+    Object getObject(String path);
+    String getString(String path, String defaultValue);
+    String getString(String path);
+    List getList(String path, List defaultValue);
+    List getList(String path);
+    Map getMap(String path, Map defaultValue);
+    Map getMap(String path);
 
     ImmutableList<YamlElement> getAllElements();
+    ImmutableMap<Object, Object> getAsMap();
+
+    @Override
+    String toString();
 
 }
