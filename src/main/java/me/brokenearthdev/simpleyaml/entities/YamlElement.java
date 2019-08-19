@@ -15,6 +15,9 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.entities;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import me.brokenearthdev.simpleyaml.utils.StorageUtils;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -48,9 +51,9 @@ public class YamlElement {
     private String yaml;
 
     /**
-     * Key-value pairs stored in a map
+     * Key-value pairs stored in an immutable map
      */
-    private Map<Object, Object> map;
+    private ImmutableMap<Object, Object> map;
 
     /**
      * This constructor requires a key-value pair to be passed into its parameters where
@@ -69,8 +72,9 @@ public class YamlElement {
         Yaml yaml = (options != null) ? new Yaml(options) : new Yaml();
         this.key = key;
         this.value = value;
-        this.map = new HashMap<>();
-        this.map.put(key, value);
+        this.map = new ImmutableMap.Builder<Object, Object>()
+            .put(key, value)
+            .build();
         this.yaml = yaml.dump(map);
     }
 
@@ -110,7 +114,7 @@ public class YamlElement {
         }
         if (key == null || value == null)
             throw new YAMLException("One of the objects in the map is null");
-        this.map = map;
+        this.map = StorageUtils.toImmutableMap(map);
         Yaml yaml = (options != null) ? new Yaml(options) : new Yaml();
         this.yaml = yaml.dump(map);
     }
@@ -154,8 +158,19 @@ public class YamlElement {
      *
      * @return The key-value pair in a map
      */
-    public Map<?, ?> getAsMap() {
+    public ImmutableMap<Object, Object> getAsMap() {
         return map;
+    }
+
+    /**
+     * This method converts yaml key-value pair passed into the constructor to
+     * Json.
+     *
+     * @return Json converted from Yaml
+     */
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(map);
     }
 
     @Override

@@ -15,5 +15,5 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.configuration;
 
-public class DynamicConfiguration {
+public class ImmutableConfiguration {
 }
