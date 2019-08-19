@@ -15,7 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.configuration;
 
-public interface LockableConfiguration extends Configuration {
+public interface LockableConfiguration extends DynamicConfiguration {
 
     boolean isLocked();
     void setLocked(boolean locked);

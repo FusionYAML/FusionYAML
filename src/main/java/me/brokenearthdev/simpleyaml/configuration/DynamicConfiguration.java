@@ -15,9 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.configuration;
 
-import me.brokenearthdev.simpleyaml.configuration.Configuration;
-
-public interface RefreshableConfiguration extends Configuration {
+public interface DynamicConfiguration extends Configuration {
 
     void set(String path, Object value);
     void remove(String path, Object value);
