@@ -27,24 +27,25 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
-public class DefaultYamlParser extends YamlParser {
+public class DefaultParser extends YamlParser {
 
-    public DefaultYamlParser(@NotNull String raw) {
+    public DefaultParser(@NotNull String raw) {
         super(raw);
     }
 
-    public DefaultYamlParser(@NotNull File file) throws IOException {
+    public DefaultParser(@NotNull File file) throws IOException {
         super(file);
     }
 
-    public DefaultYamlParser(@NotNull URL url) throws IOException {
+    public DefaultParser(@NotNull URL url) throws IOException {
         super(url);
     }
 
     @Override
     public @Nullable Map<?, ?> map() {
         try {
-            return new Yaml().loadAs(raw, Map.class);
+            map = new Yaml().loadAs(raw, Map.class);
+            return map;
         } catch (Exception e) {
             throw new YAMLException("Invalid YAML", e.getCause());
         }
@@ -58,13 +59,17 @@ public class DefaultYamlParser extends YamlParser {
 
     @Override
     public @Nullable Object getObject(@NotNull String path, char dirSeparator) {
+        if (map == null)
+            map = map();
         if (path.startsWith(".") || path.endsWith("."))
             return null;
         List<String> paths = new LinkedList<>();
         char[] chars = path.toCharArray();
         StringBuilder str = new StringBuilder();
         for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == dirSeparator) {
+            if (chars[i] == dirSeparator || i + 1 == chars.length) {
+                if (i + 1 == chars.length)
+                    str.append(chars[i]);
                 paths.add(str.toString());
                 str = new StringBuilder();
                 continue;
@@ -76,6 +81,8 @@ public class DefaultYamlParser extends YamlParser {
 
     @Override
     public @Nullable Object getObject(@NotNull List<String> path) {
+        if (map == null)
+            map = map();
         if (path.size() == 0)
             return null;
         return getObject(map, path, new HashMap(), path.get(0), true, 0);
@@ -83,7 +90,9 @@ public class DefaultYamlParser extends YamlParser {
 
     @Override
     public @Nullable Object getObject(@NotNull String[] path) {
-        return  getObject(new LinkedList<>(Arrays.asList(path)));
+        if (map == null)
+            map = map();
+        return getObject(new LinkedList<>(Arrays.asList(path)));
     }
 
     private Object getObject(Map<?, ?> mapped, List<String> paths, Map newMap, String currentPath, boolean first, int loops) {

@@ -109,6 +109,9 @@ public abstract class YamlParser {
      *     human:
      *       gender: 'male'
      * </pre>
+     * <p>
+     * In some parsers, the method won't return a {@link me.brokenearthdev.simpleyaml.tree.Node}
+     * nor a {@link me.brokenearthdev.simpleyaml.tree.Tree}
      *
      * @param path The path where the object is located
      * @param dirSeparator The path separator. Applying it will signal a descent.
@@ -120,6 +123,9 @@ public abstract class YamlParser {
     /**
      * Retrieves an object from a given path. The method requires a {@link List}. Every
      * index in a list signals a descent.
+     * <p>
+     * In some parsers, the method won't return a {@link me.brokenearthdev.simpleyaml.tree.Node}
+     * nor a {@link me.brokenearthdev.simpleyaml.tree.Tree}
      *
      * @param path The path where the object is located
      * @return The {@link Object} found, or {@code null} otherwise.
@@ -130,6 +136,9 @@ public abstract class YamlParser {
     /**
      * Retrieves an object from a given path. The method requires an array of strings.
      * Every index in the array signals a descent.
+     * <p>
+     * In some parsers, the method won't return a {@link me.brokenearthdev.simpleyaml.tree.Node}
+     * nor a {@link me.brokenearthdev.simpleyaml.tree.Tree}
      *
      * @param path The path where the object is located
      * @return The {@link Object} found, or null otherwise.
