@@ -13,18 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.entities;
+package me.brokenearthdev.simpleyaml.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import me.brokenearthdev.simpleyaml.entities.YamlElement;
 
 import java.util.List;
 import java.util.Map;
 
 public interface Configuration {
-
-    void set(String key, Object value);
-    void removeKey(String key);
 
     byte getByte(String path, byte defaultValue);
     byte getByte(String path);
