@@ -69,5 +69,21 @@ public class StorageUtils {
         return builder.build();
     }
 
+    public static List<String> toList(String path, char separator) {
+        List<String> paths = new LinkedList<>();
+        char[] chars = path.toCharArray();
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == separator || i + 1 == chars.length) {
+                if (i + 1 == chars.length)
+                    str.append(chars[i]);
+                paths.add(str.toString());
+                str = new StringBuilder();
+                continue;
+            }
+            str.append(chars[i]);
+        }
+        return paths;
+    }
 
 }

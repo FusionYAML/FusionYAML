@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.entities;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import me.brokenearthdev.simpleyaml.utils.StorageUtils;
@@ -23,17 +24,19 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * YamlElement is an immutable class that houses key-value pair(s). A value in this class can be a map that also
- * houses key-value pair(s), which can also house key-value pair(s), and so on. This kind of data arrangement
- * is known as tree.
+ * YamlElement is an immutable class that houses key-value pair(s). A value in this class can be a map
+ * that also houses key-value pair(s), which can also house key-value pair(s), and so on. This kind of data arrangement
+ * is known as tree. A value in this class can also be a list that houses key-value pairs.
  * <p>
  * The key in this class is the highest in the hierarchy. There can be only one outermost key.
  */
-public class YamlElement {
+public class YamlPair {
+
+    private static DumperOptions defaultDumperOptions;
 
     /**
      * The key, which is the identifier for the value
@@ -51,9 +54,9 @@ public class YamlElement {
     private String yaml;
 
     /**
-     * Key-value pairs stored in an immutable map
+     * Key-value pairs stored in an immutable map or list
      */
-    private ImmutableMap<Object, Object> map;
+    private Object object;
 
     /**
      * This constructor requires a key-value pair to be passed into its parameters where
@@ -68,14 +71,15 @@ public class YamlElement {
      * @param options A {@link DumperOptions} instance which contains convenient options t
      *                hat adjust styles in yaml to meet your preferences
      */
-    public YamlElement(@NotNull String key, @NotNull Object value, DumperOptions options) {
-        Yaml yaml = (options != null) ? new Yaml(options) : new Yaml();
+    public YamlPair(@NotNull String key, @NotNull Object value, DumperOptions options) {
+        initDefaultOptions();
+        Yaml yaml = (options != null) ? new Yaml(options) : new Yaml(defaultDumperOptions);
         this.key = key;
         this.value = value;
-        this.map = new ImmutableMap.Builder<Object, Object>()
+        this.object = new ImmutableMap.Builder<Object, Object>()
             .put(key, value)
             .build();
-        this.yaml = yaml.dump(map);
+        this.yaml = yaml.dump(options);
     }
 
     /**
@@ -89,7 +93,7 @@ public class YamlElement {
      * @param key The key that contains a value
      * @param value The value that its key contains
      */
-    public YamlElement(@NotNull String key, @NotNull Object value) {
+    public YamlPair(@NotNull String key, @NotNull Object value) {
         this(key, value, null);
     }
 
@@ -105,17 +109,18 @@ public class YamlElement {
      * @param options A {@link DumperOptions} instance which contains convenient options that adjust
      *                styles in yaml to meet your preferences
      */
-    public YamlElement(@NotNull Map<Object, Object> map, DumperOptions options) {
+    public YamlPair(@NotNull Map<Object, Object> map, DumperOptions options) {
         if (map.size() != 1)
             throw new YAMLException("The size of the map passed in is not equal to one");
+        initDefaultOptions();
         for (Map.Entry entry : map.entrySet()) {
             this.key = entry.getKey().toString();
             this.value = entry.getValue();
         }
         if (key == null || value == null)
             throw new YAMLException("One of the objects in the map is null");
-        this.map = StorageUtils.toImmutableMap(map);
-        Yaml yaml = (options != null) ? new Yaml(options) : new Yaml();
+        this.object = StorageUtils.toImmutableMap(map);
+        Yaml yaml = (options != null) ? new Yaml(options) : new Yaml(defaultDumperOptions);
         this.yaml = yaml.dump(map);
     }
 
@@ -129,9 +134,24 @@ public class YamlElement {
      *
      * @param map The map that contains key-value information
      */
-    public YamlElement(@NotNull Map<Object, Object> map) {
+    public YamlPair(@NotNull Map<Object, Object> map) {
         this(map, null);
     }
+
+    public YamlPair(@NotNull List<Object> list, DumperOptions options) {
+        initDefaultOptions();
+        this.object = list;
+        Yaml yaml = (options == null) ? new Yaml(defaultDumperOptions) : new Yaml(options);
+        this.yaml = yaml.dump(list);
+        ImmutableList.Builder<Object> builder = new ImmutableList.Builder<>();
+        list.forEach(builder::add);
+        this.object = builder.build();
+    }
+
+    public YamlPair(@NotNull List<Object> list) {
+        this(list, null);
+    }
+
 
     /**
      * A key contains a value, retrieved by calling {@link #getValue()}
@@ -153,13 +173,13 @@ public class YamlElement {
     }
 
     /**
-     * This method returns a map containing the key-value pair passed into the
+     * This method returns a map or a list containing the key-value pair passed into the
      * constructor.
      *
-     * @return The key-value pair in a map
+     * @return The key-value pair in a map or list
      */
-    public ImmutableMap<Object, Object> getAsMap() {
-        return map;
+    public Object getAsObject() {
+        return object;
     }
 
     /**
@@ -170,12 +190,18 @@ public class YamlElement {
      */
     public String toJson() {
         Gson gson = new Gson();
-        return gson.toJson(map);
+        return gson.toJson(object);
     }
 
     @Override
     public String toString() {
         return yaml;
+    }
+
+    private static void initDefaultOptions() {
+        if (defaultDumperOptions == null)
+            defaultDumperOptions = new DumperOptions();
+        defaultDumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
     }
 
 }

@@ -17,7 +17,7 @@ package me.brokenearthdev.simpleyaml.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import me.brokenearthdev.simpleyaml.entities.YamlElement;
+import me.brokenearthdev.simpleyaml.entities.YamlPair;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,7 @@ public interface Configuration {
     Map getMap(String path, Map defaultValue);
     Map getMap(String path);
 
-    ImmutableList<YamlElement> getAllElements();
+    ImmutableList<YamlPair> getAllElements();
     ImmutableMap<Object, Object> getAsMap();
 
     @Override

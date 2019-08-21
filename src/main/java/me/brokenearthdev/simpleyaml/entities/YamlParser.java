@@ -19,18 +19,18 @@ import me.brokenearthdev.simpleyaml.utils.URLUtils;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * This class is responsible for parsing YAML and converting raw YAML data
- * into a map, which can be also used to convert the raw YAML data to JSON.
+ * into a map which can be also used to convert the raw YAML data to JSON.
  */
 public abstract class YamlParser {
 
@@ -40,9 +40,9 @@ public abstract class YamlParser {
     protected String raw;
 
     /**
-     * The yaml raw contents as a map
+     * The yaml raw contents as a {@link Map}
      */
-    protected Map<?, ?> map = new HashMap<>();
+    protected Map<?, ?> data;
 
     /**
      * This constructor requires a raw YAML data which will be used
@@ -79,13 +79,26 @@ public abstract class YamlParser {
     }
 
     /**
-     * Maps the raw (yaml) content into a form of a map. The value of a map can be a map
-     * (and so on) if the key is a parent or a node.
-     * <p>
+     * This constructor requires a {@link Map} that houses the YAML contents. Since the
+     * value passed in is a map, the contents won't be mapped. Hence, calling {@link #map()}
+     * will return the {@link Map} you passed in.
+     *
+     * @param map The map that houses YAML contents
+     */
+    public YamlParser(@NotNull Map<Object, Object> map) {
+        data = map;
+    }
+
+    /**
+     * Maps the raw (yaml) content into a form of an object. If you initialized this class
+     * using {@link #YamlParser(Map)}, you don't need to call this method. Calling this method
+     * will return the map passed in.
+     *
      * {@link org.yaml.snakeyaml.error.YAMLException} will be thrown if an error occurred
      * while mapping. Invalid yaml may be the cause of the exception
      *
-     * @return A map containing yaml data ({@link #raw})
+     * @return A map containing yaml data ({@link #raw}) or {@link #getMap()} if the class is
+     * initialized using {@link #YamlParser(Map)}
      * @throws org.yaml.snakeyaml.error.YAMLException If an error occurred while mapping
      * @see #reload(File)
      * @see #reload(URL)
@@ -110,8 +123,6 @@ public abstract class YamlParser {
      *       gender: 'male'
      * </pre>
      * <p>
-     * In some parsers, the method won't return a {@link me.brokenearthdev.simpleyaml.tree.Node}
-     * nor a {@link me.brokenearthdev.simpleyaml.tree.Tree}
      *
      * @param path The path where the object is located
      * @param dirSeparator The path separator. Applying it will signal a descent.
@@ -124,8 +135,6 @@ public abstract class YamlParser {
      * Retrieves an object from a given path. The method requires a {@link List}. Every
      * index in a list signals a descent.
      * <p>
-     * In some parsers, the method won't return a {@link me.brokenearthdev.simpleyaml.tree.Node}
-     * nor a {@link me.brokenearthdev.simpleyaml.tree.Tree}
      *
      * @param path The path where the object is located
      * @return The {@link Object} found, or {@code null} otherwise.
@@ -136,9 +145,6 @@ public abstract class YamlParser {
     /**
      * Retrieves an object from a given path. The method requires an array of strings.
      * Every index in the array signals a descent.
-     * <p>
-     * In some parsers, the method won't return a {@link me.brokenearthdev.simpleyaml.tree.Node}
-     * nor a {@link me.brokenearthdev.simpleyaml.tree.Tree}
      *
      * @param path The path where the object is located
      * @return The {@link Object} found, or null otherwise.
@@ -161,6 +167,8 @@ public abstract class YamlParser {
     /**
      * Reloads by changing the raw contents set up during initialization to
      * the new contents found in the {@link URL} in the parameter.
+     * <p>
+     * Any changes
      *
      * @param url The {@link URL} that will get its contents retrieved
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
@@ -168,6 +176,10 @@ public abstract class YamlParser {
     public void reload(@NotNull URL url) throws IOException {
         raw = URLUtils.readURLToString(url);
         map();
+    }
+
+    public void setDataMap(Map<Object, Object> map) {
+        this.data = map;
     }
 
     /**
@@ -178,10 +190,12 @@ public abstract class YamlParser {
     }
 
     /**
-     * @return The yaml raw contents as a map
+     * @return The yaml raw contents as an {@link Map}
      */
     public Map<?, ?> getMap() {
-        return map;
+        return data;
     }
+
+
 
 }

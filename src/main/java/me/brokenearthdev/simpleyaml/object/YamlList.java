@@ -13,23 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.tree;
+package me.brokenearthdev.simpleyaml.object;
 
-import me.brokenearthdev.simpleyaml.entities.YamlElement;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class Tree {
-
-    private List<YamlElement> elements = new ArrayList<>();
-
-    public Tree() {}
-
-    public Tree(List<YamlElement> elements) {
-        this.elements = elements;
-    }
-
-   // public void addElement()
-
+public class YamlList implements YamlElement {
 }

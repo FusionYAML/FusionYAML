@@ -13,28 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.entities;
+package me.brokenearthdev.simpleyaml.object;
 
-import com.google.common.collect.ImmutableList;
+public class YamlNull implements YamlElement {
 
-import java.io.File;
-
-
-public class YamlFile {
-
-    private File file;
-    private ImmutableList<YamlPair> elements;
-
-    public YamlFile(File file) {
-        this.file = file;
-    }
-
-    public YamlFile(String path) {
-        this(new File(path));
-    }
-
-    public File getFile() {
-        return file;
-    }
+    public static final YamlNull INSTANCE = new YamlNull();
 
 }

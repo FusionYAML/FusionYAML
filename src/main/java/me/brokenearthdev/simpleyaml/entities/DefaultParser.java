@@ -16,7 +16,7 @@ limitations under the License.
 package me.brokenearthdev.simpleyaml.entities;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import me.brokenearthdev.simpleyaml.utils.StorageUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
@@ -41,12 +41,20 @@ public class DefaultParser extends YamlParser {
         super(url);
     }
 
+    public DefaultParser(@NotNull Map<Object, Object> map) {
+        super(map);
+    }
+
     @Override
     public @Nullable Map<?, ?> map() {
         try {
-            map = new Yaml().loadAs(raw, Map.class);
-            return map;
+            if (raw == null)
+                return data;
+            data = new Yaml().loadAs(raw, Map.class);
+            return data;
         } catch (Exception e) {
+            if (e.getCause().toString().equals("org.yaml.snakeyaml.error.YAMLException: No suitable constructor with 1 arguments found for interface java.util.Map"))
+                throw new YAMLException("Lists in the uppermost tree are not supported. You can only set lists under a parent or a key");
             throw new YAMLException("Invalid YAML", e.getCause());
         }
     }
@@ -59,51 +67,46 @@ public class DefaultParser extends YamlParser {
 
     @Override
     public @Nullable Object getObject(@NotNull String path, char dirSeparator) {
-        if (map == null)
-            map = map();
+        if (data == null)
+            data = map();
         if (path.startsWith(".") || path.endsWith("."))
             return null;
-        List<String> paths = new LinkedList<>();
-        char[] chars = path.toCharArray();
-        StringBuilder str = new StringBuilder();
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == dirSeparator || i + 1 == chars.length) {
-                if (i + 1 == chars.length)
-                    str.append(chars[i]);
-                paths.add(str.toString());
-                str = new StringBuilder();
-                continue;
-            }
-            str.append(chars[i]);
-        }
+        List<String> paths = StorageUtils.toList(path, dirSeparator);
         return getObject(paths);
     }
 
     @Override
     public @Nullable Object getObject(@NotNull List<String> path) {
-        if (map == null)
-            map = map();
+        if (data == null)
+            data = map();
         if (path.size() == 0)
             return null;
-        return getObject(map, path, new HashMap(), path.get(0), true, 0);
+        return getObject(data, path, new HashMap(), path.get(0), true, 0);
     }
 
     @Override
     public @Nullable Object getObject(@NotNull String[] path) {
-        if (map == null)
-            map = map();
+        if (data == null)
+            data = map();
         return getObject(new LinkedList<>(Arrays.asList(path)));
     }
 
-    private Object getObject(Map<?, ?> mapped, List<String> paths, Map newMap, String currentPath, boolean first, int loops) {
-        Map map = (first) ? mapped : newMap;
-        if (map == null) return null;
-        if (currentPath.equals(paths.get(paths.size() - 1))) return map.get(currentPath);
-        for (Object o : map.keySet()) {
+
+
+    static Object getObject(Map<?, ?> init, List<String> paths, Map newMap, String currentPath, boolean first, int loops) {
+        if (paths.size() == 1)
+            return init.get(paths.get(0));
+        Map object = (first) ? init : newMap;
+        if (object == null) return null;
+        if (currentPath.equals(paths.get(paths.size() - 1))) {
+            Object o = object.get(currentPath);
+            return o;
+        }
+            for (Object o : object.keySet()) {
             if (!o.equals(currentPath)) continue;
-            if (map.get(o) instanceof Map) {
-                Map objMap = (Map) map.get(o);
-                return getObject(mapped, paths, objMap, paths.get(loops + 1), false, loops + 1);
+            if (object.get(o) instanceof Map) {
+                Map objMap = (Map) object.get(o);
+                return getObject(init, paths, objMap, paths.get(loops + 1), false, loops + 1);
             }
         }
         return null;
