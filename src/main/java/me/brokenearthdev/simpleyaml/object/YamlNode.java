@@ -15,32 +15,62 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.object;
 
-import me.brokenearthdev.simpleyaml.struct.Node;
-import me.brokenearthdev.simpleyaml.utils.StorageUtils;
+import me.brokenearthdev.simpleyaml.object.YamlElement;
+import me.brokenearthdev.simpleyaml.object.YamlObject;
+import me.brokenearthdev.simpleyaml.object.YamlPrimitive;
 
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class YamlNode extends Node implements YamlElement {
+public class YamlNode implements YamlElement {
 
-    public YamlNode(String path, char separator, Map map) {
-        super(path, separator, map);
+    // children
+
+    private Map<String, YamlElement> map = new LinkedHashMap<>();
+    private String str;
+
+    public YamlNode(String name) {
+        str = name;
     }
 
-    @Override
-    @SuppressWarnings("unchecked") // Map is somewhat similar to Map<Object, Object>
-    public void addChild(String key, Object value) {
-        children.put(key, value);
-        for (Object o : data.keySet()) {
-            //if (o.toString().equals())
-        }
+    public YamlNode(String name, Map<String, YamlElement> children) {
+        this.map = children;
+        str = name;
     }
 
-    @Override
-    public void removeChild(String key, Object value) {
-        children.remove(key);
+    public Map<String, YamlElement> getChildren() {
+        return map;
     }
 
+    public String getKeyName() {
+        return str;
+    }
 
+    public void addChild(String key, YamlElement element) {
+        change(key, element);
+    }
+
+    public void addChild(String key, String value) {
+        change(key, createElementPrimitive(value));
+    }
+
+    public void addChild(String key, boolean value) {
+        change(key, createElementPrimitive(value));
+    }
+
+    public void addChild(String key, Number value) {
+        change(key, createElementPrimitive(value));
+    }
+
+    private void change(String key, YamlElement element) {
+        if (element == null)
+            map.remove(key);
+        else
+            map.put(key, element);
+    }
+
+    private YamlElement createElementPrimitive(Object o) {
+        return new YamlPrimitive(o);
+    }
 
 }

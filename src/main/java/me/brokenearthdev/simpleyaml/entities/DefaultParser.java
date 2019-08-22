@@ -16,7 +16,9 @@ limitations under the License.
 package me.brokenearthdev.simpleyaml.entities;
 
 import com.google.gson.Gson;
+import me.brokenearthdev.simpleyaml.object.*;
 import me.brokenearthdev.simpleyaml.utils.StorageUtils;
+import me.brokenearthdev.simpleyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
@@ -91,9 +93,22 @@ public class DefaultParser extends YamlParser {
         return getObject(new LinkedList<>(Arrays.asList(path)));
     }
 
+    @Override
+    public @Nullable YamlElement getElement(@NotNull String path, char dirSeparator) {
+        return getElement(StorageUtils.toList(path, dirSeparator));
+    }
 
+    @Override
+    public @Nullable YamlElement getElement(@NotNull List<String> path) {
+        return YamlUtils.toYamlElement(path.get(path.size() - 1), getObject(path), path.size() == 1);
+    }
 
-    static Object getObject(Map<?, ?> init, List<String> paths, Map newMap, String currentPath, boolean first, int loops) {
+    @Override
+    public @Nullable YamlElement getElement(@NotNull String[] path) {
+        return getElement(new LinkedList<>(Arrays.asList(path)));
+    }
+
+    private static Object getObject(Map<?, ?> init, List<String> paths, Map newMap, String currentPath, boolean first, int loops) {
         if (paths.size() == 1)
             return init.get(paths.get(0));
         Map object = (first) ? init : newMap;

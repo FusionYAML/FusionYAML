@@ -16,28 +16,58 @@ limitations under the License.
 package me.brokenearthdev.simpleyaml.object;
 
 
+import me.brokenearthdev.simpleyaml.entities.DefaultParser;
+
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class YamlObject implements YamlElement {
 
-        private final LinkedHashMap<String, YamlElement> map = new LinkedHashMap<>();
+    protected Map<String, YamlElement> map = new LinkedHashMap<>();
+    private String upperMost;
 
-    public void add(String key, YamlElement value) {
-        value = (value == null) ? YamlNull.INSTANCE : value;
-        map.put(key, value);
+    public YamlObject(String upperMost) {
+        this.upperMost = upperMost;
     }
 
-    public void add(String key, String value) {
-        map.put(key, createElementPrimitive(value));
+    public YamlObject(String upperMost, Map<String, YamlElement> children) {
+        this.upperMost = upperMost;
+        map = children;
     }
 
-    public void add(String key, boolean value) {
-        map.put(key, createElementPrimitive(value));
+    private void change(String key, YamlElement value) {
+        if (value == null)
+            map.remove(key);
+        else map.put(key, value);
     }
 
-    public void add(String key, Number value) {
-        map.put(key, createElementPrimitive(value));
+    public void set(String key, YamlElement value) {
+        change(key, value);
+    }
+
+    public void set(String key, String value) {
+        change(key, createElementPrimitive(value));
+    }
+
+    public void set(String key, boolean value) {
+        change(key, createElementPrimitive(value));
+    }
+
+    public void set(String key, Number value) {
+        change(key, createElementPrimitive(value));
+    }
+
+    public void set(String key, char separator, String value) {
+
+    }
+
+    private void setNested0(List<String> paths, Object value) {
+        //Map<Object, Object>
+    }
+
+    public void remove(String key) {
+        map.remove(key);
     }
 
     public Map<String, YamlElement> getMap() {
@@ -45,7 +75,9 @@ public class YamlObject implements YamlElement {
     }
 
     private YamlElement createElementPrimitive(Object o) {
-        return o == null ? YamlNull.INSTANCE : new YamlPrimitive(o);
+        return new YamlPrimitive(o);
     }
+
+
 
 }

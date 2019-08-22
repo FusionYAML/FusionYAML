@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.simpleyaml.entities;
 
+import me.brokenearthdev.simpleyaml.object.*;
 import me.brokenearthdev.simpleyaml.utils.URLUtils;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,12 +26,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class is responsible for parsing YAML and converting raw YAML data
- * into a map which can be also used to convert the raw YAML data to JSON.
+ * into a map which can be also used to convert the raw YAML data to JSON using
+ * {@link #toJson()}
  */
 public abstract class YamlParser {
 
@@ -152,6 +153,15 @@ public abstract class YamlParser {
     @Nullable
     public abstract Object getObject(@NotNull String[] path);
 
+    @Nullable
+    public abstract YamlElement getElement(@NotNull String path, char dirSeparator);
+
+    @Nullable
+    public abstract YamlElement getElement(@NotNull List<String> path);
+
+    @Nullable
+    public abstract YamlElement getElement(@NotNull String[] path);
+
     /**
      * Reloads by changing the raw contents set up during initialization to
      * the new contents found in the {@link File} in the parameter.
@@ -190,12 +200,13 @@ public abstract class YamlParser {
     }
 
     /**
-     * @return The yaml raw contents as an {@link Map}
+     * @return The yaml raw contents as a {@link Map}.
+     * <p>
+     * Please note that this method returns {@link #data}, which is a
+     * map of objects and not a map of String with values of type {@link YamlElement}
      */
     public Map<?, ?> getMap() {
         return data;
     }
-
-
 
 }

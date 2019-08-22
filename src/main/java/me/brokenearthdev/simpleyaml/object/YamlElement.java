@@ -16,12 +16,7 @@ limitations under the License.
 package me.brokenearthdev.simpleyaml.object;
 
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 public interface YamlElement {
-
-
 
     // primitives
 
@@ -71,9 +66,6 @@ public interface YamlElement {
         return this instanceof YamlObject;
     }
 
-    default boolean isYamlNull() {
-        return this instanceof YamlNull;
-    }
 
     default boolean isNumber() {
         throw new UnsupportedOperationException(getClass().getName());
@@ -96,10 +88,10 @@ public interface YamlElement {
         else throw new IllegalStateException("Not a YAML list: " + this);
     }
 
-    default YamlNull getAsYamlNull() {
-        if (isYamlNull())
-            return (YamlNull) this;
-        else throw new IllegalStateException("Not a YAML null: " + this);
+    default YamlNode getAsYamlNode() {
+        if (isYamlNode())
+            return (YamlNode) this;
+        else throw new IllegalStateException("Not a YAML node: " + this);
     }
 
     default YamlObject getAsYamlObject() {
@@ -112,12 +104,6 @@ public interface YamlElement {
         if (isYamlPrimitive())
             return (YamlPrimitive) this;
         else throw new IllegalStateException("Not a YAML primitive: " + this);
-    }
-
-    default YamlNode getAsYamlNode() {
-        if (isYamlNode())
-            return (YamlNode) this;
-        else throw new IllegalArgumentException("Not a YAML node: " + this);
     }
 
     default Number getAsNumber() {
