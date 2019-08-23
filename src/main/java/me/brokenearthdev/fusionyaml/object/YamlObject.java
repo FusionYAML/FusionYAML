@@ -13,13 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.object;
+package me.brokenearthdev.fusionyaml.object;
 
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import me.brokenearthdev.simpleyaml.utils.YamlUtils;
+import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import net.moltenjson.utils.Gsons;
 import net.moltenjson.utils.ReflectiveTypes;
 import org.yaml.snakeyaml.DumperOptions;

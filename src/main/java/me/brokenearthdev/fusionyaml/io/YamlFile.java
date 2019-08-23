@@ -13,27 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.error;
+package me.brokenearthdev.fusionyaml.io;
 
-public class YamlException extends Exception {
+import com.google.common.collect.ImmutableList;
+import me.brokenearthdev.fusionyaml.YamlPair;
 
-    public YamlException() {
-        super();
+import java.io.File;
+
+
+public class YamlFile {
+
+    private File file;
+    private ImmutableList<YamlPair> elements;
+
+    public YamlFile(File file) {
+        this.file = file;
     }
 
-    public YamlException(String message) {
-        super(message);
+    public YamlFile(String path) {
+        this(new File(path));
     }
 
-    public YamlException(String message, Throwable cause) {
-        super(message, cause);
+    public File getFile() {
+        return file;
     }
 
-    public YamlException(Throwable cause) {
-        super(cause);
-    }
-
-    protected YamlException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

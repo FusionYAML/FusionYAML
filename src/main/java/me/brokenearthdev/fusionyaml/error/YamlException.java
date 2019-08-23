@@ -13,31 +13,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.object;
+package me.brokenearthdev.fusionyaml.error;
 
-import java.util.LinkedList;
-import java.util.List;
+public class YamlException extends Exception {
 
-public class YamlList implements YamlElement {
-
-    private List<YamlElement> list = new LinkedList<>();
-
-    public YamlList() {}
-
-    public YamlList(List<YamlElement> list) {
-        this.list = list;
+    public YamlException() {
+        super();
     }
 
-    public void add(YamlElement value /* may be a node */) {
-        list.add(value);
+    public YamlException(String message) {
+        super(message);
     }
 
-    public void remove(int index) {
-        list.remove(index);
+    public YamlException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public List<YamlElement> getList() {
-        return list;
+    public YamlException(Throwable cause) {
+        super(cause);
     }
 
+    protected YamlException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

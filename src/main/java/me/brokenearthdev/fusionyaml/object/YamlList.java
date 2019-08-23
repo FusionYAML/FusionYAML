@@ -13,29 +13,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.io;
+package me.brokenearthdev.fusionyaml.object;
 
-import com.google.common.collect.ImmutableList;
-import me.brokenearthdev.simpleyaml.YamlPair;
+import java.util.LinkedList;
+import java.util.List;
 
-import java.io.File;
+public class YamlList implements YamlElement {
 
+    private List<YamlElement> list = new LinkedList<>();
 
-public class YamlFile {
+    public YamlList() {}
 
-    private File file;
-    private ImmutableList<YamlPair> elements;
-
-    public YamlFile(File file) {
-        this.file = file;
+    public YamlList(List<YamlElement> list) {
+        this.list = list;
     }
 
-    public YamlFile(String path) {
-        this(new File(path));
+    public void add(YamlElement value /* may be a node */) {
+        list.add(value);
     }
 
-    public File getFile() {
-        return file;
+    public void remove(int index) {
+        list.remove(index);
+    }
+
+    public List<YamlElement> getList() {
+        return list;
     }
 
 }

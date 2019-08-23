@@ -13,14 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.io;
+package me.brokenearthdev.fusionyaml.io;
 
-import me.brokenearthdev.simpleyaml.object.*;
-import me.brokenearthdev.simpleyaml.utils.URLUtils;
+import me.brokenearthdev.fusionyaml.error.YamlException;
+import me.brokenearthdev.fusionyaml.object.*;
+import me.brokenearthdev.fusionyaml.utils.URLUtils;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,12 +99,13 @@ public abstract class YamlParser {
      * while mapping. Invalid yaml may be the cause of the exception
      *
      * @return A map containing yaml data ({@link #raw})
-     * @throws org.yaml.snakeyaml.error.YAMLException If an error occurred while mapping
+     * @throws me.brokenearthdev.fusionyaml.error.YamlException If an error occurred while mapping
+     * @throws UnsupportedOperationException Using lists with no parents (list yaml) causes this exception
      * @see #reload(File)
      * @see #reload(URL)
      */
     @Nullable
-    public abstract Map<String, Object> map();
+    public abstract Map<String, Object> map() throws YamlException;
 
     /**
      * Converts the data written in yaml syntax into json.
@@ -133,7 +134,7 @@ public abstract class YamlParser {
 
     /**
      * Retrieves an object from a given path. The method requires a {@link List}. Every
-     * index in a list signals a descent.
+     * index in a list indicates a descent.
      * <p>
      *
      * @param path The path where the object is located
@@ -144,7 +145,7 @@ public abstract class YamlParser {
 
     /**
      * Retrieves an object from a given path. The method requires an array of strings.
-     * Every index in the array signals a descent.
+     * Every index in the array indicates a descent.
      *
      * @param path The path where the object is located
      * @return The {@link Object} found, or null otherwise.
@@ -152,12 +153,43 @@ public abstract class YamlParser {
     @Nullable
     public abstract Object getObject(@NotNull String[] path);
 
+    /**
+     * Retrieves a {@link YamlElement} from a given path. The method requires a {@code character} which
+     * serves as a separator when used in the {@code path}. Using a separator targets elements
+     * in nested paths. For example, the path player.games.tetris using a dot as a separator:
+     * <pre>
+     *     player:
+     *       games:
+     *         tetris: 3
+     * </pre>
+     *
+     * @param path The path where the element is found
+     * @param dirSeparator The path separator. When applied, the value will be searched deeper
+     *                     into the path.
+     * @return The {@link YamlElement} found, or {@code null} otherwise
+     */
     @Nullable
     public abstract YamlElement getElement(@NotNull String path, char dirSeparator);
 
+    /**
+     * Retrieves a {@link YamlElement} from a given path. Every index of the {@link List}
+     * required in the parameter is a child under the string mentioned before the
+     * index in the {@link List} excluding {@code 0}.
+     *
+     * @param path The path where the object is located
+     * @return The {@link YamlElement} found, or {@code null} otherwise
+     */
     @Nullable
     public abstract YamlElement getElement(@NotNull List<String> path);
 
+    /**
+     * Retrieves a {@link YamlElement} from a given path. Every index of the
+     * {@code String} array is a child under the string mentioned before the
+     * index excluding {@code 0}.
+     *
+     * @param path The path where the object is found
+     * @return The {@link YamlElement} found, or {@code null} otherwise
+     */
     @Nullable
     public abstract YamlElement getElement(@NotNull String[] path);
 
@@ -167,8 +199,10 @@ public abstract class YamlParser {
      *
      * @param file The {@link File} that will get its contents retrieved
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
+     * @throws YamlException If an error occurred while mapping
+     * @throws UnsupportedOperationException Using lists with no parents (list yaml) causes this exception
      */
-    public void reload(@NotNull File file) throws IOException {
+    public void reload(@NotNull File file) throws IOException, YamlException {
         raw = FileUtils.readFileToString(file, Charset.defaultCharset());
         map();
     }
@@ -182,7 +216,7 @@ public abstract class YamlParser {
      * @param url The {@link URL} that will get its contents retrieved
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
-    public void reload(@NotNull URL url) throws IOException {
+    public void reload(@NotNull URL url) throws IOException, YamlException {
         raw = URLUtils.readURLToString(url);
         map();
     }

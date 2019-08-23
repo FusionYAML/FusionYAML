@@ -46,4 +46,4 @@ build/docs/
 /build/
 .idea/*
 
-src/main/java/me/brokenearthdev/simpleyaml/Test.java
+src/main/java/me/brokenearthdev/fusionyaml/Test.java

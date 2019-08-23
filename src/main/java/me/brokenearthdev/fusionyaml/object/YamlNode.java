@@ -13,13 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.object;
+package me.brokenearthdev.fusionyaml.object;
 
-import me.brokenearthdev.simpleyaml.object.YamlElement;
-import me.brokenearthdev.simpleyaml.object.YamlObject;
-import me.brokenearthdev.simpleyaml.object.YamlPrimitive;
+import com.google.common.collect.ImmutableList;
+import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class YamlNode implements YamlElement {
@@ -27,12 +28,23 @@ public class YamlNode implements YamlElement {
     // children
 
     private Map<String, YamlElement> map = new LinkedHashMap<>();
+    private List<YamlNode> childNodes = new LinkedList<>();
 
     public YamlNode() {
     }
 
+    private List<YamlNode> findChildNodes(Map<String, YamlElement> map) {
+        List<YamlNode> list = new LinkedList<>();
+        map.forEach((k, v) -> {
+            if (v instanceof YamlNode)
+                list.add((YamlNode) v);
+        });
+        return list;
+    }
+
     public YamlNode(Map<String, YamlElement> children) {
         this.map = children;
+        this.childNodes = findChildNodes(children);
     }
 
     public Map<String, YamlElement> getChildren() {
@@ -40,6 +52,8 @@ public class YamlNode implements YamlElement {
     }
 
     public void addChild(String key, YamlElement element) {
+        if (element instanceof YamlNode)
+            childNodes.add((YamlNode) element);
         change(key, element);
     }
 
@@ -64,6 +78,10 @@ public class YamlNode implements YamlElement {
 
     private YamlElement createElementPrimitive(Object o) {
         return new YamlPrimitive(o);
+    }
+
+    public ImmutableList<YamlNode> getChildNodes() {
+        return StorageUtils.toImmutableList(childNodes);
     }
 
 }

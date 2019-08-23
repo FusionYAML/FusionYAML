@@ -13,17 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.io;
+package me.brokenearthdev.fusionyaml.io;
 
 import com.google.gson.Gson;
-import me.brokenearthdev.simpleyaml.io.YamlParser;
-import me.brokenearthdev.simpleyaml.object.*;
-import me.brokenearthdev.simpleyaml.utils.StorageUtils;
-import me.brokenearthdev.simpleyaml.utils.YamlUtils;
+import me.brokenearthdev.fusionyaml.error.YamlException;
+import me.brokenearthdev.fusionyaml.object.*;
+import me.brokenearthdev.fusionyaml.utils.StorageUtils;
+import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class DefaultParser extends YamlParser {
     }
 
     @Override
-    public @Nullable Map<String, Object> map() {
+    public @Nullable Map<String, Object> map() throws YamlException {
         try {
             if (raw == null)
                 return data;
@@ -57,8 +56,8 @@ public class DefaultParser extends YamlParser {
             return data;
         } catch (Exception e) {
             if (e.getCause().toString().equals("org.yaml.snakeyaml.error.YAMLException: No suitable constructor with 1 arguments found for interface java.util.Map"))
-                throw new YAMLException("Lists in the uppermost tree are not supported. You can only set lists under a parent or a key");
-            throw new YAMLException("Invalid YAML", e.getCause());
+                throw new UnsupportedOperationException("Lists in the uppermost tree are not supported. You can only set lists under a parent or a key");
+            throw new YamlException("Invalid YAML", e.getCause());
         }
     }
 
@@ -71,7 +70,7 @@ public class DefaultParser extends YamlParser {
     @Override
     public @Nullable Object getObject(@NotNull String path, char dirSeparator) {
         if (data == null)
-            data = map();
+            return null;
         if (path.startsWith(".") || path.endsWith("."))
             return null;
         List<String> paths = StorageUtils.toList(path, dirSeparator);
@@ -81,7 +80,7 @@ public class DefaultParser extends YamlParser {
     @Override
     public @Nullable Object getObject(@NotNull List<String> path) {
         if (data == null)
-            data = map();
+            return null;
         if (path.size() == 0)
             return null;
         return getObject(data, path, new HashMap(), path.get(0), true, 0);
@@ -90,7 +89,7 @@ public class DefaultParser extends YamlParser {
     @Override
     public @Nullable Object getObject(@NotNull String[] path) {
         if (data == null)
-            data = map();
+            return null;
         return getObject(new LinkedList<>(Arrays.asList(path)));
     }
 
@@ -129,7 +128,5 @@ public class DefaultParser extends YamlParser {
         }
         return null;
     }
+
 }
-
-
-
