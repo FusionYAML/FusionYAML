@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.entities;
+package me.brokenearthdev.simpleyaml.io;
 
 import me.brokenearthdev.simpleyaml.object.*;
 import me.brokenearthdev.simpleyaml.utils.URLUtils;
@@ -43,7 +43,7 @@ public abstract class YamlParser {
     /**
      * The yaml raw contents as a {@link Map}
      */
-    protected Map<?, ?> data;
+    protected Map<String, Object> data;
 
     /**
      * This constructor requires a raw YAML data which will be used
@@ -86,7 +86,7 @@ public abstract class YamlParser {
      *
      * @param map The map that houses YAML contents
      */
-    public YamlParser(@NotNull Map<Object, Object> map) {
+    public YamlParser(@NotNull Map<String, Object> map) {
         data = map;
     }
 
@@ -98,14 +98,13 @@ public abstract class YamlParser {
      * {@link org.yaml.snakeyaml.error.YAMLException} will be thrown if an error occurred
      * while mapping. Invalid yaml may be the cause of the exception
      *
-     * @return A map containing yaml data ({@link #raw}) or {@link #getMap()} if the class is
-     * initialized using {@link #YamlParser(Map)}
+     * @return A map containing yaml data ({@link #raw})
      * @throws org.yaml.snakeyaml.error.YAMLException If an error occurred while mapping
      * @see #reload(File)
      * @see #reload(URL)
      */
     @Nullable
-    public abstract Map<?, ?> map();
+    public abstract Map<String, Object> map();
 
     /**
      * Converts the data written in yaml syntax into json.
@@ -188,7 +187,7 @@ public abstract class YamlParser {
         map();
     }
 
-    public void setDataMap(Map<Object, Object> map) {
+    public void setDataMap(Map<String, Object> map) {
         this.data = map;
     }
 

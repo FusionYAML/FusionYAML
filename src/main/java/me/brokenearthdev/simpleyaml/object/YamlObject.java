@@ -17,9 +17,11 @@ package me.brokenearthdev.simpleyaml.object;
 
 
 import com.google.gson.Gson;
-import me.brokenearthdev.simpleyaml.entities.DefaultParser;
-import me.brokenearthdev.simpleyaml.entities.YamlParser;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import me.brokenearthdev.simpleyaml.utils.YamlUtils;
+import net.moltenjson.utils.Gsons;
+import net.moltenjson.utils.ReflectiveTypes;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -29,7 +31,7 @@ import java.util.Map;
 
 public class YamlObject implements YamlElement {
 
-    public static final char SEPARATOR = '.';
+    private static final Gson gson = new Gson();
 
     protected Map<String, YamlElement> map = new LinkedHashMap<>();
 
@@ -37,6 +39,16 @@ public class YamlObject implements YamlElement {
 
     public YamlObject(Map<String, YamlElement> data) {
         map = data;
+    }
+
+    public static YamlObject fromJsonObject(JsonObject object) {
+        return new YamlObject(YamlUtils.toMap(Gsons.DEFAULT.fromJson(object, ReflectiveTypes.MAP_TYPE)));
+    }
+
+    public static YamlObject readFromJson(String json) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        Map<String, Object> jmap = gson.fromJson(json, Map.class);
+        return new YamlObject(YamlUtils.toMap(jmap));
     }
 
     private void change(String key, YamlElement value) {
@@ -68,12 +80,14 @@ public class YamlObject implements YamlElement {
             return;
         }
         // path is nested
-        Map<Object, Object> map = YamlUtils.toMap0(this);
-        Map<Object, Object> newMap = YamlUtils.setNested(map, paths, value);
-        this.map = YamlUtils.toMap(newMap);
+        Map<String, Object> map = YamlUtils.toMap0(this);
+        Map<String, Object> newMap = YamlUtils.setNested(map, paths, value);
+        this.map = YamlUtils.toMap(YamlUtils.toStrMap(newMap));
     }
 
-
+    public JsonObject saveToJsonObject() {
+        return gson.fromJson(toJson(), JsonObject.class);
+    }
 
     public void remove(String key) {
         map.remove(key);

@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.entities;
+package me.brokenearthdev.simpleyaml;
 
+import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -34,6 +35,7 @@ import java.util.Map;
  * <p>
  * The key in this class is the highest in the hierarchy. There can be only one outermost key.
  */
+@Beta
 public class YamlPair {
 
     private static DumperOptions defaultDumperOptions;

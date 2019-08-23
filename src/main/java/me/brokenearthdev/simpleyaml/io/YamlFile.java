@@ -13,7 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.configuration;
+package me.brokenearthdev.simpleyaml.io;
 
-public class DynamicConfiguration {
+import com.google.common.collect.ImmutableList;
+import me.brokenearthdev.simpleyaml.YamlPair;
+
+import java.io.File;
+
+
+public class YamlFile {
+
+    private File file;
+    private ImmutableList<YamlPair> elements;
+
+    public YamlFile(File file) {
+        this.file = file;
+    }
+
+    public YamlFile(String path) {
+        this(new File(path));
+    }
+
+    public File getFile() {
+        return file;
+    }
+
 }

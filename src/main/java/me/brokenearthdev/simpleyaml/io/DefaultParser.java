@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.simpleyaml.entities;
+package me.brokenearthdev.simpleyaml.io;
 
 import com.google.gson.Gson;
+import me.brokenearthdev.simpleyaml.io.YamlParser;
 import me.brokenearthdev.simpleyaml.object.*;
 import me.brokenearthdev.simpleyaml.utils.StorageUtils;
 import me.brokenearthdev.simpleyaml.utils.YamlUtils;
@@ -43,12 +44,12 @@ public class DefaultParser extends YamlParser {
         super(url);
     }
 
-    public DefaultParser(@NotNull Map<Object, Object> map) {
+    public DefaultParser(@NotNull Map<String, Object> map) {
         super(map);
     }
 
     @Override
-    public @Nullable Map<?, ?> map() {
+    public @Nullable Map<String, Object> map() {
         try {
             if (raw == null)
                 return data;

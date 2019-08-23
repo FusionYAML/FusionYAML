@@ -33,15 +33,21 @@ public class YamlUtils {
         if (o instanceof List)
             return toYamlList((List<Object>) o);
         if (o instanceof Map && tree)
-            return new YamlObject(toMap((Map<Object, Object>) o));
+            return new YamlObject(toMap(toStrMap((Map) o)));
         if (o instanceof Map)
-            return new YamlNode(toMap((Map<Object, Object>) o));
+            return new YamlNode(toMap(toStrMap((Map) o)));
         else return null;
     }
 
-    public static Map<String, YamlElement> toMap(Map<Object, Object> map) {
+    public static <K, V> Map<String, Object> toStrMap(Map<K, V> map) {
+        Map<String, Object> mp = new LinkedHashMap<>();
+        map.forEach((k, v) -> mp.put(k.toString(), v));
+        return mp;
+    }
+
+    public static Map<String, YamlElement> toMap(Map<String, Object> map) {
         Map<String, YamlElement> map1 = new LinkedHashMap<>();
-        map.forEach((k, v) -> map1.put(k.toString(), toElement(v, false)));
+        map.forEach((k, v) -> map1.put(k, toElement(v, false)));
         return map1;
     }
 
@@ -77,8 +83,8 @@ public class YamlUtils {
         return o instanceof Number || o instanceof Character || o instanceof Boolean || o instanceof String;
     }
 
-    public static Map<Object, Object> toMap0(YamlObject object) {
-        Map<Object, Object> empty = new LinkedHashMap<>();
+    public static Map<String, Object> toMap0(YamlObject object) {
+        Map<String, Object> empty = new LinkedHashMap<>();
         object.getMap().forEach((k, v) -> empty.put(k, toObject(v)));
         return empty;
     }
@@ -89,7 +95,7 @@ public class YamlUtils {
         return empty;
     }
 
-    public static Map<Object, Object> setNested(Map<Object, Object> map, List<String> keys, Object value) {
+    public static Map<String, Object> setNested(Map<String, Object> map, List<String> keys, Object value) {
         String key = keys.get(0);
         List<String> nextKeys = keys.subList(1, keys.size());
         Object newValue;
@@ -101,9 +107,9 @@ public class YamlUtils {
             Object v = map.get(key);
             if (!(v instanceof Map))
                 v = new LinkedHashMap<>();
-            newValue = setNested((Map<Object, Object>) v, nextKeys, value);
+            newValue = setNested((Map<String, Object>) v, nextKeys, value);
         }
-        Map<Object, Object> copyMap = new LinkedHashMap<>(map);
+        Map<String, Object> copyMap = new LinkedHashMap<>(map);
         copyMap.put(key, newValue);
         return copyMap;
     }

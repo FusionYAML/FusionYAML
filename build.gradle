@@ -31,4 +31,7 @@ dependencies {
     // Apache HttpClient library
     //compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.9'
 
+    // Molten Json's library
+    compile 'io.github.moltenjson:MoltenJSON:2.4.7'
+
 }
