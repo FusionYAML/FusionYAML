@@ -35,7 +35,7 @@ public class YamlPrimitive implements YamlElement {
     }
 
     public YamlPrimitive(Object primitive) {
-        if (!(primitive instanceof Number) && !(primitive instanceof String) && !(primitive instanceof Character))
+        if (!(primitive instanceof Number) && !(primitive instanceof String) && !(primitive instanceof Character) && !(primitive instanceof Boolean))
             throw new IllegalArgumentException(primitive.getClass().getName() + " is not a primitive type");
         value = primitive;
     }
@@ -105,6 +105,11 @@ public class YamlPrimitive implements YamlElement {
         } else {
             return (String) value;
         }
+    }
+
+    @Override
+    public boolean isCharacter() {
+        return value instanceof Character;
     }
 
     @Override

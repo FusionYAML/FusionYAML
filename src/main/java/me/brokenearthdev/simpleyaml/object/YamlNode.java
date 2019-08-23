@@ -27,23 +27,16 @@ public class YamlNode implements YamlElement {
     // children
 
     private Map<String, YamlElement> map = new LinkedHashMap<>();
-    private String str;
 
-    public YamlNode(String name) {
-        str = name;
+    public YamlNode() {
     }
 
-    public YamlNode(String name, Map<String, YamlElement> children) {
+    public YamlNode(Map<String, YamlElement> children) {
         this.map = children;
-        str = name;
     }
 
     public Map<String, YamlElement> getChildren() {
         return map;
-    }
-
-    public String getKeyName() {
-        return str;
     }
 
     public void addChild(String key, YamlElement element) {

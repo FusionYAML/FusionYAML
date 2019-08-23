@@ -36,4 +36,8 @@ public class YamlList implements YamlElement {
         list.remove(index);
     }
 
+    public List<YamlElement> getList() {
+        return list;
+    }
+
 }

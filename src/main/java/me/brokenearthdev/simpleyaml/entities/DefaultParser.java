@@ -100,7 +100,9 @@ public class DefaultParser extends YamlParser {
 
     @Override
     public @Nullable YamlElement getElement(@NotNull List<String> path) {
-        return YamlUtils.toYamlElement(path.get(path.size() - 1), getObject(path), path.size() == 1);
+        if (path.size() == 0) return null;
+        Object o = getObject(path);
+        return YamlUtils.toElement(o, path.size() == 1 && !(o instanceof Map));
     }
 
     @Override

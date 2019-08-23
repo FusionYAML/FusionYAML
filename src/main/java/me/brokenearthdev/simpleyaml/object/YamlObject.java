@@ -16,7 +16,12 @@ limitations under the License.
 package me.brokenearthdev.simpleyaml.object;
 
 
+import com.google.gson.Gson;
 import me.brokenearthdev.simpleyaml.entities.DefaultParser;
+import me.brokenearthdev.simpleyaml.entities.YamlParser;
+import me.brokenearthdev.simpleyaml.utils.YamlUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,16 +29,14 @@ import java.util.Map;
 
 public class YamlObject implements YamlElement {
 
+    public static final char SEPARATOR = '.';
+
     protected Map<String, YamlElement> map = new LinkedHashMap<>();
-    private String upperMost;
 
-    public YamlObject(String upperMost) {
-        this.upperMost = upperMost;
-    }
+    public YamlObject() {}
 
-    public YamlObject(String upperMost, Map<String, YamlElement> children) {
-        this.upperMost = upperMost;
-        map = children;
+    public YamlObject(Map<String, YamlElement> data) {
+        map = data;
     }
 
     private void change(String key, YamlElement value) {
@@ -58,13 +61,19 @@ public class YamlObject implements YamlElement {
         change(key, createElementPrimitive(value));
     }
 
-    public void set(String key, char separator, String value) {
-
+    public void set(List<String> paths, YamlElement value) {
+        if (paths.size() == 0) return; // empty path
+        if (paths.size() == 1) {
+            set(paths.get(0), value);
+            return;
+        }
+        // path is nested
+        Map<Object, Object> map = YamlUtils.toMap0(this);
+        Map<Object, Object> newMap = YamlUtils.setNested(map, paths, value);
+        this.map = YamlUtils.toMap(newMap);
     }
 
-    private void setNested0(List<String> paths, Object value) {
-        //Map<Object, Object>
-    }
+
 
     public void remove(String key) {
         map.remove(key);
@@ -78,6 +87,20 @@ public class YamlObject implements YamlElement {
         return new YamlPrimitive(o);
     }
 
+    @Override
+    public String toString() {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        Yaml yaml = new Yaml(options);
+        return yaml.dump(YamlUtils.toMap0(this));
+    }
 
+    public String toYaml() {
+        return toString();
+    }
+
+    public String toJson() {
+        return new Gson().toJson(YamlUtils.toMap0(this));
+    }
 
 }

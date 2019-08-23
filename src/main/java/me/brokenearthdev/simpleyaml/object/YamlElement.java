@@ -79,6 +79,9 @@ public interface YamlElement {
         return this instanceof YamlNode;
     }
 
+    default boolean isCharacter() {
+        throw new UnsupportedOperationException(getClass().getName());
+    }
 
     // NON-PRIMITIVE
 
