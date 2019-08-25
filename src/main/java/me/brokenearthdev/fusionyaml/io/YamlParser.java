@@ -215,6 +215,8 @@ public abstract class YamlParser {
      *
      * @param url The {@link URL} that will get its contents retrieved
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
+     * @throws YamlException if there are issues with loading, reading,
+     * or mapping a {@code string}, {@code object}, or {@link Map}
      */
     public void reload(@NotNull URL url) throws IOException, YamlException {
         raw = URLUtils.readURLToString(url);

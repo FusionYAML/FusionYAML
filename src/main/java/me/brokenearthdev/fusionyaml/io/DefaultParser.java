@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
+/**
+ * Built-in parser
+ */
 public class DefaultParser extends YamlParser {
 
     public DefaultParser(@NotNull String raw) {

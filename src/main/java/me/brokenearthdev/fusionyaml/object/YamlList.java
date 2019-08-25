@@ -15,27 +15,95 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.object;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * This class represents a list structure under a given path in {@code yaml}.
+ * Its data can be retrieved by {@link #getList()} and modified by
+ * {@link #add(YamlElement)} and {@link #remove(int)}
+ */
 public class YamlList implements YamlElement {
 
+    /**
+     * The {@link List} of {@link YamlElement}s
+     */
     private List<YamlElement> list = new LinkedList<>();
 
+    /**
+     * This constructor requires no objects to be passed into their parameters. An
+     * empty {@link LinkedList} is created upon initialization.
+     */
     public YamlList() {}
 
+    /**
+     * This constructor requires a {@link List} of {@link YamlElement}s to be
+     * passed into the constructor. The {@link List} containing {@link YamlElement}s
+     * in this object will be set equal to the value passed into the constructor.
+     * <p>
+     * It is encouraged to pass in a {@link LinkedList} object for predictable iteration
+     * order.
+     *
+     * @param list The {@link List} of {@link YamlElement}s
+     */
     public YamlList(List<YamlElement> list) {
         this.list = list;
     }
 
-    public void add(YamlElement value /* may be a node */) {
-        list.add(value);
+    /**
+     * Adds a {@link YamlElement} entry into the {@link List}. Please note if {@link YamlObject}
+     * is passed into the parameter, the object will be converted into a {@link YamlNode}
+     *
+     * @param value The {@link YamlElement} value
+     */
+    public void add(@NotNull YamlElement value) {
+        YamlElement val = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
+        list.add(val);
     }
 
+    /**
+     * Adds a {@code boolean} entry into the {@link List}.
+     *
+     * @param value The {@code boolean} value
+     */
+    public void add(boolean value) {
+        list.add(new YamlPrimitive(value));
+    }
+
+    /**
+     * Adds a {@link String} entry into the {@link List}.
+     *
+     * @param value The {@link String} value
+     */
+    public void add(@NotNull String value) {
+        list.add(new YamlPrimitive(value));
+    }
+
+    /**
+     * Adds a {@link String} entry into the {@link List}.
+     *
+     * @param number The {@link String} value
+     */
+    public void add(@NotNull Number number) {
+        list.add(new YamlPrimitive(number));
+    }
+
+    /**
+     * Removes a {@link YamlElement} entry in a given index.
+     *
+     * @param index The index where the {@link YamlElement} entry
+     *              is found.
+     */
     public void remove(int index) {
         list.remove(index);
     }
 
+    /**
+     * @return The {@link List} of {@link YamlElement}s that stores data in the
+     * {@link List}
+     */
     public List<YamlElement> getList() {
         return list;
     }

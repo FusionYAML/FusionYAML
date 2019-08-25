@@ -15,6 +15,10 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.error;
 
+/**
+ * Thrown when an error regarding loading or parsing a {@code yaml} object, string, or map
+ * occurred.
+ */
 public class YamlException extends Exception {
 
     public YamlException() {

@@ -109,7 +109,9 @@ public class YamlUtils {
             newValue = setNested((Map<String, Object>) v, nextKeys, value);
         }
         Map<String, Object> copyMap = new LinkedHashMap<>(map);
-        copyMap.put(key, newValue);
+        if (newValue == null)
+            copyMap.remove(key);
+        else copyMap.put(key, newValue);
         return copyMap;
     }
 
