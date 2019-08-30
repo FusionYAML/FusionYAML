@@ -15,10 +15,10 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml;
 
-import jdk.internal.jline.internal.Nullable;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
