@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.fusionyaml;
+package me.brokenearthdev.fusionyaml.configurations;
 
 import me.brokenearthdev.fusionyaml.error.YamlException;
 import me.brokenearthdev.fusionyaml.io.DefaultParser;

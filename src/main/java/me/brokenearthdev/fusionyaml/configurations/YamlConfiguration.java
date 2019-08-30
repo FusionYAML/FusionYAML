@@ -13,42 +13,78 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.fusionyaml;
+package me.brokenearthdev.fusionyaml.configurations;
 
+import me.brokenearthdev.fusionyaml.configurations.Configuration;
+import me.brokenearthdev.fusionyaml.configurations.FileConfiguration;
+import me.brokenearthdev.fusionyaml.io.DefaultParser;
+import me.brokenearthdev.fusionyaml.io.YamlParser;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
+import me.brokenearthdev.fusionyaml.object.YamlPrimitive;
+import me.brokenearthdev.fusionyaml.utils.StorageUtils;
+import me.brokenearthdev.fusionyaml.utils.YamlUtils;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
-
+import java.util.Map;
 
 /**
- * A configuration converts IO data, such as files and urls, into memory. Upon initialization, the
- * the contents will be copied into a {@link YamlObject} instance.
- * <p>
- * You can, in this class, save the contents into any file of your choice. Any getter or setter will
- * have to interact with the {@link YamlObject} instance to change data. For example, calling
- * {@link #getObject(String)} will retrieve the data in the {@link YamlObject}. Using setters will
- * also set the values in {@link YamlObject}
- * <p>
- * When saving, the {@link YamlObject} will be converted into a {@link String} and will be written
- * on a file, URL, etc.
+ * This class allows you to save {@link YamlObject}s to a file. This is a super class
+ * for most configurations, for example, {@link FileConfiguration} extends this class.
  */
-public interface Configuration {
+public class YamlConfiguration implements Configuration {
+
+    /**
+     * The local {@link YamlObject} that contains class data
+     */
+    protected YamlObject object;
+
+    /**
+     * The default {@link DumperOptions}. If {@link #save(File)} is called, this object will
+     * be used to call {@link #save(DumperOptions, File)}
+     */
+    private static final DumperOptions defOptions = defOptions();
+
+    /**
+     * This constructor requires a {@link YamlObject} instance to initialize this
+     * class. The {@link YamlObject} passed in will then be modified depending on the method
+     * calling in this object.
+     *
+     * @param obj The {@link YamlObject} instance
+     */
+    public YamlConfiguration(YamlObject obj) {
+        object = obj;
+    }
+
+    protected YamlConfiguration() {
+        this(new YamlObject());
+    }
 
     /**
      * This method saves the contents into a {@link File} specified.
      *
      * @param options The {@link DumperOptions}, which contains convenient options to fit your needs
-     * @param file The file that'll be saved to. If the file doesn't exist, the file will
-     *             be created with the data saved to it.
-     * @throws IOException Thrown if any IO error occurred.
+     * @param file    The file that'll be saved to. If the file doesn't exist, the file will
+     *  @throws IOException Thrown if any IO error occurred.
      */
-    void save(@Nullable DumperOptions options, @NotNull File file) throws IOException;
+    @Override
+    public void save(DumperOptions options, @NotNull File file) throws IOException {
+        Map<String, Object> map = YamlUtils.toMap0(object);
+        Yaml yaml = new Yaml((options != null) ? options : defOptions);
+        String data = yaml.dump(map);
+
+        // UTF-8 supports more characters
+        FileUtils.writeStringToFile(file, data, Charset.forName(StandardCharsets.UTF_8.name()));
+    }
 
     /**
      * This method saves the contents into a {@link File} specified.
@@ -57,7 +93,10 @@ public interface Configuration {
      *             be created with the data saved to it.
      * @throws IOException Thrown if any IO error occurred.
      */
-    void save(@NotNull File file) throws IOException;
+    @Override
+    public void save(@NotNull File file) throws IOException {
+        save(defOptions, file);
+    }
 
     /**
      * Sets the value in the path. If the path didn't exist, a new path will be created with the
@@ -76,11 +115,14 @@ public interface Configuration {
      *     <li>lists</li>
      *     <li>YamlElements and its children</li>
      * </ul>
+     *  @param path The path to the value
      *
-     * @param path The path to the value
      * @param value The value the path contains
      */
-    void set(@NotNull String path, Object value);
+    @Override
+    public void set(@NotNull String path, Object value) {
+        set(Collections.singletonList(path), value);
+    }
 
     /**
      * Sets the value in the path. If the path didn't exist, a new path will be created with the
@@ -103,13 +145,16 @@ public interface Configuration {
      *     <li>lists</li>
      *     <li>YamlElements and its children</li>
      * </ul>
+     *  @param path The path to the value
      *
-     * @param path The path to the value
      * @param separator The path separator. When used, the value will be set under the parent, which is
      *                  the section before the separator.
-     * @param value The value the path contains
+     * @param value     The value the path contains
      */
-    void set(@NotNull String path, char separator, Object value);
+    @Override
+    public void set(@NotNull String path, char separator, Object value) {
+        set(StorageUtils.toList(path, separator), value);
+    }
 
     /**
      * Sets the value in the path. If the path didn't exist, a new path will be created with the
@@ -132,11 +177,20 @@ public interface Configuration {
      *     <li>lists</li>
      *     <li>YamlElements and its children</li>
      * </ul>
+     *  @param path The path to the value
      *
-     * @param path The path to the value
      * @param value The value the path contains
      */
-    void set(@NotNull List<String> path, Object value);
+    @Override
+    public void set(@NotNull List<String> path, Object value) {
+        if (value instanceof YamlElement) {
+            set(path, (YamlElement) value);
+            return;
+        }
+        YamlElement converted = YamlUtils.toElement(value, false);
+        YamlElement data = (converted != null) ? converted : new YamlPrimitive(value.toString());
+        object.set(path, data);
+    }
 
     /**
      * Sets the value in the path. If the path didn't exist, a new path will be created with the
@@ -146,10 +200,13 @@ public interface Configuration {
      * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
      * to calling {@link #removePath(String)}.
      *
-     * @param path The path to the value
+     * @param path  The path to the value
      * @param value The value the path contains
      */
-    void set(@NotNull String path, YamlElement value);
+    @Override
+    public void set(@NotNull String path, YamlElement value) {
+        set(Collections.singletonList(path), value);
+    }
 
     /**
      * Sets the value in the path. If the path didn't exist, a new path will be created with the
@@ -163,12 +220,15 @@ public interface Configuration {
      * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
      * to calling {@link #removePath(String, char)}.
      *
-     * @param path The path to the value
+     * @param path      The path to the value
      * @param separator The path separator. When used, the value will be set under the parent, which is
      *                  the section before the separator.
-     * @param value The value the path contains
+     * @param value     The value the path contains
      */
-    void set(@NotNull String path, char separator, YamlElement value);
+    @Override
+    public void set(@NotNull String path, char separator, YamlElement value) {
+        set(StorageUtils.toList(path, separator), value);
+    }
 
     /**
      * Sets the value in the path. If the path didn't exist, a new path will be created with the
@@ -182,17 +242,23 @@ public interface Configuration {
      * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
      * to calling {@link #removePath(List)}.
      *
-     * @param path The path to the value
+     * @param path  The path to the value
      * @param value The value the path contains
      */
-    void set(@NotNull List<String> path, YamlElement value);
+    @Override
+    public void set(@NotNull List<String> path, YamlElement value) {
+        set(path, (Object) value);
+    }
 
     /**
      * Removes the key-value pair found in the path. A path is essentially a key.
      *
      * @param path The path to the key-value pair.
      */
-    void removePath(@NotNull String path);
+    @Override
+    public void removePath(@NotNull String path) {
+        set(path, null);
+    }
 
     /**
      * Removes the key-value pair found in the path. A path is essentially a key.
@@ -201,11 +267,13 @@ public interface Configuration {
      * is the part of the path used before the separator. Calling this method while not using a separator
      * in the path is equivalent to calling {@link #set(String, Object)}.
      *
-     * @param path The path to the key-value pair.
+     * @param path      The path to the key-value pair.
      * @param separator The path separator. When used, the value will be set under the parent, which is
-     *                  the section before the separator.
      */
-    void removePath(@NotNull String path, char separator);
+    @Override
+    public void removePath(@NotNull String path, char separator) {
+        set(StorageUtils.toList(path, separator), null);
+    }
 
     /**
      * Removes the key-value pair found in the path. A path is essentially a key.
@@ -216,12 +284,18 @@ public interface Configuration {
      *
      * @param path The path to the key-value pair. Every index in the {@link List} is a descent.
      */
-    void removePath(@NotNull List<String> path);
+    @Override
+    public void removePath(@NotNull List<String> path) {
+        set(path, null);
+    }
 
     /**
      * @return Gets the {@link YamlObject} for the configuration
      */
-    YamlObject getContents();
+    @Override
+    public YamlObject getContents() {
+        return object;
+    }
 
     /**
      * This method retrieves the {@link Object} in a {@link List} of paths with the specified
@@ -231,12 +305,17 @@ public interface Configuration {
      * Calling this method will never return an instance of {@link YamlElement}. Use
      * {@link #getElement(List, YamlElement)} instead
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@link Object} found in the given path or the default value if not
      */
-    Object getObject(@NotNull List<String> path, Object defValue);
+    @Override
+    public Object getObject(@NotNull List<String> path, Object defValue) {
+        YamlParser parser = new DefaultParser(YamlUtils.toMap0(object));
+        Object found = parser.getObject(path);
+        return (found != null) ? found : defValue;
+    }
 
     /**
      * This method retrieves the {@link Object} in a {@link List} of paths. Every index in the
@@ -251,7 +330,10 @@ public interface Configuration {
      * @return The {@link Object} found in the given path or {@code null} if the {@link Object}
      * in the given path is not found
      */
-    Object getObject(@NotNull List<String> path);
+    @Override
+    public Object getObject(@NotNull List<String> path) {
+        return getObject(path, null);
+    }
 
     /**
      * This method retrieves the {@link Object} in a given path with a given default value if the {@link Object}
@@ -265,13 +347,16 @@ public interface Configuration {
      * Calling this method will never return an instance of {@link YamlElement}. Use
      * {@link #getElement(String, char, YamlElement)} instead
      *
-     * @param path The path where the {@link Object} is found
+     * @param path      The path where the {@link Object} is found
      * @param separator The path separator. When used, the method will look for the {@link Object}
      *                  under the parent.
-     * @param defValue If the {@link Object} is not found, the method will return this value.
+     * @param defValue  If the {@link Object} is not found, the method will return this value.
      * @return The {@link Object} found in the given path or the default value if not
      */
-    Object getObject(@NotNull String path, char separator, Object defValue);
+    @Override
+    public Object getObject(@NotNull String path, char separator, Object defValue) {
+        return StorageUtils.toList(path, separator);
+    }
 
     /**
      * This method retrieves the {@link Object} in a given path. The separator is a {@code char} when used,
@@ -285,12 +370,15 @@ public interface Configuration {
      * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String, char)}
      * instead
      *
-     * @param path The path where the {@link Object} is found
+     * @param path      The path where the {@link Object} is found
      * @param separator The path separator. When used, the method will look for the {@link Object}
      *                  under the parent.
      * @return The {@link Object} found in the given path or {@code null} if otherwise
      */
-    Object getObject(@NotNull String path, char separator);
+    @Override
+    public Object getObject(@NotNull String path, char separator) {
+        return getObject(StorageUtils.toList(path, separator));
+    }
 
     /**
      * This method retrieves the {@link Object} in a given path with a given default value if the {@link Object}
@@ -299,11 +387,14 @@ public interface Configuration {
      * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String, YamlElement)}
      * instead
      *
-     * @param path The path where the {@link Object} is found
+     * @param path     The path where the {@link Object} is found
      * @param defValue If the {@link Object} is not found, the method will return this value.
      * @return The {@link Object} found in the given path or the default value if not
      */
-    Object getObject(@NotNull String path, Object defValue);
+    @Override
+    public Object getObject(@NotNull String path, Object defValue) {
+        return getObject(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@link Object} in a given path or {@code null} if otherwise.
@@ -315,19 +406,26 @@ public interface Configuration {
      * @param path The path where the {@link Object} is found
      * @return The {@link Object} found in the given path or {@code null} if otherwise
      */
-    Object getObject(@NotNull String path);
+    @Override
+    public Object getObject(@NotNull String path) {
+        return getObject(path, null);
+    }
 
     /**
      * This method retrieves the {@link String} in a {@link List} of paths with the specified
      * default value if the {@link String} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@link String} found in the given path or the default value if not
      */
-    String getString(@NotNull List<String> path, String defValue);
+    @Override
+    public String getString(@NotNull List<String> path, String defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof String) ? (String) found : defValue;
+    }
 
     /**
      * This method retrieves the {@link String} in a {@link List} of paths. Every index in the
@@ -339,7 +437,10 @@ public interface Configuration {
      * @return The {@link String} found in the given path or {@code null} if the {@link String}
      * in the given path is not found
      */
-    String getString(@NotNull List<String> path);
+    @Override
+    public String getString(@NotNull List<String> path) {
+        return getString(path, null);
+    }
 
     /**
      * This method retrieves the {@link String} in a given path with a given default value if the {@link String}
@@ -350,13 +451,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@link String} is found
+     * @param path      The path where the {@link String} is found
      * @param separator The path separator. When used, the method will look for the {@link String}
      *                  under the parent.
-     * @param defValue If the {@link String} is not found, the method will return this value.
+     * @param defValue  If the {@link String} is not found, the method will return this value.
      * @return The {@link String} found in the given path or the default value if not
      */
-    String getString(@NotNull String path, char separator, String defValue);
+    @Override
+    public String getString(@NotNull String path, char separator, String defValue) {
+        return getString(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@link String} in a given path. The separator is a {@code char} when used,
@@ -367,22 +471,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@link String} is found
+     * @param path      The path where the {@link String} is found
      * @param separator The path separator. When used, the method will look for the {@link String}
      *                  under the parent.
      * @return The {@link String} found in the given path or {@code null} if otherwise
      */
-    String getString(@NotNull String path, char separator);
+    @Override
+    public String getString(@NotNull String path, char separator) {
+        return getString(path, separator, null);
+    }
 
     /**
      * This method retrieves the {@link String} in a given path with a given default value if the {@link String}
      * isn't found. The method only works on retrieving the {@link String} in the uppermost key.
      *
-     * @param path The path where the {@link String} is found
+     * @param path     The path where the {@link String} is found
      * @param defValue If the {@link String} is not found, the method will return this value.
      * @return The {@link String} found in the given path or the default value if not
      */
-    String getString(@NotNull String path, String defValue);
+    @Override
+    public String getString(@NotNull String path, String defValue) {
+        return getString(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@link String} in a given path or {@code null} if the {@link String}
@@ -391,19 +501,26 @@ public interface Configuration {
      * @param path The path where the {@link String} is found
      * @return The {@link String} found in the given path or {@code null} if otherwise
      */
-    String getString(@NotNull String path);
+    @Override
+    public String getString(@NotNull String path) {
+        return getString(Collections.singletonList(path));
+    }
 
     /**
      * This method retrieves the {@link YamlElement} in a {@link List} of paths with the specified
      * default value if the {@link YamlElement} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@link YamlElement} found in the given path or the default value if not
      */
-    YamlElement getElement(@NotNull List<String> path, YamlElement defValue);
+    @Override
+    public YamlElement getElement(@NotNull List<String> path, YamlElement defValue) {
+        Object obj = getObject(path, defValue);
+        return YamlUtils.toElement(obj, false);
+    }
 
     /**
      * This method retrieves the {@link YamlElement} in a {@link List} of paths. Every index in the
@@ -415,7 +532,10 @@ public interface Configuration {
      * @return The {@link YamlElement} found in the given path or {@code null} if the {@link YamlElement}
      * in the given path is not found
      */
-    YamlElement getElement(@NotNull List<String> path);
+    @Override
+    public YamlElement getElement(@NotNull List<String> path) {
+        return getElement(path, null);
+    }
 
     /**
      * This method retrieves the {@link YamlElement} in a given path with a given default value if the {@link YamlElement}
@@ -426,13 +546,16 @@ public interface Configuration {
      * {@link #getElement(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@link YamlElement} is found
+     * @param path      The path where the {@link YamlElement} is found
      * @param separator The path separator. When used, the method will look for the {@link YamlElement}
      *                  under the parent.
-     * @param defValue If the {@link YamlElement} is not found, the method will return this value.
+     * @param defValue  If the {@link YamlElement} is not found, the method will return this value.
      * @return The {@link YamlElement} found in the given path or the default value if not
      */
-    YamlElement getElement(@NotNull String path, char separator, YamlElement defValue);
+    @Override
+    public YamlElement getElement(@NotNull String path, char separator, YamlElement defValue) {
+        return getElement(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@link YamlElement} in a given path. The separator is a {@code char} when used,
@@ -443,22 +566,28 @@ public interface Configuration {
      * {@link #getElement(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@link YamlElement} is found
+     * @param path      The path where the {@link YamlElement} is found
      * @param separator The path separator. When used, the method will look for the {@link YamlElement}
      *                  under the parent.
      * @return The {@link YamlElement} found in the given path or {@code null} if otherwise
      */
-    YamlElement getElement(@NotNull String path, char separator);
+    @Override
+    public YamlElement getElement(@NotNull String path, char separator) {
+        return getElement(StorageUtils.toList(path, separator), null);
+    }
 
     /**
      * This method retrieves the {@link YamlElement} in a given path with a given default value if the {@link YamlElement}
      * isn't found. The method only works on retrieving the {@link YamlElement} in the uppermost key.
      *
-     * @param path The path where the {@link YamlElement} is found
+     * @param path     The path where the {@link YamlElement} is found
      * @param defValue If the {@link YamlElement} is not found, the method will return this value.
      * @return The {@link YamlElement} found in the given path or the default value if not
      */
-    YamlElement getElement(@NotNull String path, YamlElement defValue);
+    @Override
+    public YamlElement getElement(@NotNull String path, YamlElement defValue) {
+        return null;
+    }
 
     /**
      * This method retrieves the {@link YamlElement} in a given path or {@code null} if the {@link YamlElement}
@@ -467,19 +596,26 @@ public interface Configuration {
      * @param path The path where the {@link YamlElement} is found
      * @return The {@link YamlElement} found in the given path or {@code null} if otherwise
      */
-    YamlElement getElement(@NotNull String path);
+    @Override
+    public YamlElement getElement(@NotNull String path) {
+        return getElement(Collections.singletonList(path));
+    }
 
     /**
      * This method retrieves the {@code boolean} in a {@link List} of paths with the specified
      * default value if the {@code boolean} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@code boolean} found in the given path or the default value if not
      */
-    boolean getBoolean(@NotNull List<String> path, boolean defValue);
+    @Override
+    public boolean getBoolean(@NotNull List<String> path, boolean defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof Boolean) ? (boolean) found : defValue;
+    }
 
     /**
      * This method retrieves the {@code boolean} in a {@link List} of paths. Every index in the
@@ -491,7 +627,10 @@ public interface Configuration {
      * @return The {@code boolean} found in the given path or {@code false} if the {@code boolean}
      * in the given path is not found
      */
-    boolean getBoolean(@NotNull List<String> path);
+    @Override
+    public boolean getBoolean(@NotNull List<String> path) {
+        return getBoolean(path, false);
+    }
 
     /**
      * This method retrieves the {@code boolean} in a given path with a given default value if the {@code boolean}
@@ -502,13 +641,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code boolean} is found
+     * @param path      The path where the {@code boolean} is found
      * @param separator The path separator. When used, the method will look for the {@code boolean}
      *                  under the parent.
-     * @param defValue If the {@code boolean} is not found, the method will return this value.
+     * @param defValue  If the {@code boolean} is not found, the method will return this value.
      * @return The {@code boolean} found in the given path or the default value if not
      */
-    boolean getBoolean(@NotNull String path, char separator, boolean defValue);
+    @Override
+    public boolean getBoolean(@NotNull String path, char separator, boolean defValue) {
+        return getBoolean(StorageUtils.toList(path, separator), false);
+    }
 
     /**
      * This method retrieves the {@code boolean} in a given path. The separator is a {@code char} when used,
@@ -519,22 +661,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code boolean} is found
+     * @param path      The path where the {@code boolean} is found
      * @param separator The path separator. When used, the method will look for the {@code boolean}
      *                  under the parent.
      * @return The {@code boolean} found in the given path or {@code false} if otherwise
      */
-    boolean getBoolean(@NotNull String path, char separator);
+    @Override
+    public boolean getBoolean(@NotNull String path, char separator) {
+        return getBoolean(path, separator, false);
+    }
 
     /**
      * This method retrieves the {@code boolean} in a given path with a given default value if the {@code boolean}
      * isn't found. The method only works on retrieving the {@code boolean} in the uppermost key.
      *
-     * @param path The path where the {@code boolean} is found
+     * @param path     The path where the {@code boolean} is found
      * @param defValue If the {@code boolean} is not found, the method will return this value.
      * @return The {@code boolean} found in the given path or the default value if not
      */
-    boolean getBoolean(@NotNull String path, boolean defValue);
+    @Override
+    public boolean getBoolean(@NotNull String path, boolean defValue) {
+        return getBoolean(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@code boolean} in a given path with a given default value if the {@code boolean}
@@ -543,19 +691,26 @@ public interface Configuration {
      * @param path The path where the {@code boolean} is found
      * @return The {@code byte} found in the given path or {@code false} if otherwise
      */
-    boolean getBoolean(@NotNull String path);
+    @Override
+    public boolean getBoolean(@NotNull String path) {
+        return getBoolean(Collections.singletonList(path));
+    }
 
     /**
      * This method retrieves the {@code byte} in a {@link List} of paths with the specified
      * default value if the {@code byte} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@code byte} found in the given path or the default value if not
      */
-    byte getByte(@NotNull List<String> path, byte defValue);
+    @Override
+    public byte getByte(@NotNull List<String> path, byte defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof Byte) ? (byte) found : defValue;
+    }
 
     /**
      * This method retrieves the {@code byte} in a {@link List} of paths. Every index in the
@@ -567,7 +722,10 @@ public interface Configuration {
      * @return The {@code byte} found in the given path or {@code 0} if the {@code byte}
      * in the given path is not found
      */
-    byte getByte(@NotNull List<String> path);
+    @Override
+    public byte getByte(@NotNull List<String> path) {
+        return getByte(path, (byte) 0);
+    }
 
     /**
      * This method retrieves the {@code byte} in a given path with a given default value if the {@code byte}
@@ -578,13 +736,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code byte} is found
+     * @param path      The path where the {@code byte} is found
      * @param separator The path separator. When used, the method will look for the {@code byte}
      *                  under the parent.
-     * @param defValue If the {@code byte} is not found, the method will return this value.
+     * @param defValue  If the {@code byte} is not found, the method will return this value.
      * @return The {@code byte} found in the given path or the default value if not
      */
-    byte getByte(@NotNull String path, char separator, byte defValue);
+    @Override
+    public byte getByte(@NotNull String path, char separator, byte defValue) {
+        return getByte(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@code byte} in a given path. The separator is a {@code char} when used,
@@ -595,22 +756,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code byte} is found
+     * @param path      The path where the {@code byte} is found
      * @param separator The path separator. When used, the method will look for the {@code byte}
      *                  under the parent.
      * @return The {@code byte} found in the given path or {@code 0} if otherwise
      */
-    byte getByte(@NotNull String path, char separator);
+    @Override
+    public byte getByte(@NotNull String path, char separator) {
+        return getByte(StorageUtils.toList(path, separator), (byte) 0);
+    }
 
     /**
      * This method retrieves the {@code byte} in a given path with a given default value if the {@code byte}
      * isn't found. The method only works on retrieving the {@code byte} in the uppermost key.
      *
-     * @param path The path where the {@code byte} is found
+     * @param path     The path where the {@code byte} is found
      * @param defValue If the {@code byte} is not found, the method will return this value.
      * @return The {@code byte} found in the given path or the default value if not
      */
-    byte getByte(@NotNull String path, byte defValue);
+    @Override
+    public byte getByte(@NotNull String path, byte defValue) {
+        return getByte(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@code byte} in a given path with a given default value if the {@code byte}
@@ -619,19 +786,26 @@ public interface Configuration {
      * @param path The path where the {@code byte} is found
      * @return The {@code byte} found in the given path or {@code 0} if otherwise
      */
-    byte getByte(@NotNull String path);
+    @Override
+    public byte getByte(@NotNull String path) {
+        return getByte(Collections.singletonList(path), (byte) 0);
+    }
 
     /**
      * This method retrieves the {@code short} in a {@link List} of paths with the specified
      * default value if the {@code short} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@code short} found in the given path or the default value if not
      */
-    short getShort(@NotNull List<String> path, short defValue);
+    @Override
+    public short getShort(@NotNull List<String> path, short defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof Short) ? (short) found : defValue;
+    }
 
     /**
      * This method retrieves the {@code short} in a {@link List} of paths. Every index in the
@@ -643,7 +817,10 @@ public interface Configuration {
      * @return The {@code short} found in the given path or {@code 0} if the {@code short}
      * in the given path is not found
      */
-    short getShort(@NotNull List<String> path);
+    @Override
+    public short getShort(@NotNull List<String> path) {
+        return getShort(path, (short) 0);
+    }
 
     /**
      * This method retrieves the {@code short} in a given path with a given default value if the {@code short}
@@ -654,13 +831,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code short} is found
+     * @param path      The path where the {@code short} is found
      * @param separator The path separator. When used, the method will look for the {@code short}
      *                  under the parent.
-     * @param defValue If the {@code short} is not found, the method will return this value.
+     * @param defValue  If the {@code short} is not found, the method will return this value.
      * @return The {@code short} found in the given path or the default value if not
      */
-    short getShort(@NotNull String path, char separator, short defValue);
+    @Override
+    public short getShort(@NotNull String path, char separator, short defValue) {
+        return getShort(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@code short} in a given path. The separator is a {@code char} when used,
@@ -671,22 +851,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code short} is found
+     * @param path      The path where the {@code short} is found
      * @param separator The path separator. When used, the method will look for the {@code short}
      *                  under the parent.
      * @return The {@code short} found in the given path or {@code 0} if otherwise
      */
-    short getShort(@NotNull String path, char separator);
+    @Override
+    public short getShort(@NotNull String path, char separator) {
+        return getShort(StorageUtils.toList(path, separator), (short) 0);
+    }
 
     /**
      * This method retrieves the {@code short} in a given path with a given default value if the {@code short}
      * isn't found. The method only works on retrieving the {@code short} in the uppermost key.
      *
-     * @param path The path where the {@code short} is found
+     * @param path     The path where the {@code short} is found
      * @param defValue If the {@code short} is not found, the method will return this value.
      * @return The {@code short} found in the given path or the default value if not
      */
-    short getShort(@NotNull String path, short defValue);
+    @Override
+    public short getShort(@NotNull String path, short defValue) {
+        return getShort(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@code short} in a given path with a given default value if the {@code short}
@@ -695,19 +881,26 @@ public interface Configuration {
      * @param path The path where the {@code short} is found
      * @return The {@code short} found in the given path or {@code 0} if otherwise
      */
-    short getShort(@NotNull String path);
+    @Override
+    public short getShort(@NotNull String path) {
+        return getShort(path, (short) 0);
+    }
 
     /**
      * This method retrieves the {@code float} in a {@link List} of paths with the specified
      * default value if the {@code float} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@code float} found in the given path or the default value if not
      */
-    float getFloat(@NotNull List<String> path, float defValue);
+    @Override
+    public float getFloat(@NotNull List<String> path, float defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof Float) ? (float) found : defValue;
+    }
 
     /**
      * This method retrieves the {@code float} in a {@link List} of paths. Every index in the
@@ -719,7 +912,10 @@ public interface Configuration {
      * @return The {@code float} found in the given path or {@code 0} if the {@code float}
      * in the given path is not found
      */
-    float getFloat(@NotNull List<String> path);
+    @Override
+    public float getFloat(@NotNull List<String> path) {
+        return getFloat(path, 0f);
+    }
 
     /**
      * This method retrieves the {@code float} in a given path with a given default value if the {@code float}
@@ -730,13 +926,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code float} is found
+     * @param path      The path where the {@code float} is found
      * @param separator The path separator. When used, the method will look for the {@code float}
      *                  under the parent.
-     * @param defValue If the {@code float} is not found, the method will return this value.
+     * @param defValue  If the {@code float} is not found, the method will return this value.
      * @return The {@code float} found in the given path or the default value if not
      */
-    float getFloat(@NotNull String path, char separator, float defValue);
+    @Override
+    public float getFloat(@NotNull String path, char separator, float defValue) {
+        return getFloat(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@code float} in a given path. The separator is a {@code char} when used,
@@ -747,22 +946,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code float} is found
+     * @param path      The path where the {@code float} is found
      * @param separator The path separator. When used, the method will look for the {@code float}
      *                  under the parent.
      * @return The {@code float} found in the given path or {@code 0} if otherwise
      */
-    float getFloat(@NotNull String path, char separator);
+    @Override
+    public float getFloat(@NotNull String path, char separator) {
+        return getFloat(StorageUtils.toList(path, separator));
+    }
 
     /**
      * This method retrieves the {@code float} in a given path with a given default value if the {@code float}
      * isn't found. The method only works on retrieving the {@code float} in the uppermost key.
      *
-     * @param path The path where the {@code float} is found
+     * @param path     The path where the {@code float} is found
      * @param defValue If the {@code float} is not found, the method will return this value.
      * @return The {@code float} found in the given path or the default value if not
      */
-    float getFloat(@NotNull String path, float defValue);
+    @Override
+    public float getFloat(@NotNull String path, float defValue) {
+        return getFloat(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@code float} in a given path with a given default value if the {@code float}
@@ -771,19 +976,26 @@ public interface Configuration {
      * @param path The path where the {@code float} is found
      * @return The {@code float} found in the given path or {@code 0} if otherwise
      */
-    float getFloat(@NotNull String path);
+    @Override
+    public float getFloat(@NotNull String path) {
+        return getFloat(path, 0f);
+    }
 
     /**
      * This method retrieves the {@code double} in a {@link List} of paths with the specified
      * default value if the {@code double} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@code double} found in the given path or the default value if not
      */
-    double getDouble(@NotNull List<String> path, double defValue);
+    @Override
+    public double getDouble(@NotNull List<String> path, double defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof Double) ? (double) found : defValue;
+    }
 
     /**
      * This method retrieves the {@code double} in a {@link List} of paths. Every index in the
@@ -795,7 +1007,10 @@ public interface Configuration {
      * @return The {@code double} found in the given path or {@code 0} if the {@code double}
      * in the given path is not found
      */
-    double getDouble(@NotNull List<String> path);
+    @Override
+    public double getDouble(@NotNull List<String> path) {
+        return getDouble(path, 0d);
+    }
 
     /**
      * This method retrieves the {@code double} in a given path with a given default value if the {@code double}
@@ -806,13 +1021,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code double} is found
+     * @param path      The path where the {@code double} is found
      * @param separator The path separator. When used, the method will look for the {@code double}
      *                  under the parent.
-     * @param defValue If the {@code double} is not found, the method will return this value.
+     * @param defValue  If the {@code double} is not found, the method will return this value.
      * @return The {@code double} found in the given path or the default value if not
      */
-    double getDouble(@NotNull String path, char separator, double defValue);
+    @Override
+    public double getDouble(@NotNull String path, char separator, double defValue) {
+        return getDouble(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@code double} in a given path. The separator is a {@code char} when used,
@@ -823,22 +1041,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code double} is found
+     * @param path      The path where the {@code double} is found
      * @param separator The path separator. When used, the method will look for the {@code double}
      *                  under the parent.
      * @return The {@code double} found in the given path or {@code 0} if otherwise
      */
-    double getDouble(@NotNull String path, char separator);
+    @Override
+    public double getDouble(@NotNull String path, char separator) {
+        return getDouble(path, separator, 0d);
+    }
 
     /**
      * This method retrieves the {@code double} in a given path with a given default value if the {@code double}
      * isn't found. The method only works on retrieving the {@code double} in the uppermost key.
      *
-     * @param path The path where the {@code double} is found
+     * @param path     The path where the {@code double} is found
      * @param defValue If the {@code double} is not found, the method will return this value.
      * @return The {@code double} found in the given path or the default value if not
      */
-    double getDouble(@NotNull String path, double defValue);
+    @Override
+    public double getDouble(@NotNull String path, double defValue) {
+        return getDouble(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@code double} in a given path with a given default value if the {@code double}
@@ -847,19 +1071,26 @@ public interface Configuration {
      * @param path The path where the {@code double} is found
      * @return The {@code double} found in the given path or {@code 0} if otherwise
      */
-    double getDouble(@NotNull String path);
+    @Override
+    public double getDouble(@NotNull String path) {
+        return getDouble(path, 0d);
+    }
 
     /**
      * This method retrieves the {@code int} in a {@link List} of paths with the specified
      * default value if the {@code int} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@code int} found in the given path or the default value if not
      */
-    int getInt(@NotNull List<String> path, int defValue);
+    @Override
+    public int getInt(@NotNull List<String> path, int defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof Integer) ? (int) found : defValue;
+    }
 
     /**
      * This method retrieves the {@code int} in a {@link List} of paths. Every index in the
@@ -871,7 +1102,10 @@ public interface Configuration {
      * @return The {@code int} found in the given path or {@code 0} if the {@code int}
      * in the given path is not found
      */
-    int getInt(@NotNull List<String> path);
+    @Override
+    public int getInt(@NotNull List<String> path) {
+        return getInt(path, 0);
+    }
 
     /**
      * This method retrieves the {@code int} in a given path with a given default value if the {@code int}
@@ -882,13 +1116,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code int} is found
+     * @param path      The path where the {@code int} is found
      * @param separator The path separator. When used, the method will look for the {@code int}
      *                  under the parent.
-     * @param defValue If the {@code int} is not found, the method will return this value.
+     * @param defValue  If the {@code int} is not found, the method will return this value.
      * @return The {@code int} found in the given path or the default value if not
      */
-    int getInt(@NotNull String path, char separator, int defValue);
+    @Override
+    public int getInt(@NotNull String path, char separator, int defValue) {
+        return getInt(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@code int} in a given path. The separator is a {@code char} when used,
@@ -899,22 +1136,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code int} is found
+     * @param path      The path where the {@code int} is found
      * @param separator The path separator. When used, the method will look for the {@code int}
      *                  under the parent.
      * @return The {@code int} found in the given path or {@code 0} if otherwise
      */
-    int getInt(@NotNull String path, char separator);
+    @Override
+    public int getInt(@NotNull String path, char separator) {
+        return getInt(path, separator, 0);
+    }
 
     /**
      * This method retrieves the {@code int} in a given path with a given default value if the {@code int}
      * isn't found. The method only works on retrieving the {@code int} in the uppermost key.
      *
-     * @param path The path where the {@code int} is found
+     * @param path     The path where the {@code int} is found
      * @param defValue If the {@code int} is not found, the method will return this value.
      * @return The {@code int} found in the given path or the default value if not
      */
-    int getInt(@NotNull String path, int defValue);
+    @Override
+    public int getInt(@NotNull String path, int defValue) {
+        return getInt(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@code int} in a given path with a given default value if the {@code int}
@@ -923,19 +1166,26 @@ public interface Configuration {
      * @param path The path where the {@code int} is found
      * @return The {@code int} found in the given path or {@code 0} if otherwise
      */
-    int getInt(@NotNull String path);
+    @Override
+    public int getInt(@NotNull String path) {
+        return getInt(path, 0);
+    }
 
     /**
      * This method retrieves the {@code long} in a {@link List} of paths with the specified
      * default value if the {@code long} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@code long} found in the given path or the default value if not
      */
-    long getLong(@NotNull List<String> path, long defValue);
+    @Override
+    public long getLong(@NotNull List<String> path, long defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof Long) ? (long) found : defValue;
+    }
 
     /**
      * This method retrieves the {@code long} in a {@link List} of paths. Every index in the
@@ -947,7 +1197,10 @@ public interface Configuration {
      * @return The {@code long} found in the given path or {@code 0} if the {@code long}
      * in the given path is not found
      */
-    long getLong(@NotNull List<String> path);
+    @Override
+    public long getLong(@NotNull List<String> path) {
+        return getLong(path, 0);
+    }
 
     /**
      * This method retrieves the {@code long} in a given path with a given default value if the {@code long}
@@ -958,13 +1211,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code long} is found
+     * @param path      The path where the {@code long} is found
      * @param separator The path separator. When used, the method will look for the {@code long}
      *                  under the parent.
-     * @param defValue If the {@code long} is not found, the method will return this value.
+     * @param defValue  If the {@code long} is not found, the method will return this value.
      * @return The {@code long} found in the given path or the default value if not
      */
-    long getLong(@NotNull String path, char separator, long defValue);
+    @Override
+    public long getLong(@NotNull String path, char separator, long defValue) {
+        return getLong(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@code long} in a given path. The separator is a {@code char} when used,
@@ -975,22 +1231,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@code long} is found
+     * @param path      The path where the {@code long} is found
      * @param separator The path separator. When used, the method will look for the {@code long}
      *                  under the parent.
      * @return The {@code long} found in the given path or {@code 0} if otherwise
      */
-    long getLong(@NotNull String path, char separator);
+    @Override
+    public long getLong(@NotNull String path, char separator) {
+        return getLong(path, separator, 0);
+    }
 
     /**
      * This method retrieves the {@code long} in a given path with a given default value if the {@code long}
      * isn't found. The method only works on retrieving the {@code long} in the uppermost key.
      *
-     * @param path The path where the {@code long} is found
+     * @param path     The path where the {@code long} is found
      * @param defValue If the {@code long} is not found, the method will return this value.
      * @return The {@code long} found in the given path or the default value if not
      */
-    long getLong(@NotNull String path, long defValue);
+    @Override
+    public long getLong(@NotNull String path, long defValue) {
+        return getLong(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@code long} in a given path with a given default value if the {@code long}
@@ -999,19 +1261,26 @@ public interface Configuration {
      * @param path The path where the {@code long} is found
      * @return The {@code long} found in the given path or {@code 0} if otherwise
      */
-    long getLong(@NotNull String path);
+    @Override
+    public long getLong(@NotNull String path) {
+        return getLong(path, 0);
+    }
 
     /**
      * This method retrieves the {@link List} in a {@link List} of paths with the specified
      * default value if the {@link List} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      *
-     * @param path The path to the value. Every index is a child of the previous index
-     *             except at index {@code 0}
+     * @param path     The path to the value. Every index is a child of the previous index
+     *                 except at index {@code 0}
      * @param defValue The default value if the value in the given path doesn't exist
      * @return The {@link List} found in the given path or the default value if not
      */
-    List getList(@NotNull List<String> path, List defValue);
+    @Override
+    public List getList(@NotNull List<String> path, List defValue) {
+        Object found = getObject(path, defValue);
+        return (found instanceof List) ? (List) found : defValue;
+    }
 
     /**
      * This method retrieves the {@link List} in a {@link List} of paths. Every index in the
@@ -1023,7 +1292,10 @@ public interface Configuration {
      * @return The {@link List} found in the given path or {@code null} if the {@link List}
      * in the given path is not found
      */
-    List getList(@NotNull List<String> path);
+    @Override
+    public List getList(@NotNull List<String> path) {
+        return getList(path, null);
+    }
 
     /**
      * This method retrieves the {@link List} in a given path with a given default value if the {@link List}
@@ -1034,13 +1306,16 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@link List} is found
+     * @param path      The path where the {@link List} is found
      * @param separator The path separator. When used, the method will look for the {@link List}
      *                  under the parent.
-     * @param defValue If the {@link List} is not found, the method will return this value.
+     * @param defValue  If the {@link List} is not found, the method will return this value.
      * @return The {@link List} found in the given path or the default value if not
      */
-    List getList(@NotNull String path, char separator, List defValue);
+    @Override
+    public List getList(@NotNull String path, char separator, List defValue) {
+        return getList(StorageUtils.toList(path, separator), defValue);
+    }
 
     /**
      * This method retrieves the {@link List} in a given path. The separator is a {@code char} when used,
@@ -1051,22 +1326,28 @@ public interface Configuration {
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
      *
-     * @param path The path where the {@link List} is found
+     * @param path      The path where the {@link List} is found
      * @param separator The path separator. When used, the method will look for the {@link List}
      *                  under the parent.
      * @return The {@link List} found in the given path or {@code null} if otherwise
      */
-    List getList(@NotNull String path, char separator);
+    @Override
+    public List getList(@NotNull String path, char separator) {
+        return getList(path, separator, null);
+    }
 
     /**
      * This method retrieves the {@link List} in a given path with a given default value if the {@link List}
      * isn't found. The method only works on retrieving the {@link List} in the uppermost key.
      *
-     * @param path The path where the {@link List} is found
+     * @param path     The path where the {@link List} is found
      * @param defValue If the {@link List} is not found, the method will return this value.
      * @return The {@link List} found in the given path or the default value if not
      */
-    List getList(@NotNull String path, List defValue);
+    @Override
+    public List getList(@NotNull String path, List defValue) {
+        return getList(Collections.singletonList(path), defValue);
+    }
 
     /**
      * This method retrieves the {@link List} in a given path or {@code null} if otherwise.
@@ -1075,9 +1356,23 @@ public interface Configuration {
      * @param path The path where the {@link List} is found
      * @return The {@link List} found in the given path or {@code null} if otherwise
      */
-    List getList(@NotNull String path);
+    @Override
+    public List getList(@NotNull String path) {
+        return getList(path, null);
+    }
+
+    /**
+     * @return The default {@link DumperOptions} with tailored options
+     */
+    private static DumperOptions defOptions() {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        return options;
+    }
 
     @Override
-    String toString();
+    public String toString() {
+        return object.toString();
+    }
 
 }
