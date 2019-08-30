@@ -18,6 +18,7 @@ package me.brokenearthdev.fusionyaml.utils;
 import me.brokenearthdev.fusionyaml.object.*;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +57,12 @@ public class YamlUtils {
         return list;
     }
 
+    private static List<Object> toObjList(List<YamlElement> list) {
+        List<Object> l = new LinkedList<>();
+        list.forEach(e -> l.add(toObject(e)));
+        return l;
+    }
+
     private static Object toObject(YamlElement element) {
         if (element.isYamlPrimitive()) {
             YamlPrimitive primitive = element.getAsYamlPrimitive();
@@ -69,8 +76,9 @@ public class YamlUtils {
                 return primitive.getAsString();
         }
         else if (element.isYamlList())
-            return ((YamlList) element).getList();
+            return toObjList(((YamlList) element).getList());
         else if (element.isYamlNode()) {
+            System.out.println("TRIG");
             return toMap0(element.getAsYamlNode().getChildren());
         }
         else if (element.isYamlObject())
