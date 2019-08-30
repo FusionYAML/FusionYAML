@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-
 /**
  * A configuration converts IO data, such as files and urls, into memory. Upon initialization, the
  * the contents will be copied into a {@link YamlObject} instance.
