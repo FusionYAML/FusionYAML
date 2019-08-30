@@ -20,7 +20,7 @@ Our priority is simplicity and convenience.
 <li>YamlElements</li>
 </ul>
 
-```
+```java
 YamlObject object = new YamlObject();
 object.set("key", true);
 YamlNode node = new YamlNode();
@@ -32,3 +32,65 @@ System.out.println(object.toString());
 System.out.println("JSON STRING");
 System.out.println(object.toJsonString());
 ```
+
+The above will print:
+```yaml
+YAML STRING
+key: true
+Bill Gates:
+  age: 63
+  height: 1.77m
+
+JSON STRING
+{"key":true,"Bill Gates":{"age":63,"height":"1.77m"}}
+```
+
+<ul>
+  <li>Configurations</li>
+</ul>
+
+**FileConfiguration**
+
+```java
+File file = new File("path to file");
+FileConfiguration configuration = new FileConfiguration(file);
+configuration.set("dx", 321);
+configuration.save(file);
+```
+<h5>File Data</h5>
+
+```yaml
+dx: 321
+```
+
+
+**WebConfiguration**
+
+```java
+WebConfiguration configuration = new WebConfiguration("url here");
+configuration.set("x", 312);
+configuration.save(new File("path to file"));
+```
+
+<h5>File Data</h5>
+
+```yaml
+x: 312
+```
+
+<h2>Creating a Pull Request</h2>
+There are a few requirements that you'll have to follow to get your request considered.
+<ul>
+  <li>Using standard java conventions</li>
+  <li>Adhering to java's good practices</li>
+  <li>Well documented code</li>
+</ul>
+In your pull request, make sure to explain why should the code be deemed useful in full detail.
+
+<h2>Become a Collaborator</h2>
+Contact me via discord if you meet one of these requirements:
+<ul>
+  <li>Atleast one pull request accepted from the user</li>
+  <li>demonstrate appropriate java skills</li>
+  <li>if you're reflxction</li>
+</ul>
