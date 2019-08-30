@@ -78,7 +78,6 @@ public class YamlUtils {
         else if (element.isYamlList())
             return toObjList(((YamlList) element).getList());
         else if (element.isYamlNode()) {
-            System.out.println("TRIG");
             return toMap0(element.getAsYamlNode().getChildren());
         }
         else if (element.isYamlObject())
