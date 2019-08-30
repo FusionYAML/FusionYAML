@@ -19,7 +19,8 @@ Our priority is simplicity and convenience.
 <ul>
 <li>YamlElements</li>
 </ul>
-```java
+
+```
 YamlObject object = new YamlObject();
 object.set("key", true);
 YamlNode node = new YamlNode();
