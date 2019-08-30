@@ -227,6 +227,9 @@ public interface Configuration {
      * This method retrieves the {@link Object} in a {@link List} of paths with the specified
      * default value if the {@link Object} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use
+     * {@link #getElement(List, YamlElement)} instead
      *
      * @param path The path to the value. Every index is a child of the previous index
      *             except at index {@code 0}
@@ -239,6 +242,9 @@ public interface Configuration {
      * This method retrieves the {@link Object} in a {@link List} of paths. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      * If the {@link Object} in the given path is not found, {@code null} is returned.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use
+     * {@link #getElement(List)} instead
      *
      * @param path The path to the value. Every index is a child of the previous index
      *             except at index {@code 0}
@@ -255,6 +261,9 @@ public interface Configuration {
      * For example, trying to retrieve the value of "player.stats.wins" is equal to calling
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use
+     * {@link #getElement(String, char, YamlElement)} instead
      *
      * @param path The path where the {@link Object} is found
      * @param separator The path separator. When used, the method will look for the {@link Object}
@@ -272,6 +281,9 @@ public interface Configuration {
      * For example, trying to retrieve the value of "player.stats.wins" is equal to calling
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String, char)}
+     * instead
      *
      * @param path The path where the {@link Object} is found
      * @param separator The path separator. When used, the method will look for the {@link Object}
@@ -283,6 +295,9 @@ public interface Configuration {
     /**
      * This method retrieves the {@link Object} in a given path with a given default value if the {@link Object}
      * isn't found. The method only works on retrieving the {@link Object} in the uppermost key.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String, YamlElement)}
+     * instead
      *
      * @param path The path where the {@link Object} is found
      * @param defValue If the {@link Object} is not found, the method will return this value.
@@ -293,6 +308,9 @@ public interface Configuration {
     /**
      * This method retrieves the {@link Object} in a given path or {@code null} if otherwise.
      * The method only works on retrieving the {@link Object} in the uppermost key.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String)}
+     * instead
      *
      * @param path The path where the {@link Object} is found
      * @return The {@link Object} found in the given path or {@code null} if otherwise

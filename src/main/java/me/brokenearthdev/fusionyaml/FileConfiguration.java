@@ -36,11 +36,35 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is a synchronized class that converts {@link File} data into {@link YamlObject} data.
+ * You can then retrieve and update file data in this class. To save the {@link File}, use
+ * {@link #save(File)} or {@link #save(DumperOptions, File)}
+ */
 public class FileConfiguration implements Configuration {
 
+    /**
+     * The local {@link YamlObject} that contains class data
+     */
     private YamlObject object;
+
+    /**
+     * The default {@link DumperOptions}. If {@link #save(File)} is called, this object will
+     * be used to call {@link #save(DumperOptions, File)}
+     */
     private static final DumperOptions defOptions = defOptions();
 
+    /**
+     * This constructor requires a {@link File} instance. The {@link File} contents will then
+     * be copied into a {@link YamlObject}, which gives the user the ability to modify and
+     * retrieve data.
+     * <p>
+     * To save the updated data, call {@link #save(DumperOptions, File)} or {@link #save(File)}
+     *
+     * @param file The file that will get its contents copied
+     * @throws IOException If an IO error occurred
+     * @throws YamlException If the parser map returns null
+     */
     public FileConfiguration(File file) throws IOException, YamlException {
         YamlParser parser = new DefaultParser(file);
         Map<String, Object> map = parser.map();
@@ -62,7 +86,7 @@ public class FileConfiguration implements Configuration {
         Yaml yaml = new Yaml((options != null) ? options : defOptions);
         String data = yaml.dump(map);
 
-        // UTF-8 supports more languages
+        // UTF-8 supports more characters
         FileUtils.writeStringToFile(file, data, Charset.forName(StandardCharsets.UTF_8.name()));
     }
 
@@ -281,6 +305,9 @@ public class FileConfiguration implements Configuration {
      * This method retrieves the {@link Object} in a {@link List} of paths with the specified
      * default value if the {@link Object} in the path didn't exist. Every index in the
      * list represents a parent that has one or more children excluding the last index.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use
+     * {@link #getElement(List, YamlElement)} instead
      *
      * @param path     The path to the value. Every index is a child of the previous index
      *                 except at index {@code 0}
@@ -289,13 +316,18 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
-        return null;
+        YamlParser parser = new DefaultParser(YamlUtils.toMap0(object));
+        Object found = parser.getObject(path);
+        return (found != null) ? found : defValue;
     }
 
     /**
      * This method retrieves the {@link Object} in a {@link List} of paths. Every index in the
      * list represents a parent that has one or more children excluding the last index.
      * If the {@link Object} in the given path is not found, {@code null} is returned.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use
+     * {@link #getElement(List)} instead
      *
      * @param path The path to the value. Every index is a child of the previous index
      *             except at index {@code 0}
@@ -304,7 +336,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path) {
-        return null;
+        return getObject(path, null);
     }
 
     /**
@@ -315,6 +347,9 @@ public class FileConfiguration implements Configuration {
      * For example, trying to retrieve the value of "player.stats.wins" is equal to calling
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use
+     * {@link #getElement(String, char, YamlElement)} instead
      *
      * @param path      The path where the {@link Object} is found
      * @param separator The path separator. When used, the method will look for the {@link Object}
@@ -324,7 +359,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull String path, char separator, Object defValue) {
-        return null;
+        return StorageUtils.toList(path, separator);
     }
 
     /**
@@ -335,6 +370,9 @@ public class FileConfiguration implements Configuration {
      * For example, trying to retrieve the value of "player.stats.wins" is equal to calling
      * {@link #getObject(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
      * in its parameter.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String, char)}
+     * instead
      *
      * @param path      The path where the {@link Object} is found
      * @param separator The path separator. When used, the method will look for the {@link Object}
@@ -343,12 +381,15 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull String path, char separator) {
-        return null;
+        return getObject(StorageUtils.toList(path, separator));
     }
 
     /**
      * This method retrieves the {@link Object} in a given path with a given default value if the {@link Object}
      * isn't found. The method only works on retrieving the {@link Object} in the uppermost key.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String, YamlElement)}
+     * instead
      *
      * @param path     The path where the {@link Object} is found
      * @param defValue If the {@link Object} is not found, the method will return this value.
@@ -356,19 +397,22 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull String path, Object defValue) {
-        return null;
+        return getObject(Collections.singletonList(path), defValue);
     }
 
     /**
      * This method retrieves the {@link Object} in a given path or {@code null} if otherwise.
      * The method only works on retrieving the {@link Object} in the uppermost key.
+     * <p>
+     * Calling this method will never return an instance of {@link YamlElement}. Use {@link #getElement(String)}
+     * instead
      *
      * @param path The path where the {@link Object} is found
      * @return The {@link Object} found in the given path or {@code null} if otherwise
      */
     @Override
     public Object getObject(@NotNull String path) {
-        return null;
+        return getObject(path, null);
     }
 
     /**
@@ -383,7 +427,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public String getString(@NotNull List<String> path, String defValue) {
-        return null;
+        Object found = getObject(path, defValue);
+        return (found instanceof String) ? (String) found : defValue;
     }
 
     /**
@@ -398,7 +443,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public String getString(@NotNull List<String> path) {
-        return null;
+        return getString(path, null);
     }
 
     /**
@@ -418,7 +463,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public String getString(@NotNull String path, char separator, String defValue) {
-        return null;
+        return getString(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -437,7 +482,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public String getString(@NotNull String path, char separator) {
-        return null;
+        return getString(path, separator, null);
     }
 
     /**
@@ -450,7 +495,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public String getString(@NotNull String path, String defValue) {
-        return null;
+        return getString(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -462,7 +507,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public String getString(@NotNull String path) {
-        return null;
+        return getString(Collections.singletonList(path));
     }
 
     /**
@@ -477,7 +522,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull List<String> path, YamlElement defValue) {
-        return null;
+        Object obj = getObject(path, defValue);
+        return YamlUtils.toElement(obj, false);
     }
 
     /**
@@ -492,7 +538,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull List<String> path) {
-        return null;
+        return getElement(path, null);
     }
 
     /**
@@ -512,7 +558,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull String path, char separator, YamlElement defValue) {
-        return null;
+        return getElement(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -531,7 +577,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull String path, char separator) {
-        return null;
+        return getElement(StorageUtils.toList(path, separator), null);
     }
 
     /**
@@ -556,7 +602,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull String path) {
-        return null;
+        return getElement(Collections.singletonList(path));
     }
 
     /**
@@ -571,7 +617,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public boolean getBoolean(@NotNull List<String> path, boolean defValue) {
-        return false;
+        Object found = getObject(path, defValue);
+        return (found instanceof Boolean) ? (boolean) found : defValue;
     }
 
     /**
@@ -586,7 +633,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public boolean getBoolean(@NotNull List<String> path) {
-        return false;
+        return getBoolean(path, false);
     }
 
     /**
@@ -606,7 +653,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public boolean getBoolean(@NotNull String path, char separator, boolean defValue) {
-        return false;
+        return getBoolean(StorageUtils.toList(path, separator), false);
     }
 
     /**
@@ -625,7 +672,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public boolean getBoolean(@NotNull String path, char separator) {
-        return false;
+        return getBoolean(path, separator, false);
     }
 
     /**
@@ -638,7 +685,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public boolean getBoolean(@NotNull String path, boolean defValue) {
-        return false;
+        return getBoolean(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -650,7 +697,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public boolean getBoolean(@NotNull String path) {
-        return false;
+        return getBoolean(Collections.singletonList(path));
     }
 
     /**
@@ -665,7 +712,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull List<String> path, byte defValue) {
-        return 0;
+        Object found = getObject(path, defValue);
+        return (found instanceof Byte) ? (byte) found : defValue;
     }
 
     /**
@@ -680,7 +728,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull List<String> path) {
-        return 0;
+        return getByte(path, (byte) 0);
     }
 
     /**
@@ -700,7 +748,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull String path, char separator, byte defValue) {
-        return 0;
+        return getByte(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -719,7 +767,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull String path, char separator) {
-        return 0;
+        return getByte(StorageUtils.toList(path, separator), (byte) 0);
     }
 
     /**
@@ -732,7 +780,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull String path, byte defValue) {
-        return 0;
+        return getByte(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -744,7 +792,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull String path) {
-        return 0;
+        return getByte(Collections.singletonList(path), (byte) 0);
     }
 
     /**
@@ -759,7 +807,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull List<String> path, short defValue) {
-        return 0;
+        Object found = getObject(path, defValue);
+        return (found instanceof Short) ? (short) found : defValue;
     }
 
     /**
@@ -774,7 +823,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull List<String> path) {
-        return 0;
+        return getShort(path, (short) 0);
     }
 
     /**
@@ -794,7 +843,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull String path, char separator, short defValue) {
-        return 0;
+        return getShort(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -813,7 +862,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull String path, char separator) {
-        return 0;
+        return getShort(StorageUtils.toList(path, separator), (short) 0);
     }
 
     /**
@@ -826,7 +875,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull String path, short defValue) {
-        return 0;
+        return getShort(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -838,7 +887,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull String path) {
-        return 0;
+        return getShort(path, (short) 0);
     }
 
     /**
@@ -853,7 +902,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull List<String> path, float defValue) {
-        return 0;
+        Object found = getObject(path, defValue);
+        return (found instanceof Float) ? (float) found : defValue;
     }
 
     /**
@@ -868,7 +918,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull List<String> path) {
-        return 0;
+        return getFloat(path, 0f);
     }
 
     /**
@@ -888,7 +938,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull String path, char separator, float defValue) {
-        return 0;
+        return getFloat(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -907,7 +957,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull String path, char separator) {
-        return 0;
+        return getFloat(StorageUtils.toList(path, separator));
     }
 
     /**
@@ -920,7 +970,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull String path, float defValue) {
-        return 0;
+        return getFloat(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -932,7 +982,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull String path) {
-        return 0;
+        return getFloat(path, 0f);
     }
 
     /**
@@ -947,7 +997,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public double getDouble(@NotNull List<String> path, double defValue) {
-        return 0;
+        Object found = getObject(path, defValue);
+        return (found instanceof Double) ? (double) found : defValue;
     }
 
     /**
@@ -962,7 +1013,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public double getDouble(@NotNull List<String> path) {
-        return 0;
+        return getDouble(path, 0d);
     }
 
     /**
@@ -982,7 +1033,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public double getDouble(@NotNull String path, char separator, double defValue) {
-        return 0;
+        return getDouble(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -1001,7 +1052,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public double getDouble(@NotNull String path, char separator) {
-        return 0;
+        return getDouble(path, separator, 0d);
     }
 
     /**
@@ -1014,7 +1065,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public double getDouble(@NotNull String path, double defValue) {
-        return 0;
+        return getDouble(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -1026,7 +1077,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public double getDouble(@NotNull String path) {
-        return 0;
+        return getDouble(path, 0d);
     }
 
     /**
@@ -1041,7 +1092,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public int getInt(@NotNull List<String> path, int defValue) {
-        return 0;
+        Object found = getObject(path, defValue);
+        return (found instanceof Integer) ? (int) found : defValue;
     }
 
     /**
@@ -1056,7 +1108,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public int getInt(@NotNull List<String> path) {
-        return 0;
+        return getInt(path, 0);
     }
 
     /**
@@ -1076,7 +1128,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public int getInt(@NotNull String path, char separator, int defValue) {
-        return 0;
+        return getInt(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -1095,7 +1147,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public int getInt(@NotNull String path, char separator) {
-        return 0;
+        return getInt(path, separator, 0);
     }
 
     /**
@@ -1108,7 +1160,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public int getInt(@NotNull String path, int defValue) {
-        return 0;
+        return getInt(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -1120,7 +1172,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public int getInt(@NotNull String path) {
-        return 0;
+        return getInt(path, 0);
     }
 
     /**
@@ -1135,7 +1187,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public long getLong(@NotNull List<String> path, long defValue) {
-        return 0;
+        Object found = getObject(path, defValue);
+        return (found instanceof Long) ? (long) found : defValue;
     }
 
     /**
@@ -1150,7 +1203,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public long getLong(@NotNull List<String> path) {
-        return 0;
+        return getLong(path, 0);
     }
 
     /**
@@ -1170,7 +1223,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public long getLong(@NotNull String path, char separator, long defValue) {
-        return 0;
+        return getLong(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -1189,7 +1242,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public long getLong(@NotNull String path, char separator) {
-        return 0;
+        return getLong(path, separator, 0);
     }
 
     /**
@@ -1202,7 +1255,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public long getLong(@NotNull String path, long defValue) {
-        return 0;
+        return getLong(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -1214,7 +1267,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public long getLong(@NotNull String path) {
-        return 0;
+        return getLong(path, 0);
     }
 
     /**
@@ -1229,7 +1282,8 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public List getList(@NotNull List<String> path, List defValue) {
-        return null;
+        Object found = getObject(path, defValue);
+        return (found instanceof List) ? (List) found : defValue;
     }
 
     /**
@@ -1244,7 +1298,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public List getList(@NotNull List<String> path) {
-        return null;
+        return getList(path, null);
     }
 
     /**
@@ -1264,7 +1318,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public List getList(@NotNull String path, char separator, List defValue) {
-        return null;
+        return getList(StorageUtils.toList(path, separator), defValue);
     }
 
     /**
@@ -1283,7 +1337,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public List getList(@NotNull String path, char separator) {
-        return null;
+        return getList(path, separator, null);
     }
 
     /**
@@ -1296,7 +1350,7 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public List getList(@NotNull String path, List defValue) {
-        return null;
+        return getList(Collections.singletonList(path), defValue);
     }
 
     /**
@@ -1308,9 +1362,12 @@ public class FileConfiguration implements Configuration {
      */
     @Override
     public List getList(@NotNull String path) {
-        return null;
+        return getList(path, null);
     }
 
+    /**
+     * @return The default {@link DumperOptions} with tailored options
+     */
     private static DumperOptions defOptions() {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);

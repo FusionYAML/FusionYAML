@@ -56,7 +56,7 @@ public class DefaultParser extends YamlParser {
             if (raw == null)
                 return data;
             data = new Yaml().loadAs(raw, Map.class);
-            return data;
+            return data != null ? data : new LinkedHashMap<>();
         } catch (Exception e) {
             if (e.getCause().toString().equals("org.yaml.snakeyaml.error.YAMLException: No suitable constructor with 1 arguments found for interface java.util.Map"))
                 throw new UnsupportedOperationException("Lists in the uppermost tree are not supported. You can only set lists under a parent or a key");
