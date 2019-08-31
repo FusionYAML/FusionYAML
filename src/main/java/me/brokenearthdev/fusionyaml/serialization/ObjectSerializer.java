@@ -15,14 +15,27 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
+import me.brokenearthdev.fusionyaml.utils.ReflectionUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
+/**
+ * This class's role is to serialize {@link Object}s into {@link Object}s that can
+ * be written into YAML.
+ */
 public class ObjectSerializer extends Serializer {
 
+    /**
+     * Serializes {@link Object} into a {@link Map} of serialized {@link Object}s that can be
+     * written into YAML. If a primitive {@link Object}, {@link String}, {@link List}, or {@link Map}
+     * is passed, the method will serialize it by using the appropriate serializer for the {@link Object}.
+     *
+     * @param o The {@link Object} to serialize
+     * @return The serialized {@link Object}
+     * @throws IllegalAccessException Thrown if any reflective error(s) occurred.
+     */
     @Override
     public Object serialize(Object o) throws IllegalAccessException {
         if (o instanceof Collection)
@@ -31,27 +44,14 @@ public class ObjectSerializer extends Serializer {
             return Serializers.MAP_SERIALIZER.serialize(o);
         else if (YamlUtils.isPrimitive(o))
             return Serializers.PRIMITIVE_SERIALIZER.serialize(o);
-
-        List<Field> fields = getFields(o);
+        List<Field> fields = ReflectionUtils.getFields(o);
         Map<String, Object> map = new LinkedHashMap<>();
         for (Field field : fields) {
             field.setAccessible(true);
             map.put(field.getName(), new ObjectSerializer().serialize(field.get(o)));
             field.setAccessible(false);
         }
-
         return map;
-    }
-
-    private static List<Field> getFields(Object o) {
-        Field[] fields = o.getClass().getDeclaredFields();
-        List<Field> list = new LinkedList<>();
-        for (Field field : fields) {
-            if (Modifier.isStatic(field.getModifiers()))
-                continue;
-            list.add(field);
-        }
-        return list;
     }
 
 }

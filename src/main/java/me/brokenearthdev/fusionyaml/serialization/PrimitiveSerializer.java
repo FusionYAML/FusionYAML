@@ -17,8 +17,20 @@ package me.brokenearthdev.fusionyaml.serialization;
 
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 
+/**
+ * The class's role is to serialize a primitive or a {@link String}
+ */
 public class PrimitiveSerializer extends ObjectSerializer {
 
+    /**
+     * Since data of primitive types can be directly written to YAML {@link String}s without
+     * requiring serialization, the method returns the {@link Object} initially passed in.
+     *
+     * @param o The {@link Object}
+     * @return The {@link Object} initially passed in
+     * @throws IllegalArgumentException If the {@link Object} passed in is not a primitive nor
+     * a {@link String}
+     */
     @Override
     public Object serialize(Object o) {
         if (!YamlUtils.isPrimitive(o))

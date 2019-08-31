@@ -15,14 +15,24 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
-import me.brokenearthdev.fusionyaml.utils.StorageUtils;
-import me.brokenearthdev.fusionyaml.utils.YamlUtils;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * The class's role is to serialize {@link Object}s in {@link Map}s.
+ */
 public class MapSerializer extends ObjectSerializer {
 
+    /**
+     * Serializes all {@link Object}s in the {@link Map} passed in. Since {@link Map}s
+     * can be written directly into YAML, the method serializes {@link Object}s in
+     * the {@link Map}.
+     *
+     * @param o The {@link Map} to serialize
+     * @return The serialized {@link Map}
+     * @throws IllegalAccessException Thrown if any reflective error(s) occurred
+     * @throws IllegalArgumentException Thrown if the value passed in is not a {@link Map}
+     */
     @Override
     public Map<String, Object> serialize(Object o) throws IllegalAccessException {
         if (!(o instanceof Map))

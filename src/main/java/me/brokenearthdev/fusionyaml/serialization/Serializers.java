@@ -15,11 +15,29 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
+/**
+ * A package-private class that contains {@link Serializer} constants
+ */
 class Serializers {
 
+    /**
+     * {@link ObjectSerializer} instance
+     */
     static final ObjectSerializer OBJECT_SERIALIZER = new ObjectSerializer();
+
+    /**
+     * {@link CollectionSerializer} instance
+     */
     static final CollectionSerializer COLLECTION_SERIALIZER = new CollectionSerializer();
+
+    /**
+     * {@link MapSerializer} instance
+     */
     static final MapSerializer MAP_SERIALIZER = new MapSerializer();
+
+    /**
+     * {@link PrimitiveSerializer} instance
+     */
     static final PrimitiveSerializer PRIMITIVE_SERIALIZER = new PrimitiveSerializer();
 
 }
