@@ -23,6 +23,8 @@ import java.util.Map;
 
 public class MapSerializer extends ObjectSerializer {
 
+    private static final ObjectSerializer serializer = new ObjectSerializer();
+
     @Override
     public Map<String, Object> serialize(Object o) throws IllegalAccessException {
         if (!(o instanceof Map))
@@ -30,7 +32,7 @@ public class MapSerializer extends ObjectSerializer {
         Map<String, Object> serialized = new LinkedHashMap<>();
         Map map = (Map) o;
         for (Object key : map.keySet()) {
-            serialized.put(key.toString(), new ObjectSerializer().serialize(map.get(key)));
+            serialized.put(key.toString(), serializer.serialize(map.get(key)));
         }
         return serialized;
     }

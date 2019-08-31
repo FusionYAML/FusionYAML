@@ -23,6 +23,8 @@ import java.util.List;
 
 public class CollectionSerializer extends ObjectSerializer {
 
+    private static final ObjectSerializer serializer = new ObjectSerializer();
+
     @Override
     @SuppressWarnings("unchecked")
     public Collection<Object> serialize(Object o) throws IllegalAccessException {
@@ -31,7 +33,7 @@ public class CollectionSerializer extends ObjectSerializer {
         Collection collection = (Collection) o;
         Collection serialized = new LinkedList();
         for (Object e : collection) {
-            serialized.add(new ObjectSerializer().serialize(e));
+            serialized.add(serializer.serialize(e));
         }
         return serialized;
     }
