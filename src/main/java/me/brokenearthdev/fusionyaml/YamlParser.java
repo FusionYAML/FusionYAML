@@ -13,9 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.fusionyaml.io;
+package me.brokenearthdev.fusionyaml;
 
-import me.brokenearthdev.fusionyaml.error.YamlException;
 import me.brokenearthdev.fusionyaml.object.*;
 import me.brokenearthdev.fusionyaml.utils.URLUtils;
 import org.apache.commons.io.FileUtils;
@@ -99,7 +98,7 @@ public abstract class YamlParser {
      * while mapping. Invalid yaml may be the cause of the exception
      *
      * @return A map containing yaml data ({@link #raw})
-     * @throws me.brokenearthdev.fusionyaml.error.YamlException If an error occurred while mapping
+     * @throws YamlException If an error occurred while mapping
      * @throws UnsupportedOperationException Using lists with no parents (list yaml) causes this exception
      * @see #reload(File)
      * @see #reload(URL)

@@ -15,9 +15,9 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.configurations;
 
-import me.brokenearthdev.fusionyaml.error.YamlException;
-import me.brokenearthdev.fusionyaml.io.DefaultParser;
-import me.brokenearthdev.fusionyaml.io.YamlParser;
+import me.brokenearthdev.fusionyaml.YamlException;
+import me.brokenearthdev.fusionyaml.DefaultParser;
+import me.brokenearthdev.fusionyaml.YamlParser;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.yaml.snakeyaml.DumperOptions;
