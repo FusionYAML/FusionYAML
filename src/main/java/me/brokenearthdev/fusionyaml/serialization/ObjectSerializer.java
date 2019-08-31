@@ -15,10 +15,8 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
-import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -28,11 +26,11 @@ public class ObjectSerializer extends Serializer {
     @Override
     public Object serialize(Object o) throws IllegalAccessException {
         if (o instanceof Collection)
-            return new CollectionSerializer().serialize(o);
+            return Serializers.COLLECTION_SERIALIZER.serialize(o);
         else if (o instanceof Map)
-            return new MapSerializer().serialize(o);
+            return Serializers.MAP_SERIALIZER.serialize(o);
         else if (YamlUtils.isPrimitive(o))
-            return new PrimitiveSerializer().serialize(o);
+            return Serializers.PRIMITIVE_SERIALIZER.serialize(o);
 
         List<Field> fields = getFields(o);
         Map<String, Object> map = new LinkedHashMap<>();
