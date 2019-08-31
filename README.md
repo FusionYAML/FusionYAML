@@ -1,3 +1,6 @@
+[![](https://jitpack.io/v/BrokenEarthDev/FusionYAML.svg)](https://jitpack.io/#BrokenEarthDev/FusionYAML)
+
+
 <h1>FusionYAML</h1>
 
 <h4>What is FusionYAML?</h4>
@@ -93,4 +96,14 @@ Contact me via discord if you meet one of these requirements:
   <li>Atleast one pull request accepted from the user</li>
   <li>demonstrate appropriate java skills</li>
   <li>if you're reflxction</li>
+</ul>
+
+<h2>Planned Features</h2>
+<ul>
+  <li>Support serialization and deserialization</li>
+  <li>Adding events</li>
+  <li>Asynchronous web configuration</li>
+  <li>Changing data directly on the webpage using FTP</li>
+  <li>String Literals in YAML</li>
+  <li>Supporting basic math operations in YAML</li>
 </ul>
