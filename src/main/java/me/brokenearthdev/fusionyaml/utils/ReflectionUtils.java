@@ -22,7 +22,7 @@ import java.util.List;
 
 public class ReflectionUtils {
 
-    public static List<Field> getFields(Object o) {
+    public static List<Field> getNonStaticFields(Object o) {
         Field[] fields = o.getClass().getDeclaredFields();
         List<Field> list = new LinkedList<>();
         for (Field field : fields) {
@@ -31,6 +31,10 @@ public class ReflectionUtils {
             list.add(field);
         }
         return list;
+    }
+
+    public static boolean isPrimitive(Class<?> clazz) {
+        return clazz.isPrimitive() || clazz.equals(String.class);
     }
 
 }

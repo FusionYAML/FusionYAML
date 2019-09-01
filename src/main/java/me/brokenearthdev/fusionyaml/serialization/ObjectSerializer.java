@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
+import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
 import me.brokenearthdev.fusionyaml.utils.ReflectionUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 
@@ -34,24 +35,32 @@ public class ObjectSerializer extends Serializer {
      *
      * @param o The {@link Object} to serialize
      * @return The serialized {@link Object}
-     * @throws IllegalAccessException Thrown if any reflective error(s) occurred.
+     * @throws YamlSerializationException Thrown if any reflective error(s) occurred.
      */
     @Override
-    public Object serialize(Object o) throws IllegalAccessException {
+    public Object serialize(Object o) throws YamlSerializationException {
         if (o instanceof Collection)
             return Serializers.COLLECTION_SERIALIZER.serialize(o);
         else if (o instanceof Map)
             return Serializers.MAP_SERIALIZER.serialize(o);
         else if (YamlUtils.isPrimitive(o))
             return Serializers.PRIMITIVE_SERIALIZER.serialize(o);
-        List<Field> fields = ReflectionUtils.getFields(o);
-        Map<String, Object> map = new LinkedHashMap<>();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            map.put(field.getName(), new ObjectSerializer().serialize(field.get(o)));
-            field.setAccessible(false);
+        try {
+            List<Field> fields = ReflectionUtils.getNonStaticFields(o);
+            Map<String, Object> map = new LinkedHashMap<>();
+            for (Field field : fields) {
+                Object obj = field.get(o);
+                if (!YamlUtils.isPrimitive(obj) && !(obj instanceof Map) && !(obj instanceof Collection))
+                    throw new YamlSerializationException("non-primitve objects " + String.class.getName() + ", " +
+                            Collection.class.getName() + ", and " + Map.class.getName() + " aren't allowed");
+                field.setAccessible(true);
+                map.put(field.getName(), new ObjectSerializer().serialize(field.get(o)));
+                field.setAccessible(false);
+            }
+            return map;
+        } catch (IllegalAccessException e) {
+            throw new YamlSerializationException(e);
         }
-        return map;
     }
 
 }

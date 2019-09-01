@@ -30,12 +30,12 @@ public class CollectionSerializer extends ObjectSerializer {
      *
      * @param o The {@link Collection} of {@link Object}s to serialized
      * @return The serialized {@link Collection}
-     * @throws IllegalAccessException Thrown if any reflective error(s) occurred
+     * @throws YamlSerializationException Thrown if any reflective error(s) occurred
      * @throws IllegalArgumentException Thrown if the value passed in is not a {@link Collection}
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Collection<Object> serialize(Object o) throws IllegalAccessException {
+    public Collection<Object> serialize(Object o) throws YamlSerializationException {
         if (!(o instanceof Collection))
             throw new IllegalArgumentException("The value passed in is not an instance of " + Collection.class.getName());
         Collection collection = (Collection) o;

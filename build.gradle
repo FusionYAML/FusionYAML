@@ -45,6 +45,10 @@ dependencies {
 
     // Molten Json's library
     compile 'io.github.moltenjson:MoltenJSON:2.4.7'
+
+    // Objnesis
+    compile group: 'org.objenesis', name: 'objenesis', version: '3.0.1'
+
 }
 
 

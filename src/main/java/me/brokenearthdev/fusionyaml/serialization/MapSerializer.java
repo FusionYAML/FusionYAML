@@ -30,11 +30,11 @@ public class MapSerializer extends ObjectSerializer {
      *
      * @param o The {@link Map} to serialize
      * @return The serialized {@link Map}
-     * @throws IllegalAccessException Thrown if any reflective error(s) occurred
+     * @throws YamlSerializationException Thrown if any reflective error(s) occurred
      * @throws IllegalArgumentException Thrown if the value passed in is not a {@link Map}
      */
     @Override
-    public Map<String, Object> serialize(Object o) throws IllegalAccessException {
+    public Map<String, Object> serialize(Object o) throws YamlSerializationException {
         if (!(o instanceof Map))
             throw new IllegalArgumentException("The value passed in is not a map");
         Map<String, Object> serialized = new LinkedHashMap<>();
