@@ -15,7 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
-import me.brokenearthdev.fusionyaml.serialization.YamlSerializationException;
+import me.brokenearthdev.fusionyaml.serialization.Serializer;
 import me.brokenearthdev.fusionyaml.utils.ReflectionUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.objenesis.Objenesis;
@@ -23,55 +23,91 @@ import org.objenesis.ObjenesisStd;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ObjectDeserializer extends Deserializer {
+public class ObjectDeserializer implements Deserializer {
 
     private static final Objenesis objenesis = new ObjenesisStd();
 
     @Override
-    public <T> T deserialize(Map map, Class<T> as) throws YamlDeserializationException {
-        if (as.isPrimitive() || as.equals(String.class))
-            throw new YamlDeserializationException("Objects of primitive types aren't initially serialized into a map");
-        T t = objenesis.newInstance(as);
+    public <T> T deserializeObject(Map map, Class<T> clazz) throws YamlDeserializationException {
+        T t = objenesis.newInstance(clazz);
         List<Field> fields = ReflectionUtils.getNonStaticFields(t);
-        boolean safe = checkSafe(fields, t);
-        if (!safe)
-            throw new YamlDeserializationException("An object in the class is not of primitive type, " + String.class.getName() + ", " +
-                    Collection.class.getName() + ", " + " and a " + Map.class.getName());
-        boolean initFields = initFields(fields, t, map);
-        if (!initFields)
-            throw new YamlDeserializationException("The map passed in is not the class's serialized form");
+        boolean check = checkNonPrimitive(fields);
+        if (!check)
+            throw new YamlDeserializationException("Invalid field type is found in the class. The fields should be " +
+                    "primitive, a " + String.class.getName() + ", a " + Collection.class.getName() + ", or a " + Map.class.getName());
+        boolean match = isMatch(map, fields);
+        if (!match)
+            throw new YamlDeserializationException("The map passed in is not the deserialized object type");
+        assignFields(t, map, fields);
         return t;
     }
 
-    private static boolean checkSafe(List<Field> fields, Object o) throws YamlDeserializationException {
+    private static boolean checkNonPrimitive(List<Field> fields) {
         for (Field field : fields) {
-            boolean isInstance = false;
-            // todo check if primitive etc
+            if (check(field))
+                return false;
         }
         return true;
     }
 
-    private static boolean initFields(List<Field> fields, Object o, Map map) throws YamlDeserializationException {
-        if (fields.size() != map.size())
+    private static boolean check(Field field) {
+        return !field.getType().isPrimitive() && !contains(field.getType(), Collection.class) &&
+                !contains(field.getType(), Map.class) && !contains(field.getType(), String.class);
+    }
+
+    private static boolean isMatch(Map map, List<Field> fields) {
+        if (map.size() != fields.size())
             return false;
-        Map m2 = new LinkedHashMap(map);
         for (Field field : fields) {
-            if (map.containsKey(field.getName())) {
-                m2.remove(field.getName());
-                try {
-                    field.set(o, map.get(field.getName()));
-                } catch (IllegalAccessException e) {
-                    throw new YamlDeserializationException(e);
-                }
-                if (m2.size() == 0)
-                    return true;
-            }
+            if (!map.containsKey(field.getName()))
+                return false;
+        }
+        return true;
+    }
+
+    private static boolean contains(Class c1, Class c2) {
+        return c1.equals(c2) || c1.getSuperclass() != null && contains(c1.getSuperclass(), c2) || containsInterface(c1, c2);
+    }
+
+    private static boolean containsInterface(Class c1, Class c2) {
+        Class[] interfaces = c1.getInterfaces();
+        for (Class clazz : interfaces) {
+            if (clazz.equals(c2) || containsInterface(clazz, c2))
+                return true;
         }
         return false;
+    }
+
+
+    private static void assignFields(Object o, Map map, List<Field> fields) throws YamlDeserializationException {
+        for (Object key : map.keySet()) {
+            for (Field field : fields) {
+                if (key.toString().equals(field.getName())) {
+                    try {
+                        Object found = map.get(field.getName());
+                        Object deserialized = Deserializers.OBJECT_DESERIALIZER.deserialize(found);
+                        if (deserialized == null) continue;
+                        field.set(o, deserialized);
+                    } catch (IllegalAccessException e) {
+                        throw new YamlDeserializationException(e);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public Object deserialize(Object serializedObj) throws YamlDeserializationException {
+        if (serializedObj instanceof Collection)
+            return Deserializers.COLLECTION_DESERIALIZER.deserialize(serializedObj);
+        else if (serializedObj instanceof Map)
+            return Deserializers.MAP_DESERIALIZER.deserialize(serializedObj);
+        else if (YamlUtils.isPrimitive(serializedObj))
+            return Deserializers.PRIMITIVE_DESERIALIZER.deserialize(serializedObj);
+        else return null;
     }
 
 }

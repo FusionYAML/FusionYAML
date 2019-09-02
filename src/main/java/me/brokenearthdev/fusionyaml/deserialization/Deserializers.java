@@ -15,11 +15,14 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
-import java.util.Map;
+import me.brokenearthdev.fusionyaml.serialization.CollectionSerializer;
+import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
 
-public interface Deserializer {
+class Deserializers {
 
-    <T> T deserializeObject(Map map, Class<T> clazz) throws YamlDeserializationException;
-    Object deserialize(Object serializedObj) throws YamlDeserializationException;
+    static final ObjectDeserializer OBJECT_DESERIALIZER = new ObjectDeserializer();
+    static final PrimitiveDeserializer PRIMITIVE_DESERIALIZER = new PrimitiveDeserializer();
+    static final MapDeserializer MAP_DESERIALIZER = new MapDeserializer();
+    static final CollectionDeserializer COLLECTION_DESERIALIZER = new CollectionDeserializer();
 
 }
