@@ -15,14 +15,29 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
-import me.brokenearthdev.fusionyaml.serialization.CollectionSerializer;
-import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
-
+/**
+ * Contains constant {@link Deserializer} field
+ */
 class Deserializers {
 
+    /**
+     * The constant {@link ObjectDeserializer} object
+     */
     static final ObjectDeserializer OBJECT_DESERIALIZER = new ObjectDeserializer();
+
+    /**
+     * The constant {@link PrimitiveDeserializer} object
+     */
     static final PrimitiveDeserializer PRIMITIVE_DESERIALIZER = new PrimitiveDeserializer();
+
+    /**
+     * The constant {@link MapDeserializer} object
+     */
     static final MapDeserializer MAP_DESERIALIZER = new MapDeserializer();
+
+    /**
+     * The constant {@link CollectionDeserializer} object
+     */
     static final CollectionDeserializer COLLECTION_DESERIALIZER = new CollectionDeserializer();
 
 }

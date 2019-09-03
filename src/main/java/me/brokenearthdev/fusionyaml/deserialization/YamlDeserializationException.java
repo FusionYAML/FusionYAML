@@ -17,6 +17,9 @@ package me.brokenearthdev.fusionyaml.deserialization;
 
 import me.brokenearthdev.fusionyaml.YamlException;
 
+/**
+ * Thrown when an error occurred while deserializing {@link Object}s
+ */
 public class YamlDeserializationException extends YamlException {
 
     public YamlDeserializationException() {

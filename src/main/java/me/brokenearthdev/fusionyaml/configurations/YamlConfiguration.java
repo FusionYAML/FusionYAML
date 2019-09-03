@@ -37,7 +37,7 @@ import java.util.Map;
 
 /**
  * This class allows you to save {@link YamlObject}s to a file. This is a super class
- * for most configurations, for example, {@link FileConfiguration} extends this class.
+ * for most configurations. For example, {@link FileConfiguration} extends this class.
  */
 public class YamlConfiguration implements Configuration {
 

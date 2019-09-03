@@ -19,7 +19,7 @@ package me.brokenearthdev.fusionyaml;
  * Thrown when an error regarding loading or parsing a {@code yaml} object, string, or map
  * occurred.
  */
-public class YamlException extends Exception {
+public class YamlException extends RuntimeException {
 
     public YamlException() {
         super();
