@@ -51,9 +51,8 @@ public class ObjectSerializer extends Serializer {
             for (Field field : fields) {
                 field.setAccessible(true);
                 Object obj = field.get(o);
-                if (!YamlUtils.isPrimitive(obj) && !(obj instanceof Map) && !(obj instanceof Collection))
-                    throw new YamlSerializationException("non-primitve objects " + String.class.getName() + ", " +
-                            Collection.class.getName() + ", and " + Map.class.getName() + " aren't allowed");
+                if (ReflectionUtils.contains(field.getType(), o.getClass()))
+                    throw new YamlSerializationException();
                 map.put(field.getName(), new ObjectSerializer().serialize(field.get(o)));
                 field.setAccessible(false);
             }

@@ -33,15 +33,8 @@ public class MapDeserializer extends ObjectDeserializer {
      * <p>
      * {@link YamlDeserializationException} may be thrown if
      * <ul>
-     *     <li>An {@link IllegalAccessException} was thrown</li>
-     *     <li>One of the field(s) is
-     *       <ul>
-     *         <li>Non-primitive and non-string</li>
-     *         <li>Non-string</li>
-     *         <li>Not a {@link java.util.Collection}</li>
-     *         <li>Not a {@link Map}</li>
-     *       </ul>
-     *     </li>
+     *     <li>A reflective error had occurred, namely {@link IllegalAccessException}</li>
+     *     <li>A deserialization error had occurred</li>
      * </ul>
      *
      * @param map The serialized {@link Map}, often retrieved by serializing a non-primitive, non-map,
@@ -50,6 +43,8 @@ public class MapDeserializer extends ObjectDeserializer {
      *              of this class type.
      * @param <T> The class type. The method will return an {@link Object} of this type.
      * @return The deserialized {@link Object}
+     * @throws YamlDeserializationException Thrown when an {@link IllegalAccessException} is thrown or
+     * when an error occurred while deserializing
      * @throws UnsupportedOperationException If {@code this} is not {@link ObjectDeserializer}
      */
     @Override

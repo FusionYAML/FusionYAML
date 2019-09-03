@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
+import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.utils.ReflectionUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.objenesis.Objenesis;
@@ -44,15 +45,8 @@ public class ObjectDeserializer implements Deserializer {
      * <p>
      * {@link YamlDeserializationException} may be thrown if
      * <ul>
-     *     <li>An {@link IllegalAccessException} was thrown</li>
-     *     <li>One of the field(s) is
-     *       <ul>
-     *         <li>Non-primitive and non-string</li>
-     *         <li>Non-string</li>
-     *         <li>Not a {@link java.util.Collection}</li>
-     *         <li>Not a {@link Map}</li>
-     *       </ul>
-     *     </li>
+     *     <li>A reflective error had occurred, namely {@link IllegalAccessException}</li>
+     *     <li>A deserialization error had occurred</li>
      * </ul>
      *
      * @param map The serialized {@link Map}, often retrieved by serializing a non-primitive, non-map,
@@ -69,15 +63,17 @@ public class ObjectDeserializer implements Deserializer {
     public <T> T deserializeObject(Map map, Class<T> clazz) throws YamlDeserializationException {
         T t = objenesis.newInstance(clazz);
         List<Field> fields = ReflectionUtils.getNonStaticFields(t);
-        boolean check = ReflectionUtils.checkNonPrimitive(fields);
-        if (!check)
-            throw new YamlDeserializationException("Invalid field type is found in the class. The fields should be " +
-                    "primitive, a " + String.class.getName() + ", a " + Collection.class.getName() + ", or a " + Map.class.getName());
         boolean match = ReflectionUtils.isMatch(map, fields);
         if (!match)
             throw new YamlDeserializationException("The map passed in is not the deserialized object type");
         ReflectionUtils.assignFields(t, map, fields, Deserializers.OBJECT_DESERIALIZER);
         return t;
+    }
+
+    @Override
+    public <T> T deserializeObject(YamlObject object, Class<T> clazz) throws YamlDeserializationException {
+        Map<String, Object> regular = YamlUtils.toMap0(object);
+        return deserializeObject(regular, clazz);
     }
 
 

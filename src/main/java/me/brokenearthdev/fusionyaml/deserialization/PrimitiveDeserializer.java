@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
+import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 
@@ -32,15 +33,8 @@ public class PrimitiveDeserializer implements Deserializer {
      * <p>
      * {@link YamlDeserializationException} may be thrown if
      * <ul>
-     *     <li>An {@link IllegalAccessException} was thrown</li>
-     *     <li>One of the field(s) is
-     *       <ul>
-     *         <li>Non-primitive and non-string</li>
-     *         <li>Non-string</li>
-     *         <li>Not a {@link java.util.Collection}</li>
-     *         <li>Not a {@link Map}</li>
-     *       </ul>
-     *     </li>
+     *     <li>A reflective error had occurred, namely {@link IllegalAccessException}</li>
+     *     <li>A deserialization error had occurred</li>
      * </ul>
      *
      * @param map The serialized {@link Map}, often retrieved by serializing a non-primitive, non-map,
@@ -55,6 +49,11 @@ public class PrimitiveDeserializer implements Deserializer {
      */
     @Override
     public <T> T deserializeObject(Map map, Class<T> clazz) {
+        throw new UnsupportedOperationException("Not " + ObjectSerializer.class.getName() +": " + this.getClass().getName());
+    }
+
+    @Override
+    public <T> T deserializeObject(YamlObject object, Class<T> clazz) throws YamlDeserializationException {
         throw new UnsupportedOperationException("Not " + ObjectSerializer.class.getName() +": " + this.getClass().getName());
     }
 

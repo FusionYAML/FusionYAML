@@ -15,6 +15,9 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
+import me.brokenearthdev.fusionyaml.object.YamlElement;
+import me.brokenearthdev.fusionyaml.utils.YamlUtils;
+
 import java.util.*;
 
 /**
@@ -43,6 +46,12 @@ public abstract class Serializer {
      * @throws YamlSerializationException If any reflective errors occurred
      */
     public abstract Object serialize(Object o) throws YamlSerializationException;
+
+
+    public YamlElement serializeToElement(Object o) throws YamlSerializationException {
+        Object serialized = serialize(o);
+        return YamlUtils.toElement(serialized, true);
+    }
 
     /**
      * This method serializes {@link Object}s into {@link Object}s that can be written into YAML {@link String}s,

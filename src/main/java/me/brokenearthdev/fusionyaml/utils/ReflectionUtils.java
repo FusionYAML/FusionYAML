@@ -88,6 +88,8 @@ public class ReflectionUtils {
                         Object found = map.get(field.getName());
                         Object deserialized = objDeserializer.deserialize(found);
                         if (deserialized == null) continue;
+                        if (deserialized instanceof Map)
+                            deserialized = objDeserializer.deserializeObject((Map) deserialized, field.getType());
                         field.set(o, deserialized);
                     } catch (IllegalAccessException e) {
                         throw new YamlDeserializationException(e);
