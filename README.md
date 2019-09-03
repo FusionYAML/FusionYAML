@@ -80,6 +80,19 @@ configuration.save(new File("path to file"));
 ```yaml
 x: 312
 ```
+<ul>
+  <li>Serialization and Deserialization</li>  
+</ul>
+
+```java
+Test test = new Test(2, 4, 6);
+ObjectSerializer serializer = new ObjectSerializer();
+Object serialized = serializer.serialize(test);
+
+ObjectDeserializer deserializer = new ObjectDeserializer();
+Test deserializedTest = deserializer.deserialize((Map) serialized, Test.class);
+```
+
 
 <h2>Creating a Pull Request</h2>
 There are a few requirements that you'll have to follow to get your request considered.
