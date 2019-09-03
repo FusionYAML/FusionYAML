@@ -142,7 +142,6 @@ public abstract class Serializer {
      * @param varNames The key name
      * @param objects The {@link Object}s to serialize
      * @return The serialized {@link Object}
-     * @throws IllegalAccessException If any reflective errors occurred
      */
     public List<Map<String, Object>> serializeAll(LinkedList<String> varNames, LinkedList<Object> objects) throws YamlSerializationException {
         if (varNames.size() != objects.size())
@@ -177,7 +176,6 @@ public abstract class Serializer {
      * @param varNames The key name
      * @param objects The {@link Object}s to serialize
      * @return The serialized {@link Object}
-     * @throws IllegalAccessException If any reflective errors occurred
      */
     public List<Map<String, Object>> serializeAll(String[] varNames, Object[] objects) throws YamlSerializationException {
         if (varNames.length != objects.length)
