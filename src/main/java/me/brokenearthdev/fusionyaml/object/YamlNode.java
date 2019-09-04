@@ -16,12 +16,12 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.object;
 
 import com.google.common.collect.ImmutableList;
+import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
 import me.brokenearthdev.fusionyaml.utils.StorageUtils;
+import me.brokenearthdev.fusionyaml.utils.YamlUtils;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A {@link YamlNode} is a path that does have child(ren). These child(ren) may as well
@@ -37,6 +37,11 @@ import java.util.Map;
  * {@code game} is a child node of {@code player}
  */
 public class YamlNode implements YamlElement {
+
+    /**
+     * The constant {@link ObjectSerializer} instance
+     */
+    private static final ObjectSerializer serializer = new ObjectSerializer();
 
     /**
      * A {@link Map} containing the node child(ren)
@@ -183,6 +188,78 @@ public class YamlNode implements YamlElement {
             if (element instanceof YamlNode)
                 childNodes.add((YamlNode) element);
         }
+    }
+
+    /**
+     * Sets the {@link YamlElement} value in the given path, which is expressed as a {@link List}.
+     * Each index in a list is a descent under its parent, which is occasionally the
+     * {@link String} in the previous index except the {@link String} at index zero,
+     * which is the uppermost parent.
+     * <p>
+     * If the value is set to {@code null}, the key and its value will be removed. If
+     * the value passed in is an instance of {@link YamlObject}, it'll be converted into
+     * a {@link YamlNode}.
+     *
+     * @param paths The path to the value.
+     * @param value The value the path holds
+     */
+    public void set(@NotNull List<String> paths, YamlElement value) {
+        if (paths.size() == 0) return; // empty path
+        YamlElement theValue = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
+        if (paths.size() == 1) {
+            addChild(paths.get(0), theValue);
+            return;
+        }
+        // path is nested
+        Map<String, Object> map = YamlUtils.toMap0(new YamlObject(getChildren()));
+        Map<String, Object> newMap = YamlUtils.setNested(map, paths, theValue);
+        this.map = YamlUtils.toMap(YamlUtils.toStrMap(newMap));
+    }
+
+    /**
+     * Sets an {@link Object} in a specific path. The {@link Object} can be any class. Any {@link Object}s
+     * passed in will be serialized then converted to {@link YamlElement}.
+     *
+     * @param path The path where the {@link Object} will be set to
+     * @param value The {@link Object} that will be serialized
+     */
+    public void addChild(@NotNull String path, Object value) {
+        addChild(Collections.singletonList(path), value);
+    }
+
+    /**
+     * Sets an {@link Object} in a specific path. The {@link Object} can be any class. Any {@link Object}s
+     * passed in will be serialized then converted to {@link YamlElement}.
+     * <p>
+     * The {@code separator} is a symbol used in the path given that when used, the method will set the
+     * {@link Object} under this path (goes deeper). Not using the path separator in the {@code path} is
+     * equivalent to calling {@link #addChild(String, Object)}
+     *
+     * @param path The path where the {@link Object} will be set to
+     * @param separator The path separator
+     * @param value The {@link Object} that will be serialized
+     */
+    public void addChild(@NotNull String path, char separator, Object value) {
+        addChild(StorageUtils.toList(path, separator), value);
+    }
+
+    /**
+     * Sets an {@link Object} in a specific path. The {@link Object} can be any class. Any {@link Object}s
+     * passed in will be serialized then converted to {@link YamlElement}.
+     * <p>
+     * Every index in the {@link List} after at index {@code 0} is a descent. Each {@link String} found in
+     * the index is the child of the {@link String} found at the previous index. The {@link String} found
+     * at index {@code 0} is the uppermost path.
+     *
+     * @param path The path where the {@link Object} will be set to
+     * @param value The {@link Object} that will be serialized
+     */
+    public void addChild(@NotNull List<String> path, Object value) {
+        if (path.size() == 0)
+            return;
+        Object serialized = serializer.serialize(value);
+        YamlElement element = YamlUtils.toElement(serialized, false);
+        set(path, element);
     }
 
     /**
