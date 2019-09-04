@@ -47,7 +47,14 @@ public abstract class Serializer {
      */
     public abstract Object serialize(Object o) throws YamlSerializationException;
 
-
+    /**
+     * Serializes a given {@link Object} to a {@link YamlElement}, which gives you the ability to
+     * modify data.
+     *
+     * @param o The {@link Object} to serialize
+     * @return The serialized {@link YamlElement}
+     * @throws YamlSerializationException If an error occurred while serializing
+     */
     public YamlElement serializeToElement(Object o) throws YamlSerializationException {
         Object serialized = serialize(o);
         return YamlUtils.toElement(serialized, true);

@@ -51,9 +51,7 @@ public class ObjectSerializer extends Serializer {
             for (Field field : fields) {
                 field.setAccessible(true);
                 Object obj = field.get(o);
-                if (ReflectionUtils.contains(field.getType(), o.getClass()))
-                    throw new YamlSerializationException();
-                map.put(field.getName(), new ObjectSerializer().serialize(field.get(o)));
+                map.put(field.getName(), new ObjectSerializer().serialize(obj));
                 field.setAccessible(false);
             }
             return map;

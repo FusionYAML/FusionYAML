@@ -23,6 +23,7 @@ import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -67,8 +68,8 @@ public interface Configuration {
      * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
      * to calling {@link #removePath(String)}.
      * <p>
-     * If an {@link Object} other than the following is passed, the value will be set by converting it
-     * to a {@link String} using the {@link #toString()} method present in the {@link Object}'s instance:
+     * If an {@link Object} other than the following is passed, the {@link Object} passed will be
+     * serialized:
      * <ul>
      *     <li>primitive data types</li>
      *     <li>string</li>
@@ -94,8 +95,8 @@ public interface Configuration {
      * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
      * to calling {@link #removePath(String, char)}.
      * <p>
-     * If an {@link Object} other than the following is passed, the value will be set by converting it
-     * to a {@link String} using the {@link #toString()} method present in the {@link Object}'s instance:
+     * If an {@link Object} other than the following is passed, the {@link Object} passed will be
+     * serialized:
      * <ul>
      *     <li>primitive data types</li>
      *     <li>string</li>
@@ -123,8 +124,8 @@ public interface Configuration {
      * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
      * to calling {@link #removePath(List)}.
      * <p>
-     * If an {@link Object} other than the following is passed, the value will be set by converting it
-     * to a {@link String} using the {@link #toString()} method present in the {@link Object}'s instance:
+     * If an {@link Object} other than the following is passed, the {@link Object} passed will be
+     * serialized:
      * <ul>
      *     <li>primitive data types</li>
      *     <li>string</li>
@@ -1076,6 +1077,95 @@ public interface Configuration {
      * @return The {@link List} found in the given path or {@code null} if otherwise
      */
     List getList(@NotNull String path);
+
+    /**
+     * Deserializes the whole configuration into an {@link Object}. If the configuration contains
+     * keys the {@link Object} doesn't have, {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}
+     * will be thrown.
+     *
+     * @param clazz The class to deserialize into
+     * @param <T> The type of the class
+     * @return The deserialized class
+     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * deserializing
+     */
+    <T> T toObject(Class<T> clazz);
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link java.util.Collection},
+     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
+     * serialized into a {@link java.util.Map}
+     *
+     * @param path The path to the serialized {@link Object}
+     * @param clazz The class to deserialize into
+     * @param <T> The type of the class
+     * @return The deserialized class
+     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * deserializing
+     */
+    <T> T toObject(String path, Class<T> clazz);
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link java.util.Collection},
+     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
+     * serialized into a {@link java.util.Map}
+     *
+     * @param path The path to the serialized {@link Object}
+     * @param separator The path separator. Using the path separator in the path will cause the method to
+     *                  look for the serialized {@link Object} under the previous path section
+     * @param clazz The class to deserialize into
+     * @param <T> The type of the class
+     * @return The deserialized class
+     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * deserializing
+     */
+    <T> T toObject(String path, char separator, Class<T> clazz);
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link java.util.Collection},
+     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
+     * serialized into a {@link java.util.Map}
+     * <p>
+     * Every index in the {@link List} is a child of the {@link String} at the previous index except at
+     * index {@code 0}, where it is the uppermost parent.
+     *
+     * @param path The path to the serialized {@link Object}
+     * @param clazz The class to deserialize into
+     * @param <T> The type of the class
+     * @return The deserialized class
+     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * deserializing
+     */
+    <T> T toObject(List<String> path, Class<T> clazz);
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link java.util.Collection},
+     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
+     * serialized into a {@link java.util.Map}
+     * <p>
+     * Every index in the array is a child of the {@link String} at the previous index except at
+     * index {@code 0}, where it is the uppermost parent.
+     *
+     * @param path The path to the serialized {@link Object}
+     * @param clazz The class to deserialize into
+     * @param <T> The type of the class
+     * @return The deserialized class
+     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * deserializing
+     */
+    <T> T toObject(String[] path, Class<T> clazz);
 
     @Override
     String toString();

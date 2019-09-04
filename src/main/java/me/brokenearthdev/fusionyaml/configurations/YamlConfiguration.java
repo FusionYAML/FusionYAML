@@ -17,9 +17,12 @@ package me.brokenearthdev.fusionyaml.configurations;
 
 import me.brokenearthdev.fusionyaml.DefaultParser;
 import me.brokenearthdev.fusionyaml.YamlParser;
+import me.brokenearthdev.fusionyaml.deserialization.ObjectDeserializer;
+import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.object.YamlPrimitive;
+import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
 import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.apache.commons.io.FileUtils;
@@ -31,15 +34,127 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class allows you to save {@link YamlObject}s to a file. This is a super class
  * for most configurations. For example, {@link FileConfiguration} extends this class.
  */
 public class YamlConfiguration implements Configuration {
+
+    /**
+     * The constant {@link ObjectSerializer} instance
+     */
+    protected static final ObjectSerializer serializer = new ObjectSerializer();
+
+    /**
+     * The constant {@link ObjectDeserializer} instance
+     */
+    protected static final ObjectDeserializer deserializer = new ObjectDeserializer();
+
+    /**
+     * Deserializes the whole configuration into an {@link Object}. If the configuration contains
+     * keys the {@link Object} doesn't have, {@link YamlDeserializationException}
+     * will be thrown.
+     *
+     * @param clazz The class to deserialize into
+     * @return The deserialized class
+     * @throws YamlDeserializationException If an error occurred while
+     *                                      deserializing
+     */
+    @Override
+    public <T> T toObject(Class<T> clazz) {
+        return deserializer.deserializeObject(getContents(), clazz);
+    }
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link Collection},
+     * {@link YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link Map} because {@link Object}s are sometimes
+     * serialized into a {@link Map}
+     *
+     * @param path  The path to the serialized {@link Object}
+     * @param clazz The class to deserialize into
+     * @return The deserialized class
+     * @throws YamlDeserializationException If an error occurred while
+     *                                      deserializing
+     */
+    @Override
+    public <T> T toObject(String path, Class<T> clazz) {
+        return toObject(Collections.singletonList(path), clazz);
+    }
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link Collection},
+     * {@link YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link Map} because {@link Object}s are sometimes
+     * serialized into a {@link Map}
+     *
+     * @param path      The path to the serialized {@link Object}
+     * @param separator The path separator. Using the path separator in the path will cause the method to
+     *                  look for the serialized {@link Object} under the previous path section
+     * @param clazz     The class to deserialize into
+     * @return The deserialized class
+     * @throws YamlDeserializationException If an error occurred while
+     *                                      deserializing
+     */
+    @Override
+    public <T> T toObject(String path, char separator, Class<T> clazz) {
+        return toObject(StorageUtils.toList(path, separator), clazz);
+    }
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link Collection},
+     * {@link YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link Map} because {@link Object}s are sometimes
+     * serialized into a {@link Map}
+     * <p>
+     * Every index in the {@link List} is a child of the {@link String} at the previous index except at
+     * index {@code 0}, where it is the uppermost parent.
+     *
+     * @param path  The path to the serialized {@link Object}
+     * @param clazz The class to deserialize into
+     * @return The deserialized class
+     * @throws YamlDeserializationException If an error occurred while
+     *                                      deserializing
+     */
+    @Override
+    public <T> T toObject(List<String> path, Class<T> clazz) {
+        YamlParser parser = new DefaultParser(YamlUtils.toMap0(getContents()));
+        parser.map();
+        Object found = parser.getObject(path);
+        if (found == null)
+            return null;
+        return deserializer.deserializeObject((Map) found, clazz);
+    }
+
+    /**
+     * Deserializes the configuration section present in the given path into an {@link Object}. If the
+     * value is a primitive, {@link String}, or {@link Collection},
+     * {@link YamlDeserializationException}.
+     * <p>
+     * Usually, the value in the path is a {@link Map} because {@link Object}s are sometimes
+     * serialized into a {@link Map}
+     * <p>
+     * Every index in the array is a child of the {@link String} at the previous index except at
+     * index {@code 0}, where it is the uppermost parent.
+     *
+     * @param path  The path to the serialized {@link Object}
+     * @param clazz The class to deserialize into
+     * @return The deserialized class
+     * @throws YamlDeserializationException If an error occurred while
+     *                                      deserializing
+     */
+    @Override
+    public <T> T toObject(String[] path, Class<T> clazz) {
+        return toObject(new LinkedList<>(Arrays.asList(path)), clazz);
+    }
 
     /**
      * The local {@link YamlObject} that contains class data
@@ -183,6 +298,10 @@ public class YamlConfiguration implements Configuration {
     public void set(@NotNull List<String> path, Object value) {
         if (value instanceof YamlElement) {
             set(path, (YamlElement) value);
+            return;
+        }
+        if (!YamlUtils.isPrimitive(value) && !(value instanceof Map) && !(value instanceof Collection)) {
+            object.set(path, serializer.serializeToElement(value));
             return;
         }
         YamlElement converted = YamlUtils.toElement(value, false);

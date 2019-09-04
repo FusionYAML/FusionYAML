@@ -70,6 +70,26 @@ public class ObjectDeserializer implements Deserializer {
         return t;
     }
 
+    /**
+     * Deserializes a {@link YamlObject} into a new {@link Object}. In the built in deserializers,
+     * invoking this method in a class other than {@link ObjectDeserializer} will throw an
+     * {@link UnsupportedOperationException}
+     * <p>
+     * {@link YamlDeserializationException} may be thrown if
+     * <ul>
+     *     <li>A reflective error had occurred, namely {@link IllegalAccessException}</li>
+     *     <li>A deserialization error had occurred</li>
+     * </ul>
+     *
+     * @param object The {@link YamlObject} that it yet be deserialized
+     * @param clazz The specified class type. The deserializer will create and return an {@link Object}
+     *              of this class type.
+     * @param <T> The class type. The method will return an {@link Object} of this type.
+     * @return The deserialized {@link Object}
+     * @throws YamlDeserializationException Thrown when an {@link IllegalAccessException} is thrown or
+     * when an error occurred while deserializing
+     * @throws UnsupportedOperationException If {@code this} is not {@link ObjectDeserializer}
+     */
     @Override
     public <T> T deserializeObject(YamlObject object, Class<T> clazz) throws YamlDeserializationException {
         Map<String, Object> regular = YamlUtils.toMap0(object);
