@@ -28,6 +28,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Serializes an {@link Object} and converts it to {@link me.brokenearthdev.fusionyaml.object.YamlObject}. Methods
+ * that removes path(s) that lead to a certain {@link Object} won't have any effects when called because by removing
+ * them, it won't be possible to deserialize it back. The same applies to method that set data. However,
+ * you can only change values and not remove them.
+ * <p>
+ *  To deserialize the {@link Object}, call {@link #toObject(Class)}.
+ */
 public class ObjectConfiguration extends YamlConfiguration {
 
     /**
@@ -123,6 +131,8 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     @Override
     public void set(@NotNull List<String> path, Object value) {
+        if (value == null)
+            return;
         YamlParser parser = new DefaultParser(YamlUtils.toMap0(getContents()));
         parser.map();
         if (parser.getObject(path) != null)
