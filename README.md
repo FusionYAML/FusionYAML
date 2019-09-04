@@ -1,5 +1,4 @@
-[![](https://jitpack.io/v/BrokenEarthDev/FusionYAML.svg)](https://jitpack.io/#BrokenEarthDev/FusionYAML)
-
+**The dependencies will be posted soon**
 
 <h1>FusionYAML</h1>
 
