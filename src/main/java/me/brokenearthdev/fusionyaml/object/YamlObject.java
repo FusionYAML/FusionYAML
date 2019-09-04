@@ -18,6 +18,8 @@ package me.brokenearthdev.fusionyaml.object;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
+import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import net.moltenjson.utils.Gsons;
 import net.moltenjson.utils.ReflectiveTypes;
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +46,12 @@ public class YamlObject implements YamlElement {
     /**
      * The default {@link DumperOptions}
      */
-    private static DumperOptions defaultDumperOptions = defaultDumperOptions();
+    private static final DumperOptions defaultDumperOptions = defaultDumperOptions();
+
+    /**
+     * The constant {@link ObjectSerializer} instance
+     */
+    private static final ObjectSerializer serializer = new ObjectSerializer();
 
     /**
      * The constant {@link Gson} instance
@@ -162,6 +170,52 @@ public class YamlObject implements YamlElement {
         Map<String, Object> map = YamlUtils.toMap0(this);
         Map<String, Object> newMap = YamlUtils.setNested(map, paths, theValue);
         this.map = YamlUtils.toMap(YamlUtils.toStrMap(newMap));
+    }
+
+    /**
+     * Sets an {@link Object} in a specific path. The {@link Object} can be any class. Any {@link Object}s
+     * passed in will be serialized then converted to {@link YamlElement}.
+     *
+     * @param path The path where the {@link Object} will be set to
+     * @param value The {@link Object} that will be serialized
+     */
+    public void set(@NotNull String path, Object value) {
+        set(Collections.singletonList(path), value);
+    }
+
+    /**
+     * Sets an {@link Object} in a specific path. The {@link Object} can be any class. Any {@link Object}s
+     * passed in will be serialized then converted to {@link YamlElement}.
+     * <p>
+     * The {@code separator} is a symbol used in the path given that when used, the method will set the
+     * {@link Object} under this path (goes deeper). Not using the path separator in the {@code path} is
+     * equivalent to calling {@link #set(String, Object)}
+     *
+     * @param path The path where the {@link Object} will be set to
+     * @param separator The path separator
+     * @param value The {@link Object} that will be serialized
+     */
+    public void set(@NotNull String path, char separator, Object value) {
+        set(StorageUtils.toList(path, separator), value);
+    }
+
+    /**
+     * Sets an {@link Object} in a specific path. The {@link Object} can be any class. Any {@link Object}s
+     * passed in will be serialized then converted to {@link YamlElement}.
+     * <p>
+     * Every index in the {@link List} after at index {@code 0} is a descent. Each {@link String} found in
+     * the index is the child of the {@link String} found at the previous index. The {@link String} found
+     * at index {@code 0} is the uppermost path.
+     *
+     * @param path The path where the {@link Object} will be set to
+     * @param value The {@link Object} that will be serialized
+     */
+    public void set(@NotNull List<String> path, Object value) {
+        if (path.size() == 0)
+            return;
+        Object serialized = serializer.serialize(value);
+        YamlElement element = YamlUtils.toElement(serialized, false);
+        set(path, element);
     }
 
     /**

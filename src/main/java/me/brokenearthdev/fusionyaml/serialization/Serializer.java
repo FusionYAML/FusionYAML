@@ -173,10 +173,11 @@ public abstract class Serializer {
     }
 
     /**
-     * This method serializes an array of {@link Object}s into a {@link Map} that can be written into YAML
-     * {@link String}s, {@link java.io.File}s, etc. The method returns a {@link List} of {@link Map}s,
-     * which is a {@link List} of key-value pairs whose value is the serialized {@link Object}. The key names for
-     * the {@link Map} that contains serialized {@link Object} is specified at the parameter.
+     * This method serializes an array of {@link Object}s into a {@link List} of {@link Map} that can
+     * be written into YAML {@link String}s, {@link java.io.File}s, etc. The method returns a {@link List}
+     * of {@link Map}s, which is a {@link List} of key-value pairs whose value is the serialized
+     * {@link Object}. The key names for the {@link Map} that contains serialized {@link Object} is specified
+     * at the parameter.
      * <p>
      * Every index in the {@link LinkedList}s passed into the parameters will be the key-value pairs in
      * the {@link Map} that contains serialized {@link Object}s. The method will return a {@link List} of these

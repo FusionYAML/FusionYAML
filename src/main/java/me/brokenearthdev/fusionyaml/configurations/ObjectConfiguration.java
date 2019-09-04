@@ -30,6 +30,20 @@ import java.util.Map;
 
 public class ObjectConfiguration extends YamlConfiguration {
 
+    /**
+     * This constructor requires an {@link Object} that is:
+     * <ul>
+     *     <li>Not primitive</li>
+     *     <li>Not a {@link String}</li>
+     *     <li>Not a {@link Collection}</li>
+     *     <li>Not a {@link Map}</li>
+     * </ul>
+     * <p>
+     * The constructor will serialize the {@link Object} passed in and convert
+     * the serialized {@link Object} into {@link YamlElement}.
+     *
+     * @param object The {@link Object} that will be deserialized
+     */
     public ObjectConfiguration(Object object) {
         super();
         if (YamlUtils.isPrimitive(object) || object instanceof Collection || object instanceof Map)
