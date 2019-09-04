@@ -1,6 +1,36 @@
-**The dependencies will be posted soon**
+[![](https://jitpack.io/v/FusionYAML/FusionYAML.svg)](https://jitpack.io/#FusionYAML/FusionYAML)
 
-<h1>FusionYAML</h1>
+<h2>Dependencies</h2>
+<h3>Maven</h3>
+
+```xml
+<repositories>
+	<repository>
+		  <id>jitpack.io</id>
+		  <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+
+<dependency>
+	 <groupId>com.github.FusionYAML</groupId>
+	 <artifactId>FusionYAML</artifactId>
+	 <version>Tag</version>
+</dependency>
+```
+
+<h3>Gradle</h3>
+
+```gradle
+repositories {
+	maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+	compile 'com.github.FusionYAML:FusionYAML:Tag'
+}
+```
+
+<h3>Gradle</h3>
 
 <h4>What is FusionYAML?</h4>
 FusionYAML, formally known as SimpleYAML, is a library that eases retrieving, creating, removing, and modifying data. FusionYAML 
