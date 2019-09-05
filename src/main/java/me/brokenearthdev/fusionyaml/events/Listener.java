@@ -15,5 +15,13 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.events;
 
+/**
+ * A {@link Listener} is an interface that gets called when a certain event took place. For example,
+ * {@link FileSaveEventListener} is called when a {@link me.brokenearthdev.fusionyaml.configurations.Configuration}
+ * is saved into a {@link java.io.File}
+ * <p>
+ * The listener should extend this interface and provide one method. That method will be called
+ * if a certain event happened
+ */
 public interface Listener {
 }

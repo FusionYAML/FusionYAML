@@ -17,8 +17,17 @@ package me.brokenearthdev.fusionyaml.events;
 
 import me.brokenearthdev.fusionyaml.YamlParser;
 
+/**
+ * This {@link Listener} is called when a {@link YamlParser} successfully mapped the raw
+ * YAML data.
+ */
 public interface ParseListener extends Listener {
 
+    /**
+     * Called when a {@link YamlParser} successfully mapped the raw YAML data.
+     *
+     * @param parser The {@link YamlParser}
+     */
     void onParse(YamlParser parser);
 
 }

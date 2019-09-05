@@ -17,8 +17,21 @@ package me.brokenearthdev.fusionyaml.events;
 
 import me.brokenearthdev.fusionyaml.deserialization.Deserializer;
 
+/**
+ * This {@link Listener} is called when an {@link Object} is deserialized in the built-in
+ * deserializers. You can also call {@code this} {@link Listener} in your custom
+ * deserializers.
+ */
 public interface DeserializationListener extends Listener {
 
+    /**
+     * Called when an {@link Object} is deserialized in the built-in deserializers. You can also
+     * call {@code this} {@link Listener} in your custom deserializers.
+     *
+     * @param deserializer The {@link Deserializer} that called this method
+     * @param object The deserialized object
+     * @param serializedObj The serialized object
+     */
     void onDeserialization(Deserializer deserializer, Object object, Object serializedObj);
 
 }

@@ -16,11 +16,23 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.events;
 
 import me.brokenearthdev.fusionyaml.configurations.Configuration;
+import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
 
+/**
+ * This {@link Listener} is called when a {@link Configuration} is saved to a {@link File}
+ * through {@link Configuration#save(File)} or {@link Configuration#save(DumperOptions, File)}.
+ */
 public interface FileSaveEventListener extends Listener {
 
+    /**
+     * This {@link Listener} is called when a {@link Configuration} is saved to a {@link File}
+     * through {@link Configuration#save(File)} or {@link Configuration#save(DumperOptions, File)}.
+     *
+     * @param configuration The {@link Configuration} that was saved to a {@link File}
+     * @param file The {@link File} the {@link Configuration} was saved into
+     */
     void onSave(Configuration configuration, File file);
 
 }

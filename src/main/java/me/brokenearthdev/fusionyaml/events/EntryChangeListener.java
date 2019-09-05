@@ -19,8 +19,21 @@ import me.brokenearthdev.fusionyaml.object.YamlObject;
 
 import java.util.List;
 
-public interface EntryChangeListener extends Listener{
+/**
+ * This {@link Listener} is called when data is modified in a {@link YamlObject} object. Setters
+ * in {@link YamlObject} cause this to be called. Methods that remove path(s) also calls this
+ * {@link Listener}.
+ */
+public interface EntryChangeListener extends Listener {
 
+    /**
+     * Called when data is modified in a {@link YamlObject} object. Setts in {@link YamlObject}
+     * along with methods that remove path(s) cause this method to be called.
+     *
+     * @param object The {@link YamlObject} where the data is modified
+     * @param path The path to the object
+     * @param value The value the path contains
+     */
     void onChange(YamlObject object, List<String> path, Object value);
 
 }

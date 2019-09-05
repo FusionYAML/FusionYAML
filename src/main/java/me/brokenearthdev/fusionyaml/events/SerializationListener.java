@@ -17,8 +17,21 @@ package me.brokenearthdev.fusionyaml.events;
 
 import me.brokenearthdev.fusionyaml.serialization.Serializer;
 
+/**
+ * This {@link Listener} is called when an {@link Object} is serialized in the built-in
+ * serializers. You can also call {@code this} {@link Listener} in your custom
+ * serializers.
+ */
 public interface SerializationListener extends Listener {
 
+    /**
+     * Called when an {@link Object} is serialized in the built-in serializers. You can also
+     * call {@code this} {@link Listener} in your custom serializers.
+     *
+     * @param serializer The {@link Serializer} that called this method
+     * @param object The {@link Object} that was serialized
+     * @param serializedObj The serialized object
+     */
     void onSerialization(Serializer serializer, Object object, Object serializedObj);
 
 }
