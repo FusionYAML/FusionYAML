@@ -55,7 +55,8 @@ public class DefaultParser extends YamlParser {
             if (raw == null)
                 return data;
             data = new Yaml().loadAs(raw, Map.class);
-            listener.onParse(this);
+            if (listener != null)
+                listener.onParse(this);
             return data != null ? data : new LinkedHashMap<>();
         } catch (Exception e) {
             if (e.getCause().toString().equals("org.yaml.snakeyaml.error.YAMLException: No suitable constructor with 1 arguments found for interface java.util.Map"))
