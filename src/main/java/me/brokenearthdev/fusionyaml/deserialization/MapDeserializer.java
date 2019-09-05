@@ -72,6 +72,8 @@ public class MapDeserializer extends ObjectDeserializer {
         Map newMap = new LinkedHashMap();
         for (Object key : map.keySet())
             newMap.put(key, Deserializers.OBJECT_DESERIALIZER.deserialize(map.get(key)));
+        if (listener != null)
+            listener.onDeserialization(this, newMap, serializedObj);
         return newMap;
     }
 }

@@ -19,6 +19,9 @@ import me.brokenearthdev.fusionyaml.DefaultParser;
 import me.brokenearthdev.fusionyaml.YamlParser;
 import me.brokenearthdev.fusionyaml.deserialization.ObjectDeserializer;
 import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
+import me.brokenearthdev.fusionyaml.events.ConfigurationChangeListener;
+import me.brokenearthdev.fusionyaml.events.FileSaveEventListener;
+import me.brokenearthdev.fusionyaml.events.Listener;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.object.YamlPrimitive;
@@ -43,6 +46,16 @@ import java.util.*;
 public class YamlConfiguration implements Configuration {
 
     /**
+     * The {@link ConfigurationChangeListener} for this object
+     */
+    private ConfigurationChangeListener changeListener;
+
+    /**
+     * The {@link FileSaveEventListener} for this object
+     */
+    private FileSaveEventListener saveListener;
+
+    /**
      * The constant {@link ObjectSerializer} instance
      */
     protected static final ObjectSerializer serializer = new ObjectSerializer();
@@ -51,6 +64,17 @@ public class YamlConfiguration implements Configuration {
      * The constant {@link ObjectDeserializer} instance
      */
     protected static final ObjectDeserializer deserializer = new ObjectDeserializer();
+
+    /**
+     * The local {@link YamlObject} that contains class data
+     */
+    protected YamlObject object;
+
+    /**
+     * The default {@link DumperOptions}. If {@link #save(File)} is called, this object will
+     * be used to call {@link #save(DumperOptions, File)}
+     */
+    private static final DumperOptions defOptions = defOptions();
 
     /**
      * Deserializes the whole configuration into an {@link Object}. If the configuration contains
@@ -157,15 +181,33 @@ public class YamlConfiguration implements Configuration {
     }
 
     /**
-     * The local {@link YamlObject} that contains class data
+     * This method requires a {@link FileSaveEventListener} object to be passed into the method's
+     * parameter. {@link FileSaveEventListener} is called when {@code this} {@link Configuration}
+     * is saved to a {@link File}.
+     * *
+     *
+     * @param listener The {@link Listener} that will be
+     *                 called when the {@link Configuration} is saved to a {@link File}
      */
-    protected YamlObject object;
+    @Override
+    public void setOnFileSave(FileSaveEventListener listener) {
+        this.saveListener = listener;
+    }
 
     /**
-     * The default {@link DumperOptions}. If {@link #save(File)} is called, this object will
-     * be used to call {@link #save(DumperOptions, File)}
+     * This method requires a {@link ConfigurationChangeListener} object to be passed into the method's
+     * parameter. {@link ConfigurationChangeListener} is called when an entry in {@code this}
+     * {@link Configuration} is modified. For example, calling setters and adding, removing, or
+     * modifying the value calls this listener.
+     *
+     *
+     * @param listener The {@link ConfigurationChangeListener}
      */
-    private static final DumperOptions defOptions = defOptions();
+    @Override
+    public void setOnConfigChange(ConfigurationChangeListener listener) {
+        this.changeListener = listener;
+    }
+
 
     /**
      * This constructor requires a {@link YamlObject} instance to initialize this
@@ -176,6 +218,7 @@ public class YamlConfiguration implements Configuration {
      */
     public YamlConfiguration(YamlObject obj) {
         object = obj;
+
     }
 
     protected YamlConfiguration() {
@@ -197,6 +240,8 @@ public class YamlConfiguration implements Configuration {
 
         // UTF-8 supports more characters
         FileUtils.writeStringToFile(file, data, Charset.forName(StandardCharsets.UTF_8.name()));
+        if (saveListener != null)
+            saveListener.onSave(this, file);
     }
 
     /**
@@ -307,6 +352,8 @@ public class YamlConfiguration implements Configuration {
         YamlElement converted = YamlUtils.toElement(value, false);
         YamlElement data = (converted != null) ? converted : new YamlPrimitive(value.toString());
         object.set(path, data);
+        if (changeListener != null)
+            changeListener.onChange(this, path, value);
     }
 
     /**

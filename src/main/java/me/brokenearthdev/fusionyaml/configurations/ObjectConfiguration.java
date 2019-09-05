@@ -34,7 +34,7 @@ import java.util.Map;
  * them, it won't be possible to deserialize it back. The same applies to method that set data. However,
  * you can only change values and not remove them.
  * <p>
- *  To deserialize the {@link Object}, call {@link #toObject(Class)}.
+ * To deserialize the {@link Object}, call {@link #toObject(Class)}.
  */
 public class ObjectConfiguration extends YamlConfiguration {
 

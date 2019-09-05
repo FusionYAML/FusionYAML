@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
+import me.brokenearthdev.fusionyaml.events.SerializationListener;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 
@@ -29,6 +30,11 @@ import java.util.*;
  * serialized {@link Object}.
  */
 public abstract class Serializer {
+
+    /**
+     * The {@link SerializationListener} for this object
+     */
+    protected SerializationListener listener;
 
     /**
      * This method serializes {@link Object}s into {@link Object}s that can be written into YAML {@link String}s,
@@ -60,6 +66,10 @@ public abstract class Serializer {
         return YamlUtils.toElement(serialized, true);
     }
 
+    public void setOnSerialize(SerializationListener listener) {
+        this.listener = listener;
+    }
+
     /**
      * This method serializes {@link Object}s into {@link Object}s that can be written into YAML {@link String}s,
      * {@link java.io.File}s, etc. The method returns a {@link Map}, which contains the key-value pair whose value
@@ -76,6 +86,7 @@ public abstract class Serializer {
      * @param o The {@link Object} to serialize
      * @return The serialized {@link Object}
      * @throws YamlSerializationException If any reflective errors occurred
+     * @deprecated Use {@link #serialize(Object)} or {@link #serializeToElement(Object)} instead
      */
     @Deprecated
     public Map<String, Object> serialize(String varName, Object o) throws YamlSerializationException {
@@ -95,6 +106,7 @@ public abstract class Serializer {
      * @return The serialized {@link Object}
      * @throws YamlSerializationException If any reflective errors occurred
      * @see #serialize(Object)
+     * @deprecated Use {@link #serialize(Object)} or {@link #serializeToElement(Object)} instead
      */
     @Deprecated
     public List<Object> serializeAll(List<Object> objects) throws YamlSerializationException {
@@ -112,6 +124,7 @@ public abstract class Serializer {
      * @return The serialized {@link Object}
      * @throws YamlSerializationException If any reflective errors occurred
      * @see #serialize(Object)
+     * @deprecated Use {@link #serialize(Object)} or {@link #serializeToElement(Object)} instead
      */
     @Deprecated
     public List<Object> serializeAll(Collection<Object> objects) throws YamlSerializationException {
@@ -133,6 +146,7 @@ public abstract class Serializer {
      * @return The serialized {@link Object}
      * @throws YamlSerializationException If any reflective errors occurred
      * @see #serialize(Object)
+     * @deprecated Use {@link #serialize(Object)} or {@link #serializeToElement(Object)} instead
      */
     @Deprecated
     public List<Object> serializeAll(Object[] objects) throws YamlSerializationException {
@@ -162,6 +176,7 @@ public abstract class Serializer {
      * @param varNames The key name
      * @param objects The {@link Object}s to serialize
      * @return The serialized {@link Object}
+     * @deprecated Use {@link #serialize(Object)} or {@link #serializeToElement(Object)} instead
      */
     @Deprecated
     public List<Map<String, Object>> serializeAll(LinkedList<String> varNames, LinkedList<Object> objects) throws YamlSerializationException {
@@ -198,6 +213,7 @@ public abstract class Serializer {
      * @param varNames The key name
      * @param objects The {@link Object}s to serialize
      * @return The serialized {@link Object}
+     * @deprecated Use {@link #serialize(Object)} or {@link #serializeToElement(Object)} instead
      */
     @Deprecated
     public List<Map<String, Object>> serializeAll(String[] varNames, Object[] objects) throws YamlSerializationException {

@@ -73,6 +73,8 @@ public class CollectionDeserializer extends ObjectDeserializer {
         Collection newCollection = new LinkedList();
         for (Object o : collection)
             newCollection.add(Deserializers.OBJECT_DESERIALIZER.deserialize(o));
+        if (listener != null)
+            listener.onDeserialization(this, newCollection, serializedObj);
         return newCollection;
     }
 }

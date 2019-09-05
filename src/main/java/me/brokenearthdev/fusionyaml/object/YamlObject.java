@@ -18,6 +18,7 @@ package me.brokenearthdev.fusionyaml.object;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import me.brokenearthdev.fusionyaml.events.EntryChangeListener;
 import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
 import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
@@ -42,6 +43,11 @@ import java.util.Map;
  * stored.
  */
 public class YamlObject implements YamlElement {
+
+    /**
+     * The {@link EntryChangeListener} for this object
+     */
+    private EntryChangeListener listener;
 
     /**
      * The default {@link DumperOptions}
@@ -161,6 +167,7 @@ public class YamlObject implements YamlElement {
      */
     public void set(@NotNull List<String> paths, YamlElement value) {
         if (paths.size() == 0) return; // empty path
+        listener.onChange(this, paths, value);
         YamlElement theValue = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
         if (paths.size() == 1) {
             set(paths.get(0), theValue);
@@ -345,6 +352,17 @@ public class YamlObject implements YamlElement {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         return options;
+    }
+
+    /**
+     * Sets the {@link EntryChangeListener} for the object. When an entry changed by adding,
+     * removing, or modifying data, {@link EntryChangeListener#onChange(YamlObject, List, Object)}
+     * will be called.
+     *
+     * @param listener The {@link EntryChangeListener}
+     */
+    public void setOnEntryChange(EntryChangeListener listener) {
+        this.listener = listener;
     }
 
 }

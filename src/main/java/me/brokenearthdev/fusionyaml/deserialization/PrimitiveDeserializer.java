@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
+import me.brokenearthdev.fusionyaml.events.DeserializationListener;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
@@ -25,6 +26,11 @@ import java.util.Map;
  * Deserializes serialized primitive objects into deserialized ones
  */
 public class PrimitiveDeserializer implements Deserializer {
+
+    /**
+     * The {@link DeserializationListener} for this object
+     */
+    private DeserializationListener listener;
 
     /**
      * Deserializes a serialized non-primitive, non-map, non-list object into a new
@@ -93,6 +99,19 @@ public class PrimitiveDeserializer implements Deserializer {
     public Object deserialize(Object serializedObj) throws YamlDeserializationException {
         if (!YamlUtils.isPrimitive(serializedObj))
             throw new YamlDeserializationException("The object passed in is not a primitive nor a " + String.class.getName());
+        if (listener != null)
+            listener.onDeserialization(this, serializedObj, serializedObj);
         return serializedObj;
+    }
+
+    /**
+     * Sets the {@link DeserializationListener} for {@code this} {@link Object}. When an {@link Object}
+     * is deserialized, {@link DeserializationListener} is called.
+     *
+     * @param listener The {@link DeserializationListener}
+     */
+    @Override
+    public void setOnDeserialization(DeserializationListener listener) {
+        this.listener = listener;
     }
 }

@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml;
 
+import me.brokenearthdev.fusionyaml.events.ParseListener;
 import me.brokenearthdev.fusionyaml.object.*;
 import me.brokenearthdev.fusionyaml.utils.URLUtils;
 import org.apache.commons.io.FileUtils;
@@ -33,6 +34,11 @@ import java.util.*;
  * {@link #toJson()}
  */
 public abstract class YamlParser {
+
+    /**8
+     * The {@link ParseListener} for this object
+     */
+    protected ParseListener listener;
 
     /**
      * The raw yaml content
@@ -241,6 +247,16 @@ public abstract class YamlParser {
      */
     public Map<?, ?> getMap() {
         return data;
+    }
+
+    /**
+     * Sets the {@link ParseListener} for this object. {@link ParseListener} is called when
+     * {@link #map()} successfully mapped the yaml data.
+     *
+     * @param listener The {@link ParseListener}
+     */
+    public void setOnParse(ParseListener listener) {
+        this.listener = listener;
     }
 
 }

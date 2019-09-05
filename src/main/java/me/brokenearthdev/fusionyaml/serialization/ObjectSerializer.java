@@ -54,6 +54,7 @@ public class ObjectSerializer extends Serializer {
                 map.put(field.getName(), new ObjectSerializer().serialize(obj));
                 field.setAccessible(false);
             }
+            listener.onSerialization(this, o, map);
             return map;
         } catch (IllegalAccessException e) {
             throw new YamlSerializationException(e);

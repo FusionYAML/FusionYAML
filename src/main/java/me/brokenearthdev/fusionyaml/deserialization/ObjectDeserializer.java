@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
+import me.brokenearthdev.fusionyaml.events.DeserializationListener;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.utils.ReflectionUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
@@ -37,6 +38,11 @@ public class ObjectDeserializer implements Deserializer {
      * The constant {@link Objenesis} instance
      */
     private static final Objenesis objenesis = new ObjenesisStd();
+
+    /**
+     * The {@link DeserializationListener} for this object
+     */
+    protected DeserializationListener listener;
 
     /**
      * Deserializes a serialized non-primitive, non-map, non-list object into a new
@@ -67,6 +73,8 @@ public class ObjectDeserializer implements Deserializer {
         if (!match)
             throw new YamlDeserializationException("The map passed in is not the deserialized object type");
         ReflectionUtils.assignFields(t, map, fields, Deserializers.OBJECT_DESERIALIZER);
+        if (listener != null)
+            listener.onDeserialization(this, map, t);
         return t;
     }
 
@@ -118,6 +126,17 @@ public class ObjectDeserializer implements Deserializer {
         else if (YamlUtils.isPrimitive(serializedObj))
             return Deserializers.PRIMITIVE_DESERIALIZER.deserialize(serializedObj);
         else return null;
+    }
+
+    /**
+     * Sets the {@link DeserializationListener} for {@code this} {@link Object}. When an {@link Object}
+     * is deserialized, {@link DeserializationListener} is called.
+     *
+     * @param listener The {@link DeserializationListener}
+     */
+    @Override
+    public void setOnDeserialization(DeserializationListener listener) {
+        this.listener = listener;
     }
 
 }

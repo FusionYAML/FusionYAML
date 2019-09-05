@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.deserialization;
 
+import me.brokenearthdev.fusionyaml.events.DeserializationListener;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 
 import java.util.Map;
@@ -85,5 +86,13 @@ public interface Deserializer {
      * @throws YamlDeserializationException Thrown when an error occurred while deserializing
      */
     Object deserialize(Object serializedObj) throws YamlDeserializationException;
+
+    /**
+     * Sets the {@link DeserializationListener} for {@code this} {@link Object}. When an {@link Object}
+     * is deserialized, {@link DeserializationListener} is called.
+     *
+     * @param listener The {@link DeserializationListener}
+     */
+    void setOnDeserialization(DeserializationListener listener);
 
 }
