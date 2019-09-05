@@ -77,6 +77,7 @@ public abstract class Serializer {
      * @return The serialized {@link Object}
      * @throws YamlSerializationException If any reflective errors occurred
      */
+    @Deprecated
     public Map<String, Object> serialize(String varName, Object o) throws YamlSerializationException {
         LinkedHashMap<String, Object> linkedHashMap = new LinkedHashMap<>();
         linkedHashMap.put(varName, serialize(o));
@@ -95,6 +96,7 @@ public abstract class Serializer {
      * @throws YamlSerializationException If any reflective errors occurred
      * @see #serialize(Object)
      */
+    @Deprecated
     public List<Object> serializeAll(List<Object> objects) throws YamlSerializationException {
         return serializeAll((Collection<Object>) objects);
     }
@@ -111,6 +113,7 @@ public abstract class Serializer {
      * @throws YamlSerializationException If any reflective errors occurred
      * @see #serialize(Object)
      */
+    @Deprecated
     public List<Object> serializeAll(Collection<Object> objects) throws YamlSerializationException {
         List<Object> serialized = new LinkedList<>();
         for (Object object : objects) {
@@ -131,6 +134,7 @@ public abstract class Serializer {
      * @throws YamlSerializationException If any reflective errors occurred
      * @see #serialize(Object)
      */
+    @Deprecated
     public List<Object> serializeAll(Object[] objects) throws YamlSerializationException {
         LinkedList<Object> serialized = new LinkedList<>();
         for (Object o : objects)
@@ -159,6 +163,7 @@ public abstract class Serializer {
      * @param objects The {@link Object}s to serialize
      * @return The serialized {@link Object}
      */
+    @Deprecated
     public List<Map<String, Object>> serializeAll(LinkedList<String> varNames, LinkedList<Object> objects) throws YamlSerializationException {
         if (varNames.size() != objects.size())
             throw new IllegalArgumentException("The lists' sizes passed into the parameter is not equal");
@@ -194,6 +199,7 @@ public abstract class Serializer {
      * @param objects The {@link Object}s to serialize
      * @return The serialized {@link Object}
      */
+    @Deprecated
     public List<Map<String, Object>> serializeAll(String[] varNames, Object[] objects) throws YamlSerializationException {
         if (varNames.length != objects.length)
             throw new IllegalArgumentException("The arrays' lengths aren't equal");
