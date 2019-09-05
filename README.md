@@ -5,16 +5,16 @@
 
 ```xml
 <repositories>
-	<repository>
-		  <id>jitpack.io</id>
-		  <url>https://jitpack.io</url>
-  </repository>
+    <repository>
+	  <id>jitpack.io</id>
+	  <url>https://jitpack.io</url>
+    </repository>
 </repositories>
 
 <dependency>
-	 <groupId>com.github.FusionYAML</groupId>
-	 <artifactId>FusionYAML</artifactId>
-	 <version>Tag</version>
+    <groupId>com.github.FusionYAML</groupId> 
+    <artifactId>FusionYAML</artifactId>
+    <version>Tag</version>
 </dependency>
 ```
 
