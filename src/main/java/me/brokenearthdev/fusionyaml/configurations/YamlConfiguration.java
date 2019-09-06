@@ -20,7 +20,7 @@ import me.brokenearthdev.fusionyaml.YamlParser;
 import me.brokenearthdev.fusionyaml.deserialization.ObjectDeserializer;
 import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
 import me.brokenearthdev.fusionyaml.events.ConfigurationChangeListener;
-import me.brokenearthdev.fusionyaml.events.FileSaveEventListener;
+import me.brokenearthdev.fusionyaml.events.FileSaveListener;
 import me.brokenearthdev.fusionyaml.events.Listener;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
@@ -51,9 +51,9 @@ public class YamlConfiguration implements Configuration {
     private ConfigurationChangeListener changeListener;
 
     /**
-     * The {@link FileSaveEventListener} for this object
+     * The {@link FileSaveListener} for this object
      */
-    private FileSaveEventListener saveListener;
+    private FileSaveListener saveListener;
 
     /**
      * The constant {@link ObjectSerializer} instance
@@ -181,8 +181,8 @@ public class YamlConfiguration implements Configuration {
     }
 
     /**
-     * This method requires a {@link FileSaveEventListener} object to be passed into the method's
-     * parameter. {@link FileSaveEventListener} is called when {@code this} {@link Configuration}
+     * This method requires a {@link FileSaveListener} object to be passed into the method's
+     * parameter. {@link FileSaveListener} is called when {@code this} {@link Configuration}
      * is saved to a {@link File}.
      * *
      *
@@ -190,7 +190,7 @@ public class YamlConfiguration implements Configuration {
      *                 called when the {@link Configuration} is saved to a {@link File}
      */
     @Override
-    public void setOnFileSave(FileSaveEventListener listener) {
+    public void setOnFileSave(FileSaveListener listener) {
         this.saveListener = listener;
     }
 

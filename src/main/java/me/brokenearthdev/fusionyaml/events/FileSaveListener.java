@@ -24,7 +24,7 @@ import java.io.File;
  * This {@link Listener} is called when a {@link Configuration} is saved to a {@link File}
  * through {@link Configuration#save(File)} or {@link Configuration#save(DumperOptions, File)}.
  */
-public interface FileSaveEventListener extends Listener {
+public interface FileSaveListener extends Listener {
 
     /**
      * This {@link Listener} is called when a {@link Configuration} is saved to a {@link File}

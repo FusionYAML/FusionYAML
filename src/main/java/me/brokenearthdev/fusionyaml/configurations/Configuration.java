@@ -16,8 +16,7 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.configurations;
 
 import me.brokenearthdev.fusionyaml.events.ConfigurationChangeListener;
-import me.brokenearthdev.fusionyaml.events.EntryChangeListener;
-import me.brokenearthdev.fusionyaml.events.FileSaveEventListener;
+import me.brokenearthdev.fusionyaml.events.FileSaveListener;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +25,6 @@ import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -1171,14 +1169,14 @@ public interface Configuration {
     <T> T toObject(String[] path, Class<T> clazz);
 
     /**
-     * This method requires a {@link FileSaveEventListener} object to be passed into the method's
-     * parameter. {@link FileSaveEventListener} is called when {@code this} {@link Configuration}
+     * This method requires a {@link FileSaveListener} object to be passed into the method's
+     * parameter. {@link FileSaveListener} is called when {@code this} {@link Configuration}
      * is saved to a {@link File}.
      * *
      * @param listener The {@link me.brokenearthdev.fusionyaml.events.Listener} that will be
      *                 called when the {@link Configuration} is saved to a {@link File}
      */
-    void setOnFileSave(FileSaveEventListener listener);
+    void setOnFileSave(FileSaveListener listener);
 
     /**
      * This method requires a {@link ConfigurationChangeListener} object to be passed into the method's
