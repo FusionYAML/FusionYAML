@@ -1,4 +1,6 @@
-[![](https://jitpack.io/v/FusionYAML/FusionYAML.svg)](https://jitpack.io/#FusionYAML/FusionYAML)
+[![](https://jitpack.io/v/FusionYAML/FusionYAML.svg)](https://jitpack.io/#FusionYAML/FusionYAML) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+
 
 <h2>Dependencies</h2>
 <h3>Maven</h3>
