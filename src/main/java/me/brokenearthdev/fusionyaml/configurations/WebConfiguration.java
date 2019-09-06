@@ -16,7 +16,7 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.configurations;
 
 import me.brokenearthdev.fusionyaml.YamlException;
-import me.brokenearthdev.fusionyaml.parser.MapParser;
+import me.brokenearthdev.fusionyaml.parser.DefaultParser;
 import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.utils.URLUtils;
@@ -88,7 +88,7 @@ public class WebConfiguration extends YamlConfiguration {
      */
     public void synchronize() throws IOException, YamlException {
         String data = URLUtils.readURLToString(url);
-        YamlParser parser = new MapParser(data);
+        YamlParser parser = new DefaultParser(data);
         Map<String, Object> parsed = parser.map();
         if (parsed == null)
             throw new YamlException("parsed map is null");

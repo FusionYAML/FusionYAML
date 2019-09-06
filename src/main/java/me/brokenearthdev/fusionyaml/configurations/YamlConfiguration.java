@@ -15,7 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.configurations;
 
-import me.brokenearthdev.fusionyaml.parser.MapParser;
+import me.brokenearthdev.fusionyaml.parser.DefaultParser;
 import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.deserialization.ObjectDeserializer;
 import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
@@ -138,6 +138,7 @@ public class YamlConfiguration implements Configuration {
      * <p>
      * Usually, the value in the path is a {@link Map} because {@link Object}s are sometimes
      * serialized into a {@link Map}
+     * serialized into a {@link Map}
      * <p>
      * Every index in the {@link List} is a child of the {@link String} at the previous index except at
      * index {@code 0}, where it is the uppermost parent.
@@ -150,7 +151,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(List<String> path, Class<T> clazz) {
-        YamlParser parser = new MapParser(YamlUtils.toMap0(getContents()));
+        YamlParser parser = new DefaultParser(YamlUtils.toMap0(getContents()));
         parser.map();
         Object found = parser.getObject(path);
         if (found == null)
@@ -476,7 +477,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
-        YamlParser parser = new MapParser(YamlUtils.toMap0(object));
+        YamlParser parser = new DefaultParser(YamlUtils.toMap0(object));
         Object found = parser.getObject(path);
         return (found != null) ? found : defValue;
     }
