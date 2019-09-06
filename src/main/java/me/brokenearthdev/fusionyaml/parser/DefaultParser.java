@@ -17,14 +17,15 @@ package me.brokenearthdev.fusionyaml.parser;
 
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.constructor.ConstructorException;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Built-in parser that parses both normal YAML and list YAML
+ */
 public class DefaultParser extends DataParser {
 
     /**
