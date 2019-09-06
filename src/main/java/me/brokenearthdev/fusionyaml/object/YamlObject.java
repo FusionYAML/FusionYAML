@@ -304,6 +304,7 @@ public class YamlObject implements YamlElement {
      * parameter.
      *
      * @param key The key for the value
+     * @return this object
      */
     public YamlObject remove(@NotNull String key) {
         map.remove(key);
