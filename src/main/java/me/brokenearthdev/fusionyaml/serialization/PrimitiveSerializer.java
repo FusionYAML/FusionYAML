@@ -35,7 +35,8 @@ public class PrimitiveSerializer extends ObjectSerializer {
     public Object serialize(Object o) {
         if (!YamlUtils.isPrimitive(o))
             throw new IllegalArgumentException("The value passed in is not a primitive");
-        listener.onSerialization(this, o, o);
+        if (listener != null)
+            listener.onSerialization(this, o, o);
         return o;
     }
 

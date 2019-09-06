@@ -104,6 +104,8 @@ public class YamlObject implements YamlElement {
             YamlElement v = (value instanceof YamlObject) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
             map.put(key, v);
         }
+        if (listener != null)
+            listener.onChange(this, Collections.singletonList(key), value);
     }
 
     /**
@@ -167,7 +169,8 @@ public class YamlObject implements YamlElement {
      */
     public void set(@NotNull List<String> paths, YamlElement value) {
         if (paths.size() == 0) return; // empty path
-        listener.onChange(this, paths, value);
+        if (listener != null)
+            listener.onChange(this, paths, value);
         YamlElement theValue = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
         if (paths.size() == 1) {
             set(paths.get(0), theValue);
@@ -321,7 +324,6 @@ public class YamlObject implements YamlElement {
     @NotNull
     @SuppressWarnings("unchecked") // redundant warnings
     public static YamlObject readFromJson(String json) {
-        Map<String, Object> map = new LinkedHashMap<>();
         Map<String, Object> jMap = GSON.fromJson(json, Map.class);
         return new YamlObject(YamlUtils.toMap(jMap));
     }
