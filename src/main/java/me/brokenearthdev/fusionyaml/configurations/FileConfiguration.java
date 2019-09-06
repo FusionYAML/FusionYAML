@@ -16,8 +16,8 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.configurations;
 
 import me.brokenearthdev.fusionyaml.YamlException;
-import me.brokenearthdev.fusionyaml.DefaultParser;
-import me.brokenearthdev.fusionyaml.YamlParser;
+import me.brokenearthdev.fusionyaml.parser.MapParser;
+import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.yaml.snakeyaml.DumperOptions;
@@ -45,7 +45,7 @@ public class FileConfiguration extends YamlConfiguration {
      * @throws YamlException If the parser map returns null
      */
     public FileConfiguration(File file) throws IOException, YamlException {
-        YamlParser parser = new DefaultParser(file);
+        YamlParser parser = new MapParser(file);
         Map<String, Object> map = parser.map();
         if (map == null)
             throw new YamlException("parser map returned null");

@@ -15,8 +15,8 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.configurations;
 
-import me.brokenearthdev.fusionyaml.DefaultParser;
-import me.brokenearthdev.fusionyaml.YamlParser;
+import me.brokenearthdev.fusionyaml.parser.MapParser;
+import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.deserialization.ObjectDeserializer;
 import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
 import me.brokenearthdev.fusionyaml.events.ConfigurationChangeListener;
@@ -150,7 +150,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(List<String> path, Class<T> clazz) {
-        YamlParser parser = new DefaultParser(YamlUtils.toMap0(getContents()));
+        YamlParser parser = new MapParser(YamlUtils.toMap0(getContents()));
         parser.map();
         Object found = parser.getObject(path);
         if (found == null)
@@ -476,7 +476,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
-        YamlParser parser = new DefaultParser(YamlUtils.toMap0(object));
+        YamlParser parser = new MapParser(YamlUtils.toMap0(object));
         Object found = parser.getObject(path);
         return (found != null) ? found : defValue;
     }

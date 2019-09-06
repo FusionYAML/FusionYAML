@@ -13,42 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.fusionyaml;
+package me.brokenearthdev.fusionyaml.parser;
 
-import me.brokenearthdev.fusionyaml.events.ParseListener;
+import com.google.gson.Gson;
 import me.brokenearthdev.fusionyaml.object.*;
-import me.brokenearthdev.fusionyaml.utils.URLUtils;
-import org.apache.commons.io.FileUtils;
+import me.brokenearthdev.fusionyaml.utils.StorageUtils;
+import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
- * This class is responsible for parsing YAML and converting raw YAML data
- * into a map which can be also used to convert the raw YAML data to JSON using
- * {@link #toJson()}
+ * Retrieves data from the mapped data
  */
-public abstract class YamlParser {
-
-    /**8
-     * The {@link ParseListener} for this object
-     */
-    protected ParseListener listener;
-
-    /**
-     * The raw yaml content
-     */
-    protected String raw;
-
-    /**
-     * The yaml raw contents as a {@link Map}
-     */
-    protected Map<String, Object> data;
+public abstract class DataParser extends YamlParser {
 
     /**
      * This constructor requires a raw YAML data which will be used
@@ -56,8 +38,8 @@ public abstract class YamlParser {
      *
      * @param raw The raw YAML data
      */
-    public YamlParser(@NotNull String raw) {
-        this.raw = raw;
+    public DataParser(@NotNull String raw) {
+        super(raw);
     }
 
     /**
@@ -68,8 +50,8 @@ public abstract class YamlParser {
      * @param file The file to get its raw YAML contents extracted from
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
-    public YamlParser(@NotNull File file) throws IOException {
-        this(FileUtils.readFileToString(file, Charset.defaultCharset()));
+    public DataParser(@NotNull File file) throws IOException {
+        super(file);
     }
 
     /**
@@ -80,8 +62,8 @@ public abstract class YamlParser {
      * @param url The {@link URL} to get its raw YAML contents extracted from
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
-    public YamlParser(@NotNull URL url) throws IOException {
-        this(URLUtils.readURLToString(url));
+    public DataParser(@NotNull URL url) throws IOException {
+        super(url);
     }
 
     /**
@@ -91,34 +73,36 @@ public abstract class YamlParser {
      *
      * @param map The map that houses YAML contents
      */
-    public YamlParser(@NotNull Map<String, Object> map) {
-        data = map;
+    public DataParser(@NotNull Map<String, Object> map) {
+        super(map);
     }
 
     /**
-     * Maps the raw (yaml) content into a form of an object. If you initialized this class
-     * using {@link #YamlParser(Map)}, you don't need to call this method. Calling this method
+     * Maps the raw (yaml) content into a form of a {@link Map}. If you initialized this class
+     * using {@link #DataParser(Map)}, you don't need to call this method. Calling this method
      * will return the map passed in.
-     *
-     * {@link org.yaml.snakeyaml.error.YAMLException} will be thrown if an error occurred
+     * <p>
+     * {@link YamlParseFailedException} will be thrown if an error occurred
      * while mapping. Invalid yaml may be the cause of the exception
      *
      * @return A map containing yaml data ({@link #raw})
-     * @throws YamlException If an error occurred while mapping
-     * @throws UnsupportedOperationException Using lists with no parents (list yaml) causes this exception
+     * @throws YamlParseFailedException If an error occurred while mapping
      * @see #reload(File)
      * @see #reload(URL)
      */
-    @Nullable
-    public abstract Map<String, Object> map() throws YamlException;
+    @Override
+    public abstract Map<String, Object> map() throws YamlParseFailedException;
 
     /**
      * Converts the data written in yaml syntax into json.
      *
      * @return Data written in json's syntax
      */
-    @NotNull
-    public abstract String toJson();
+    @Override
+    public @NotNull String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(raw);
+    }
 
     /**
      * Retrieves an object from a given path. The method requires a {@code char} which
@@ -134,8 +118,15 @@ public abstract class YamlParser {
      * @param dirSeparator The path separator. Applying it will signal a descent.
      * @return The {@link Object} found, or {@code null} otherwise.
      */
-    @Nullable
-    public abstract Object getObject(@NotNull String path, char dirSeparator);
+    @Override
+    public @Nullable Object getObject(@NotNull String path, char dirSeparator) {
+        if (data == null)
+            return null;
+        if (path.startsWith(".") || path.endsWith("."))
+            return null;
+        List<String> paths = StorageUtils.toList(path, dirSeparator);
+        return getObject(paths);
+    }
 
     /**
      * Retrieves an object from a given path. The method requires a {@link List}. Every
@@ -145,8 +136,14 @@ public abstract class YamlParser {
      * @param path The path where the object is located
      * @return The {@link Object} found, or {@code null} otherwise.
      */
-    @Nullable
-    public abstract Object getObject(@NotNull List<String> path);
+    @Override
+    public @Nullable Object getObject(@NotNull List<String> path) {
+        if (data == null)
+            return null;
+        if (path.size() == 0)
+            return null;
+        return YamlUtils.getObject(data, path, new HashMap(), path.get(0), true, 0);
+    }
 
     /**
      * Retrieves an object from a given path. The method requires an array of strings.
@@ -155,8 +152,12 @@ public abstract class YamlParser {
      * @param path The path where the object is located
      * @return The {@link Object} found, or null otherwise.
      */
-    @Nullable
-    public abstract Object getObject(@NotNull String[] path);
+    @Override
+    public @Nullable Object getObject(@NotNull String[] path) {
+        if (data == null)
+            return null;
+        return getObject(new LinkedList<>(Arrays.asList(path)));
+    }
 
     /**
      * Retrieves a {@link YamlElement} from a given path. The method requires a {@code character} which
@@ -173,8 +174,10 @@ public abstract class YamlParser {
      *                     into the path.
      * @return The {@link YamlElement} found, or {@code null} otherwise
      */
-    @Nullable
-    public abstract YamlElement getElement(@NotNull String path, char dirSeparator);
+    @Override
+    public @Nullable YamlElement getElement(@NotNull String path, char dirSeparator) {
+        return getElement(StorageUtils.toList(path, dirSeparator));
+    }
 
     /**
      * Retrieves a {@link YamlElement} from a given path. Every index of the {@link List}
@@ -184,8 +187,12 @@ public abstract class YamlParser {
      * @param path The path where the object is located
      * @return The {@link YamlElement} found, or {@code null} otherwise
      */
-    @Nullable
-    public abstract YamlElement getElement(@NotNull List<String> path);
+    @Override
+    public @Nullable YamlElement getElement(@NotNull List<String> path) {
+        if (path.size() == 0) return null;
+        Object o = getObject(path);
+        return YamlUtils.toElement(o, path.size() == 1 && !(o instanceof Map));
+    }
 
     /**
      * Retrieves a {@link YamlElement} from a given path. Every index of the
@@ -195,68 +202,9 @@ public abstract class YamlParser {
      * @param path The path where the object is found
      * @return The {@link YamlElement} found, or {@code null} otherwise
      */
-    @Nullable
-    public abstract YamlElement getElement(@NotNull String[] path);
-
-    /**
-     * Reloads by changing the raw contents set up during initialization to
-     * the new contents found in the {@link File} in the parameter.
-     *
-     * @param file The {@link File} that will get its contents retrieved
-     * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
-     * @throws YamlException If an error occurred while mapping
-     * @throws UnsupportedOperationException Using lists with no parents (list yaml) causes this exception
-     */
-    public void reload(@NotNull File file) throws IOException, YamlException {
-        raw = FileUtils.readFileToString(file, Charset.defaultCharset());
-        map();
-    }
-
-    /**
-     * Reloads by changing the raw contents set up during initialization to
-     * the new contents found in the {@link URL} in the parameter.
-     * <p>
-     * Any changes
-     *
-     * @param url The {@link URL} that will get its contents retrieved
-     * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
-     * @throws YamlException if there are issues with loading, reading,
-     * or mapping a {@code string}, {@code object}, or {@link Map}
-     */
-    public void reload(@NotNull URL url) throws IOException, YamlException {
-        raw = URLUtils.readURLToString(url);
-        map();
-    }
-
-    public void setDataMap(Map<String, Object> map) {
-        this.data = map;
-    }
-
-    /**
-     * @return The yaml raw contents
-     */
-    public String getRawContents() {
-        return raw;
-    }
-
-    /**
-     * @return The yaml raw contents as a {@link Map}.
-     * <p>
-     * Please note that this method returns {@link #data}, which is a
-     * map of objects and not a map of String with values of type {@link YamlElement}
-     */
-    public Map<?, ?> getMap() {
-        return data;
-    }
-
-    /**
-     * Sets the {@link ParseListener} for this object. {@link ParseListener} is called when
-     * {@link #map()} successfully mapped the yaml data.
-     *
-     * @param listener The {@link ParseListener}
-     */
-    public void setOnParse(ParseListener listener) {
-        this.listener = listener;
+    @Override
+    public @Nullable YamlElement getElement(@NotNull String[] path) {
+        return getElement(new LinkedList<>(Arrays.asList(path)));
     }
 
 }

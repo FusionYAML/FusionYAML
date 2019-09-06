@@ -15,7 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.events;
 
-import me.brokenearthdev.fusionyaml.YamlParser;
+import me.brokenearthdev.fusionyaml.parser.YamlParser;
 
 /**
  * This {@link Listener} is called when a {@link YamlParser} successfully mapped the raw

@@ -42,7 +42,8 @@ public class MapSerializer extends ObjectSerializer {
         for (Object key : map.keySet()) {
             serialized.put(key.toString(), Serializers.OBJECT_SERIALIZER.serialize(map.get(key)));
         }
-        listener.onSerialization(this, o, serialized);
+        if (listener != null)
+            listener.onSerialization(this, o, serialized);
         return serialized;
     }
 

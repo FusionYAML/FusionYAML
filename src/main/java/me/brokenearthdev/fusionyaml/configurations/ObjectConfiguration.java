@@ -15,9 +15,9 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.configurations;
 
-import me.brokenearthdev.fusionyaml.DefaultParser;
 import me.brokenearthdev.fusionyaml.YamlException;
-import me.brokenearthdev.fusionyaml.YamlParser;
+import me.brokenearthdev.fusionyaml.parser.MapParser;
+import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
@@ -133,7 +133,7 @@ public class ObjectConfiguration extends YamlConfiguration {
     public void set(@NotNull List<String> path, Object value) {
         if (value == null)
             return;
-        YamlParser parser = new DefaultParser(YamlUtils.toMap0(getContents()));
+        YamlParser parser = new MapParser(YamlUtils.toMap0(getContents()));
         parser.map();
         if (parser.getObject(path) != null)
             super.set(path, value);

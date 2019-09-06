@@ -16,6 +16,7 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.utils;
 
 import me.brokenearthdev.fusionyaml.object.*;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -122,8 +123,29 @@ public class YamlUtils {
         return copyMap;
     }
 
+    public static Object getObject(Map<?, ?> init, List<String> paths, Map newMap, String currentPath, boolean first, int loops) {
+        if (paths.size() == 1)
+            return init.get(paths.get(0));
+        Map object = (first) ? init : newMap;
+        if (object == null) return null;
+        if (currentPath.equals(paths.get(paths.size() - 1))) {
+            Object o = object.get(currentPath);
+            return o;
+        }
+        for (Object o : object.keySet()) {
+            if (!o.equals(currentPath)) continue;
+            if (object.get(o) instanceof Map) {
+                Map objMap = (Map) object.get(o);
+                return getObject(init, paths, objMap, paths.get(loops + 1), false, loops + 1);
+            }
+        }
+        return null;
+    }
 
-
+    public static boolean mapConstructorException(Exception e) {
+        return e.getMessage().startsWith("Can't construct a java object for tag:yaml.org,2002:java.util.Map; " +
+                "exception=No suitable constructor with 3 arguments found for interface java.util.Map");
+    }
 
 
 }

@@ -43,7 +43,8 @@ public class CollectionSerializer extends ObjectSerializer {
         for (Object e : collection) {
             serialized.add(Serializers.OBJECT_SERIALIZER.serialize(e));
         }
-        listener.onSerialization(this, o, serialized);
+        if (listener != null)
+            listener.onSerialization(this, o, serialized);
         return serialized;
     }
 
