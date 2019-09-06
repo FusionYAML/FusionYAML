@@ -13,31 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.fusionyaml;
+package me.brokenearthdev.fusionyaml.exceptions;
 
-/**
- * Thrown when an error regarding loading or parsing a {@code yaml} object, string, or map
- * occurred.
- */
-public class YamlException extends RuntimeException {
+import me.brokenearthdev.fusionyaml.exceptions.YamlException;
 
-    public YamlException() {
+public class YamlParseFailedException extends YamlException {
+
+    public YamlParseFailedException() {
         super();
     }
 
-    public YamlException(String message) {
+    public YamlParseFailedException(String message) {
         super(message);
     }
 
-    public YamlException(String message, Throwable cause) {
+    public YamlParseFailedException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public YamlException(Throwable cause) {
+    public YamlParseFailedException(Throwable cause) {
         super(cause);
     }
 
-    protected YamlException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected YamlParseFailedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

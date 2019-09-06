@@ -13,29 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.fusionyaml.parser;
+package me.brokenearthdev.fusionyaml.exceptions;
 
-import me.brokenearthdev.fusionyaml.YamlException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlException;
 
-public class YamlParseFailedException extends YamlException {
+public class YamlSerializationException extends YamlException {
 
-    public YamlParseFailedException() {
+    public YamlSerializationException() {
         super();
     }
 
-    public YamlParseFailedException(String message) {
+    public YamlSerializationException(String message) {
         super(message);
     }
 
-    public YamlParseFailedException(String message, Throwable cause) {
+    public YamlSerializationException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public YamlParseFailedException(Throwable cause) {
+    public YamlSerializationException(Throwable cause) {
         super(cause);
     }
 
-    protected YamlParseFailedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected YamlSerializationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

@@ -15,7 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.configurations;
 
-import me.brokenearthdev.fusionyaml.YamlException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlException;
 import me.brokenearthdev.fusionyaml.parser.DefaultParser;
 import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
@@ -92,7 +92,7 @@ public class WebConfiguration extends YamlConfiguration {
         Map<String, Object> parsed = parser.map();
         if (parsed == null)
             throw new YamlException("parsed map is null");
-        object = new YamlObject(YamlUtils.toMap(parsed));
+        object = new YamlObject(YamlUtils.toMap(parsed), parser.getYamlType());
     }
 
     /**

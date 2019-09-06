@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.parser;
 
+import me.brokenearthdev.fusionyaml.exceptions.YamlParseFailedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,6 +94,7 @@ public class MapParser extends DataParser {
             data = YAML.loadAs(raw, Map.class);
             if (listener != null)
                 listener.onParse(this);
+            type = YamlType.MAP;
             return (data != null) ? data : new LinkedHashMap<>();
         } catch (Exception e) {
             throw new YamlParseFailedException(e);

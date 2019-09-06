@@ -15,6 +15,8 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
+import me.brokenearthdev.fusionyaml.exceptions.YamlSerializationException;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 

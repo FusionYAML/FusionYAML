@@ -16,7 +16,7 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.utils;
 
 import me.brokenearthdev.fusionyaml.deserialization.ObjectDeserializer;
-import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlDeserializationException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

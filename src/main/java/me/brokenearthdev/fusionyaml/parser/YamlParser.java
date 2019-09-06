@@ -15,8 +15,9 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.parser;
 
-import me.brokenearthdev.fusionyaml.YamlException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlException;
 import me.brokenearthdev.fusionyaml.events.ParseListener;
+import me.brokenearthdev.fusionyaml.exceptions.YamlParseFailedException;
 import me.brokenearthdev.fusionyaml.object.*;
 import me.brokenearthdev.fusionyaml.utils.URLUtils;
 import org.apache.commons.io.FileUtils;
@@ -58,6 +59,11 @@ public abstract class YamlParser {
     protected Map<String, Object> data;
 
     /**
+     * The {@link YamlType}
+     */
+    protected YamlType type = null;
+
+    /**
      * This constructor requires a raw YAML data which will be used
      * while mapping and parsing.
      *
@@ -92,6 +98,19 @@ public abstract class YamlParser {
     }
 
     /**
+     * This constructor requires a {@link Map} and a {@link YamlType}. Since the
+     * value passed in is a map, the contents won't be mapped. Hence, calling {@link #map()}
+     * will return the {@link Map} you passed in.
+     *
+     * @param map The map that houses YAML contents
+     * @param type The type of the YAML
+     */
+    public YamlParser(@NotNull Map<String, Object> map, YamlType type) {
+        this.data = map;
+        this.type = type;
+    }
+
+    /**
      * This constructor requires a {@link Map} that houses the YAML contents. Since the
      * value passed in is a map, the contents won't be mapped. Hence, calling {@link #map()}
      * will return the {@link Map} you passed in.
@@ -116,6 +135,17 @@ public abstract class YamlParser {
      * @see #reload(URL)
      */
     public abstract Map<String, Object> map() throws YamlException;
+
+    /**
+     * Gets the {@link YamlType} for the YAML. A {@link YamlType} is used when writing to a {@link File}
+     * to preserve the {@link List} structure. The {@link YamlType} is set after the raw YAML is
+     * successfully mapped.
+     *
+     * @return The {@link YamlType} for the YAML.
+     */
+    public YamlType getYamlType() {
+        return type;
+    }
 
     /**
      * Converts the data written in yaml syntax into json.
@@ -259,6 +289,42 @@ public abstract class YamlParser {
      */
     public void setOnParse(ParseListener listener) {
         this.listener = listener;
+    }
+
+    /**
+     * Contains constants that represents a YAML's type.
+     */
+    public enum YamlType {
+
+        /**
+         * The {@link Map} YAML, which is a type of YAML that contains key-value pairs. A
+         * {@link Map} YAML is a single document.
+         */
+        MAP(0),
+
+        /**
+         * The list YAML type
+         */
+        LIST(1);
+
+        /**
+         * The code that identifies the type of a YAML
+         */
+        private int code;
+
+        /**
+         * @param code The code that identifies the type of a YAML
+         */
+        YamlType(int code) {
+            this.code = code;
+        }
+
+        /**
+         * @return The code that identifies the type of a YAML
+         */
+        public int getCode() {
+            return code;
+        }
     }
 
 }

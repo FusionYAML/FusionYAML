@@ -17,6 +17,7 @@ package me.brokenearthdev.fusionyaml.configurations;
 
 import me.brokenearthdev.fusionyaml.events.ConfigurationChangeListener;
 import me.brokenearthdev.fusionyaml.events.FileSaveListener;
+import me.brokenearthdev.fusionyaml.exceptions.YamlDeserializationException;
 import me.brokenearthdev.fusionyaml.object.YamlElement;
 import me.brokenearthdev.fusionyaml.object.YamlObject;
 import org.jetbrains.annotations.NotNull;
@@ -1081,13 +1082,13 @@ public interface Configuration {
 
     /**
      * Deserializes the whole configuration into an {@link Object}. If the configuration contains
-     * keys the {@link Object} doesn't have, {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}
+     * keys the {@link Object} doesn't have, {@link YamlDeserializationException}
      * will be thrown.
      *
      * @param clazz The class to deserialize into
      * @param <T> The type of the class
      * @return The deserialized class
-     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * @throws YamlDeserializationException If an error occurred while
      * deserializing
      */
     <T> T toObject(Class<T> clazz);
@@ -1095,7 +1096,7 @@ public interface Configuration {
     /**
      * Deserializes the configuration section present in the given path into an {@link Object}. If the
      * value is a primitive, {@link String}, or {@link java.util.Collection},
-     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * {@link YamlDeserializationException}.
      * <p>
      * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
      * serialized into a {@link java.util.Map}
@@ -1104,7 +1105,7 @@ public interface Configuration {
      * @param clazz The class to deserialize into
      * @param <T> The type of the class
      * @return The deserialized class
-     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * @throws YamlDeserializationException If an error occurred while
      * deserializing
      */
     <T> T toObject(String path, Class<T> clazz);
@@ -1112,7 +1113,7 @@ public interface Configuration {
     /**
      * Deserializes the configuration section present in the given path into an {@link Object}. If the
      * value is a primitive, {@link String}, or {@link java.util.Collection},
-     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * {@link YamlDeserializationException}.
      * <p>
      * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
      * serialized into a {@link java.util.Map}
@@ -1123,7 +1124,7 @@ public interface Configuration {
      * @param clazz The class to deserialize into
      * @param <T> The type of the class
      * @return The deserialized class
-     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * @throws YamlDeserializationException If an error occurred while
      * deserializing
      */
     <T> T toObject(String path, char separator, Class<T> clazz);
@@ -1131,7 +1132,7 @@ public interface Configuration {
     /**
      * Deserializes the configuration section present in the given path into an {@link Object}. If the
      * value is a primitive, {@link String}, or {@link java.util.Collection},
-     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * {@link YamlDeserializationException}.
      * <p>
      * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
      * serialized into a {@link java.util.Map}
@@ -1143,7 +1144,7 @@ public interface Configuration {
      * @param clazz The class to deserialize into
      * @param <T> The type of the class
      * @return The deserialized class
-     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * @throws YamlDeserializationException If an error occurred while
      * deserializing
      */
     <T> T toObject(List<String> path, Class<T> clazz);
@@ -1151,7 +1152,7 @@ public interface Configuration {
     /**
      * Deserializes the configuration section present in the given path into an {@link Object}. If the
      * value is a primitive, {@link String}, or {@link java.util.Collection},
-     * {@link me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException}.
+     * {@link YamlDeserializationException}.
      * <p>
      * Usually, the value in the path is a {@link java.util.Map} because {@link Object}s are sometimes
      * serialized into a {@link java.util.Map}
@@ -1163,7 +1164,7 @@ public interface Configuration {
      * @param clazz The class to deserialize into
      * @param <T> The type of the class
      * @return The deserialized class
-     * @throws me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException If an error occurred while
+     * @throws YamlDeserializationException If an error occurred while
      * deserializing
      */
     <T> T toObject(String[] path, Class<T> clazz);

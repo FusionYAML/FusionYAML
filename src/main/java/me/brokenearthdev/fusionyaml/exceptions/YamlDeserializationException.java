@@ -13,29 +13,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package me.brokenearthdev.fusionyaml.serialization;
+package me.brokenearthdev.fusionyaml.exceptions;
 
-import me.brokenearthdev.fusionyaml.YamlException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlException;
 
-public class YamlSerializationException extends YamlException {
+/**
+ * Thrown when an error occurred while deserializing {@link Object}s
+ */
+public class YamlDeserializationException extends YamlException {
 
-    public YamlSerializationException() {
+    public YamlDeserializationException() {
         super();
     }
 
-    public YamlSerializationException(String message) {
+    public YamlDeserializationException(String message) {
         super(message);
     }
 
-    public YamlSerializationException(String message, Throwable cause) {
+    public YamlDeserializationException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public YamlSerializationException(Throwable cause) {
+    public YamlDeserializationException(Throwable cause) {
         super(cause);
     }
 
-    protected YamlSerializationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    protected YamlDeserializationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

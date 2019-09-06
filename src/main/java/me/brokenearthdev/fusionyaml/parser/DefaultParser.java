@@ -15,6 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.parser;
 
+import me.brokenearthdev.fusionyaml.exceptions.YamlParseFailedException;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,6 +64,18 @@ public class DefaultParser extends DataParser {
     }
 
     /**
+     * This constructor requires a {@link Map} and a {@link YamlType}. Since the
+     * value passed in is a map, the contents won't be mapped. Hence, calling {@link #map()}
+     * will return the {@link Map} you passed in.
+     *
+     * @param map  The map that houses YAML contents
+     * @param type The type of the YAML
+     */
+    public DefaultParser(@NotNull Map<String, Object> map, YamlType type) {
+        super(map, type);
+    }
+
+    /**
      * This constructor requires a {@link Map} that houses the YAML contents. Since the
      * value passed in is a map, the contents won't be mapped. Hence, calling {@link #map()}
      * will return the {@link Map} you passed in.
@@ -92,10 +105,15 @@ public class DefaultParser extends DataParser {
             return data;
         try {
             MapParser parser = new MapParser(raw);
-            return parser.map();
+            Map<String, Object> map = parser.map();
+            type = YamlType.MAP;
+            return map;
         } catch (Exception e) {
-            if (YamlUtils.mapConstructorException(e))
-                return new ListParser(raw).map();
+            if (YamlUtils.mapConstructorException(e)) {
+                Map<String, Object> map = new ListParser(raw).map();
+                type = YamlType.LIST;
+                return map;
+            }
             throw new YamlParseFailedException(e);
         }
     }

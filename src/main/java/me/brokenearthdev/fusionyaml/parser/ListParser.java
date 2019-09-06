@@ -15,7 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.parser;
 
-import me.brokenearthdev.fusionyaml.YamlException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlParseFailedException;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -102,6 +102,7 @@ public class ListParser extends DataParser {
                 Object o = YamlUtils.getObject(map1, lst, new LinkedHashMap(), lst.get(0), true, 0);
                 map.put(lst.get(0), o);
             }
+            type = YamlType.LIST;
             return map;
         } catch (Exception e) {
             throw new YamlParseFailedException(e);

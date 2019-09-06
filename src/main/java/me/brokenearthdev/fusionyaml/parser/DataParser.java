@@ -16,6 +16,7 @@ limitations under the License.
 package me.brokenearthdev.fusionyaml.parser;
 
 import com.google.gson.Gson;
+import me.brokenearthdev.fusionyaml.exceptions.YamlParseFailedException;
 import me.brokenearthdev.fusionyaml.object.*;
 import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
@@ -64,6 +65,18 @@ public abstract class DataParser extends YamlParser {
      */
     public DataParser(@NotNull URL url) throws IOException {
         super(url);
+    }
+
+    /**
+     * This constructor requires a {@link Map} and a {@link YamlType}. Since the
+     * value passed in is a map, the contents won't be mapped. Hence, calling {@link #map()}
+     * will return the {@link Map} you passed in.
+     *
+     * @param map  The map that houses YAML contents
+     * @param type The type of the YAML
+     */
+    public DataParser(@NotNull Map<String, Object> map, YamlType type) {
+        super(map, type);
     }
 
     /**

@@ -99,6 +99,7 @@ public class YamlNode implements YamlElement {
         return map;
     }
 
+
     /**
      * Adds a {@link YamlElement} as its child to this {@link YamlNode} object in
      * a given key.
@@ -112,9 +113,11 @@ public class YamlNode implements YamlElement {
      *
      * @param key The key to the value
      * @param element This object's child
+     * @return this object
      */
-    public void addChild(String key, YamlElement element) {
+    public YamlNode addChild(String key, YamlElement element) {
         change(key, element);
+        return this;
     }
 
     /**
@@ -127,9 +130,11 @@ public class YamlNode implements YamlElement {
      *
      * @param key The key to the value
      * @param value This object's child
+     * @return this object
      */
-    public void addChild(String key, String value) {
+    public YamlNode addChild(String key, String value) {
         change(key, new YamlPrimitive(value));
+        return this;
     }
 
     /**
@@ -142,9 +147,11 @@ public class YamlNode implements YamlElement {
      *
      * @param key The key to the value
      * @param value This object's child
+     * @return this object
      */
-    public void addChild(String key, boolean value) {
+    public YamlNode addChild(String key, boolean value) {
         change(key, new YamlPrimitive(value));
+        return this;
     }
 
     /**
@@ -157,9 +164,11 @@ public class YamlNode implements YamlElement {
      *
      * @param key The key to the value
      * @param value This object's child
+     * @return this object
      */
-    public void addChild(String key, Number value) {
+    public YamlNode addChild(String key, Number value) {
         change(key, new YamlPrimitive(value));
+        return this;
     }
 
     /**
@@ -167,9 +176,11 @@ public class YamlNode implements YamlElement {
      *
      * @param key The key where its value will be removed.
      *            The key will also be removed.
+     * @return this object
      */
-    public void removeChild(String key) {
+    public YamlNode removeChild(String key) {
         change(key, null);
+        return this;
     }
 
     /**
@@ -202,18 +213,25 @@ public class YamlNode implements YamlElement {
      *
      * @param paths The path to the value.
      * @param value The value the path holds
+     * @return this object
      */
-    public void set(@NotNull List<String> paths, YamlElement value) {
-        if (paths.size() == 0) return; // empty path
-        YamlElement theValue = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
-        if (paths.size() == 1) {
-            addChild(paths.get(0), theValue);
-            return;
+    public YamlNode set(@NotNull List<String> paths, YamlElement value) {
+        if (paths.size() == 0) return this; // empty path
+        if (value == null) {
+            Map<String, Object> converted = YamlUtils.toMap0(new YamlObject(getChildren()));
+            Map<String, Object> newMap = YamlUtils.setNested(converted, paths, null);
+            this.map = YamlUtils.toMap(newMap);
+            return this;
         }
+        YamlElement theValue = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
+        if (paths.size() == 1)
+            return addChild(paths.get(0), theValue);
+
         // path is nested
         Map<String, Object> map = YamlUtils.toMap0(new YamlObject(getChildren()));
         Map<String, Object> newMap = YamlUtils.setNested(map, paths, theValue);
         this.map = YamlUtils.toMap(YamlUtils.toStrMap(newMap));
+        return this;
     }
 
     /**
@@ -222,9 +240,10 @@ public class YamlNode implements YamlElement {
      *
      * @param path The path where the {@link Object} will be set to
      * @param value The {@link Object} that will be serialized
+     * @return this object
      */
-    public void addChild(@NotNull String path, Object value) {
-        addChild(Collections.singletonList(path), value);
+    public YamlNode addChild(@NotNull String path, Object value) {
+        return addChild(Collections.singletonList(path), value);
     }
 
     /**
@@ -238,9 +257,10 @@ public class YamlNode implements YamlElement {
      * @param path The path where the {@link Object} will be set to
      * @param separator The path separator
      * @param value The {@link Object} that will be serialized
+     * @return this object
      */
-    public void addChild(@NotNull String path, char separator, Object value) {
-        addChild(StorageUtils.toList(path, separator), value);
+    public YamlNode addChild(@NotNull String path, char separator, Object value) {
+        return addChild(StorageUtils.toList(path, separator), value);
     }
 
     /**
@@ -253,13 +273,14 @@ public class YamlNode implements YamlElement {
      *
      * @param path The path where the {@link Object} will be set to
      * @param value The {@link Object} that will be serialized
+     * @return this object
      */
-    public void addChild(@NotNull List<String> path, Object value) {
+    public YamlNode addChild(@NotNull List<String> path, Object value) {
         if (path.size() == 0)
-            return;
+            return this;
         Object serialized = serializer.serialize(value);
         YamlElement element = YamlUtils.toElement(serialized, false);
-        set(path, element);
+        return set(path, element);
     }
 
     /**

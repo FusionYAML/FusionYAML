@@ -15,7 +15,7 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.serialization;
 
-import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlSerializationException;
 import me.brokenearthdev.fusionyaml.utils.ReflectionUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
 

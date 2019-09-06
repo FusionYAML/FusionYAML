@@ -15,10 +15,11 @@ limitations under the License.
 */
 package me.brokenearthdev.fusionyaml.configurations;
 
+import me.brokenearthdev.fusionyaml.exceptions.UnsupportedYamlException;
 import me.brokenearthdev.fusionyaml.parser.DefaultParser;
 import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.deserialization.ObjectDeserializer;
-import me.brokenearthdev.fusionyaml.deserialization.YamlDeserializationException;
+import me.brokenearthdev.fusionyaml.exceptions.YamlDeserializationException;
 import me.brokenearthdev.fusionyaml.events.ConfigurationChangeListener;
 import me.brokenearthdev.fusionyaml.events.FileSaveListener;
 import me.brokenearthdev.fusionyaml.events.Listener;
@@ -237,7 +238,12 @@ public class YamlConfiguration implements Configuration {
     public void save(DumperOptions options, @NotNull File file) throws IOException {
         Map<String, Object> map = YamlUtils.toMap0(object);
         Yaml yaml = new Yaml((options != null) ? options : defOptions);
-        String data = yaml.dump(map);
+        String data;
+        if (object.getYamlType() == YamlParser.YamlType.MAP)
+            data = yaml.dump(map);
+        else if (object.getYamlType() == YamlParser.YamlType.LIST)
+            data = yaml.dump(StorageUtils.toList(map));
+        else throw new UnsupportedYamlException("The YAML type is unsupported");
 
         // UTF-8 supports more characters
         FileUtils.writeStringToFile(file, data, Charset.forName(StandardCharsets.UTF_8.name()));
@@ -344,6 +350,10 @@ public class YamlConfiguration implements Configuration {
     public void set(@NotNull List<String> path, Object value) {
         if (value instanceof YamlElement) {
             set(path, (YamlElement) value);
+            return;
+        }
+        if (value == null) {
+            object.set(path, null);
             return;
         }
         if (!YamlUtils.isPrimitive(value) && !(value instanceof Map) && !(value instanceof Collection)) {

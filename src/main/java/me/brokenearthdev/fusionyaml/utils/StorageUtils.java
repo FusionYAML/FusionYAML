@@ -88,4 +88,14 @@ public class StorageUtils {
         return paths;
     }
 
+    public static <T> List<Map> toList(Map<String, T> map) {
+        List<Map> list = new LinkedList<>();
+        map.forEach((k, v) -> {
+            Map<String, T> map2 = new LinkedHashMap<>();
+            map2.put(k, v);
+            list.add(map2);
+        });
+        return list;
+    }
+
 }

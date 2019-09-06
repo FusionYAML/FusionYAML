@@ -19,6 +19,8 @@ package me.brokenearthdev.fusionyaml.object;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import me.brokenearthdev.fusionyaml.events.EntryChangeListener;
+import me.brokenearthdev.fusionyaml.parser.DefaultParser;
+import me.brokenearthdev.fusionyaml.parser.YamlParser;
 import me.brokenearthdev.fusionyaml.serialization.ObjectSerializer;
 import me.brokenearthdev.fusionyaml.utils.StorageUtils;
 import me.brokenearthdev.fusionyaml.utils.YamlUtils;
@@ -43,6 +45,11 @@ import java.util.Map;
  * stored.
  */
 public class YamlObject implements YamlElement {
+
+    /**
+     * The {@link me.brokenearthdev.fusionyaml.parser.YamlParser.YamlType}
+     */
+    private YamlParser.YamlType type = YamlParser.YamlType.MAP;
 
     /**
      * The {@link EntryChangeListener} for this object
@@ -77,6 +84,17 @@ public class YamlObject implements YamlElement {
     public YamlObject() {}
 
     /**
+     * This constructor requires a {@link me.brokenearthdev.fusionyaml.parser.YamlParser.YamlType}
+     * to be passed into the constructor. The {@link me.brokenearthdev.fusionyaml.parser.YamlParser.YamlType}
+     * will be used when writing to a {@link java.io.File} through {@link me.brokenearthdev.fusionyaml.configurations.Configuration}
+     *
+     * @param type The {@link me.brokenearthdev.fusionyaml.parser.YamlParser.YamlType}
+     */
+    public YamlObject(@NotNull YamlParser.YamlType type) {
+        this.type = type;
+    }
+
+    /**
      * This constructor requires a {@link Map} that contains {@code YAML} data expressed
      * in a map. By using this constructor, {@link #map} will be set equal to the value
      * passed into the constructor.
@@ -88,6 +106,22 @@ public class YamlObject implements YamlElement {
      */
     public YamlObject(@NotNull Map<String, YamlElement> data) {
         map = data;
+    }
+
+    /**
+     * This constructor requires a {@link Map} and a {@link me.brokenearthdev.fusionyaml.parser.YamlParser.YamlType}
+     * The {@link Map} passed in is the YAML data. By using this constructor, {@link #map} will be set equal to
+     * the value passed into the constructor.
+     * <p>
+     * Calling {@code set} and {@code remove} methods will modify data in the map passed
+     * in by adding and removing data, respectively.
+     *
+     * @param data The {@link Map} that contains {@code YAML} data
+     * @param type The {@link me.brokenearthdev.fusionyaml.parser.YamlParser.YamlType}
+     */
+    public YamlObject(@NotNull Map<String, YamlElement> data, YamlParser.YamlType type) {
+        this.map = data;
+        this.type = type;
     }
 
     /**
@@ -116,9 +150,11 @@ public class YamlObject implements YamlElement {
      *
      * @param key The key that holds the value
      * @param value The value the key holds
+     * @return this object
      */
-    public void set(@NotNull String key, YamlElement value) {
+    public YamlObject set(@NotNull String key, YamlElement value) {
         change(key, value);
+        return this;
     }
 
     /**
@@ -127,9 +163,11 @@ public class YamlObject implements YamlElement {
      *
      * @param key The key that holds the value
      * @param value The value the key holds
+     * @return this object
      */
-    public void set(@NotNull String key, String value) {
+    public YamlObject set(@NotNull String key, String value) {
         change(key, createElementPrimitive(value));
+        return this;
     }
 
     /**
@@ -138,9 +176,11 @@ public class YamlObject implements YamlElement {
      *
      * @param key The key that holds the value
      * @param value The value the key holds
+     * @return this object
      */
-    public void set(@NotNull String key, Boolean value) {
+    public YamlObject set(@NotNull String key, Boolean value) {
         change(key, createElementPrimitive(value));
+        return this;
     }
 
     /**
@@ -149,9 +189,11 @@ public class YamlObject implements YamlElement {
      *
      * @param key The key that holds the value
      * @param value The value the key holds
+     * @return this object
      */
-    public void set(@NotNull String key, Number value) {
+    public YamlObject set(@NotNull String key, Number value) {
         change(key, createElementPrimitive(value));
+        return this;
     }
 
     /**
@@ -166,20 +208,28 @@ public class YamlObject implements YamlElement {
      *
      * @param paths The path to the value.
      * @param value The value the path holds
+     * @return this object
      */
-    public void set(@NotNull List<String> paths, YamlElement value) {
-        if (paths.size() == 0) return; // empty path
+    public YamlObject set(@NotNull List<String> paths, YamlElement value) {
+        if (paths.size() == 0) return this; // empty path
+        if (value == null) {
+            Map<String, Object> converted = YamlUtils.toMap0(this);
+            Map<String, Object> map = YamlUtils.setNested(converted, paths, value);
+            this.map = YamlUtils.toMap(map);
+            return this;
+        }
         if (listener != null)
             listener.onChange(this, paths, value);
         YamlElement theValue = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
         if (paths.size() == 1) {
             set(paths.get(0), theValue);
-            return;
+            return this;
         }
         // path is nested
         Map<String, Object> map = YamlUtils.toMap0(this);
         Map<String, Object> newMap = YamlUtils.setNested(map, paths, theValue);
         this.map = YamlUtils.toMap(YamlUtils.toStrMap(newMap));
+        return this;
     }
 
     /**
@@ -188,9 +238,10 @@ public class YamlObject implements YamlElement {
      *
      * @param path The path where the {@link Object} will be set to
      * @param value The {@link Object} that will be serialized
+     * @return this object
      */
-    public void set(@NotNull String path, Object value) {
-        set(Collections.singletonList(path), value);
+    public YamlObject set(@NotNull String path, Object value) {
+        return set(Collections.singletonList(path), value);
     }
 
     /**
@@ -204,9 +255,10 @@ public class YamlObject implements YamlElement {
      * @param path The path where the {@link Object} will be set to
      * @param separator The path separator
      * @param value The {@link Object} that will be serialized
+     * @return this object
      */
-    public void set(@NotNull String path, char separator, Object value) {
-        set(StorageUtils.toList(path, separator), value);
+    public YamlObject set(@NotNull String path, char separator, Object value) {
+        return set(StorageUtils.toList(path, separator), value);
     }
 
     /**
@@ -219,13 +271,14 @@ public class YamlObject implements YamlElement {
      *
      * @param path The path where the {@link Object} will be set to
      * @param value The {@link Object} that will be serialized
+     * @return this object
      */
-    public void set(@NotNull List<String> path, Object value) {
+    public YamlObject set(@NotNull List<String> path, Object value) {
         if (path.size() == 0)
-            return;
+            return this;
         Object serialized = serializer.serialize(value);
         YamlElement element = YamlUtils.toElement(serialized, false);
-        set(path, element);
+        return set(path, element);
     }
 
     /**
@@ -238,9 +291,11 @@ public class YamlObject implements YamlElement {
      * passed in as the second parameter.
      *
      * @param paths The path to the value.
+     * @return this object
      */
-    public void remove(@NotNull List<String> paths) {
+    public YamlObject remove(@NotNull List<String> paths) {
         set(paths, null);
+        return this;
     }
 
     /**
@@ -250,8 +305,9 @@ public class YamlObject implements YamlElement {
      *
      * @param key The key for the value
      */
-    public void remove(@NotNull String key) {
+    public YamlObject remove(@NotNull String key) {
         map.remove(key);
+        return this;
     }
 
     /**
@@ -259,6 +315,13 @@ public class YamlObject implements YamlElement {
      */
     public Map<String, YamlElement> getMap() {
         return map;
+    }
+
+    /**
+     * @return The {@link me.brokenearthdev.fusionyaml.parser.YamlParser.YamlType}
+     */
+    public YamlParser.YamlType getYamlType() {
+        return type;
     }
 
     /**
@@ -295,7 +358,9 @@ public class YamlObject implements YamlElement {
     @Override
     public String toString() {
         Yaml yaml = new Yaml(defaultDumperOptions);
-        return yaml.dump(YamlUtils.toMap0(this));
+        if (type == YamlParser.YamlType.LIST)
+            return yaml.dump(StorageUtils.toList(YamlUtils.toMap0(this)));
+        else return yaml.dump(YamlUtils.toMap0(this));
     }
 
     // Json
