@@ -15,8 +15,10 @@ limitations under the License.
 */
 package io.github.fusionyaml.configurations;
 
+import com.google.common.base.Stopwatch;
 import io.github.fusionyaml.exceptions.YamlException;
 import io.github.fusionyaml.parser.DefaultParser;
+import io.github.fusionyaml.parser.MapParser;
 import io.github.fusionyaml.parser.YamlParser;
 import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.utils.YamlUtils;
@@ -24,7 +26,9 @@ import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class is a synchronized class that converts {@link File} data into {@link YamlObject} data.
@@ -32,6 +36,11 @@ import java.util.Map;
  * {@link #save(File)} or {@link #save(DumperOptions, File)}
  */
 public class FileConfiguration extends YamlConfiguration {
+
+    /**
+     * The constant {@link DefaultParser} instance
+     */
+    private static final DefaultParser parser = new DefaultParser(new LinkedHashMap<>());
 
     /**
      * This constructor requires a {@link File} instance. The {@link File} contents will then
@@ -45,8 +54,8 @@ public class FileConfiguration extends YamlConfiguration {
      * @throws YamlException If the parser map returns null
      */
     public FileConfiguration(File file) throws IOException, YamlException {
-        YamlParser parser = new DefaultParser(file);
-        Map<String, Object> map = parser.map();
+        parser.reload(file);
+        Map<String, Object> map = parser.getMap();
         if (map == null)
             throw new YamlException("parser map returned null");
         object = new YamlObject(YamlUtils.toMap(map), parser.getYamlType());

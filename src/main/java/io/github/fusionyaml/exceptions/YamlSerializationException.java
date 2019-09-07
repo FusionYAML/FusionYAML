@@ -15,6 +15,9 @@ limitations under the License.
 */
 package io.github.fusionyaml.exceptions;
 
+/**
+ * Thrown when an error occurred while serializing {@link Object}s
+ */
 public class YamlSerializationException extends YamlException {
 
     public YamlSerializationException() {

@@ -25,6 +25,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class not intended for public usage
+ */
 public class ReflectionUtils {
 
     public static List<Field> getNonStaticFields(Object o) {

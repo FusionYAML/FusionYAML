@@ -19,13 +19,16 @@ import com.google.gson.Gson;
 import io.github.fusionyaml.exceptions.YamlParseFailedException;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.utils.StorageUtils;
+import io.github.fusionyaml.utils.URLUtils;
 import io.github.fusionyaml.utils.YamlUtils;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -52,7 +55,7 @@ public abstract class DataParser extends YamlParser {
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
     public DataParser(@NotNull File file) throws IOException {
-        super(file);
+        this(FileUtils.readFileToString(file, Charset.defaultCharset()));
     }
 
     /**
@@ -64,7 +67,7 @@ public abstract class DataParser extends YamlParser {
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
     public DataParser(@NotNull URL url) throws IOException {
-        super(url);
+        this(URLUtils.readURLToString(url));
     }
 
     /**

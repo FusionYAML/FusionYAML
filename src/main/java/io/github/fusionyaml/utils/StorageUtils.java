@@ -20,6 +20,9 @@ import com.google.common.collect.ImmutableMap;
 
 import java.util.*;
 
+/**
+ * Class not intended for public usage
+ */
 public class StorageUtils {
 
     public static <E> ImmutableList<E> add(ImmutableList<E> list, E... items) {

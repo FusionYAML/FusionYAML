@@ -22,6 +22,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class not intended for public usage
+ */
 public class YamlUtils {
 
     public static YamlElement toElement(Object o, boolean tree) {

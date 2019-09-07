@@ -15,19 +15,34 @@ limitations under the License.
 */
 package io.github.fusionyaml.parser;
 
+import com.google.common.base.Stopwatch;
+import io.github.fusionyaml.utils.URLUtils;
 import io.github.fusionyaml.utils.YamlUtils;
 import io.github.fusionyaml.exceptions.YamlParseFailedException;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Built-in parser that parses both normal YAML and list YAML
  */
 public class DefaultParser extends DataParser {
+
+    /**
+     * The constant {@link MapParser} instance
+     */
+    private static final MapParser MAP_PARSER = new MapParser(new LinkedHashMap<>());
+
+    /**
+     * The constant {@link ListParser} instance
+     */
+    private static final ListParser LIST_PARSER = new ListParser(new LinkedHashMap<>());
 
     /**
      * This constructor requires a raw YAML data which will be used
@@ -48,7 +63,7 @@ public class DefaultParser extends DataParser {
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
     public DefaultParser(@NotNull File file) throws IOException {
-        super(file);
+        this(FileUtils.readFileToString(file, Charset.defaultCharset()));
     }
 
     /**
@@ -60,7 +75,7 @@ public class DefaultParser extends DataParser {
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
     public DefaultParser(@NotNull URL url) throws IOException {
-        super(url);
+        this(URLUtils.readURLToString(url));
     }
 
     /**
@@ -104,13 +119,14 @@ public class DefaultParser extends DataParser {
         if (raw == null)
             return data;
         try {
-            MapParser parser = new MapParser(raw);
-            Map<String, Object> map = parser.map();
+            MAP_PARSER.raw = this.raw;
+            Map<String, Object> map = MAP_PARSER.map();
             type = YamlType.MAP;
             return map;
         } catch (Exception e) {
             if (YamlUtils.mapConstructorException(e)) {
-                Map<String, Object> map = new ListParser(raw).map();
+                LIST_PARSER.raw = this.raw;
+                Map<String, Object> map = LIST_PARSER.map();
                 type = YamlType.LIST;
                 return map;
             }

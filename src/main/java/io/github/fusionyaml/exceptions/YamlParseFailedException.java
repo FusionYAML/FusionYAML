@@ -15,6 +15,9 @@ limitations under the License.
 */
 package io.github.fusionyaml.exceptions;
 
+/**
+ * Thrown when parsing a YAML raw text failed, usually thrown by {@link io.github.fusionyaml.parser.YamlParser}
+ */
 public class YamlParseFailedException extends YamlException {
 
     public YamlParseFailedException() {

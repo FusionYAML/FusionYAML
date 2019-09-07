@@ -22,6 +22,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
+/**
+ * Class not intended for public usage
+ */
 public class URLUtils {
 
     public static String readURLToString(URL url) throws IOException {

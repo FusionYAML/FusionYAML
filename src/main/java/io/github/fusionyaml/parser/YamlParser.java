@@ -277,7 +277,7 @@ public abstract class YamlParser {
      * Please note that this method returns {@link #data}, which is a
      * map of objects and not a map of String with values of type {@link YamlElement}
      */
-    public Map<?, ?> getMap() {
+    public Map<String, Object> getMap() {
         return data;
     }
 
