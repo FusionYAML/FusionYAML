@@ -15,18 +15,19 @@ limitations under the License.
 */
 package io.github.fusionyaml.configurations;
 
-import io.github.fusionyaml.deserialization.ObjectDeserializer;
-import io.github.fusionyaml.events.FileSaveListener;
-import io.github.fusionyaml.exceptions.UnsupportedYamlException;
-import io.github.fusionyaml.parser.DefaultParser;
-import io.github.fusionyaml.parser.YamlParser;
-import io.github.fusionyaml.exceptions.YamlDeserializationException;
+//import io.github.fusionyaml.deserialization.ObjectDeserializer;
+import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.events.ConfigurationChangeListener;
+import io.github.fusionyaml.events.FileSaveListener;
 import io.github.fusionyaml.events.Listener;
+import io.github.fusionyaml.exceptions.UnsupportedYamlException;
+import io.github.fusionyaml.exceptions.YamlDeserializationException;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.object.YamlPrimitive;
-import io.github.fusionyaml.serialization.ObjectSerializer;
+import io.github.fusionyaml.parser.DefaultParser;
+import io.github.fusionyaml.parser.YamlParser;
+import io.github.fusionyaml.serialization.ObjectTypeAdapter;
 import io.github.fusionyaml.utils.StorageUtils;
 import io.github.fusionyaml.utils.YamlUtils;
 import org.apache.commons.io.FileUtils;
@@ -56,15 +57,7 @@ public class YamlConfiguration implements Configuration {
      */
     private FileSaveListener saveListener;
 
-    /**
-     * The constant {@link ObjectSerializer} instance
-     */
-    protected static final ObjectSerializer serializer = new ObjectSerializer();
-
-    /**
-     * The constant {@link ObjectDeserializer} instance
-     */
-    protected static final ObjectDeserializer deserializer = new ObjectDeserializer();
+    protected final ObjectTypeAdapter objectTypeAdapter;
 
     /**
      * The local {@link YamlObject} that contains class data
@@ -89,7 +82,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(Class<T> clazz) {
-        return deserializer.deserializeObject(getContents(), clazz);
+        return objectTypeAdapter.deserializeObject(getContents(), clazz);
     }
 
     /**
@@ -157,7 +150,7 @@ public class YamlConfiguration implements Configuration {
         Object found = parser.getObject(path);
         if (found == null)
             return null;
-        return deserializer.deserializeObject((Map) found, clazz);
+        return objectTypeAdapter.deserializeObject(YamlUtils.toElement(found, true).getAsYamlObject(), clazz);
     }
 
     /**
@@ -218,13 +211,17 @@ public class YamlConfiguration implements Configuration {
      *
      * @param obj The {@link YamlObject} instance
      */
-    public YamlConfiguration(YamlObject obj) {
+    public YamlConfiguration(YamlObject obj, FusionYAML yaml) {
         object = obj;
-
+        this.objectTypeAdapter = new ObjectTypeAdapter(yaml);
     }
 
-    protected YamlConfiguration() {
-        this(new YamlObject());
+    protected YamlConfiguration(FusionYAML yaml) {
+        this(new YamlObject(), yaml);
+    }
+
+    public YamlConfiguration(YamlObject obj) {
+        this(obj, new FusionYAML());
     }
 
     /**
@@ -357,7 +354,7 @@ public class YamlConfiguration implements Configuration {
             return;
         }
         if (!YamlUtils.isPrimitive(value) && !(value instanceof Map) && !(value instanceof Collection)) {
-            object.set(path, serializer.serializeToElement(value));
+            object.set(path, objectTypeAdapter.serialize(value));
             return;
         }
         YamlElement converted = YamlUtils.toElement(value, false);

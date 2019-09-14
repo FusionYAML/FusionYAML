@@ -271,6 +271,10 @@ public class YamlPrimitive implements YamlElement {
         }
     }
 
+    public Object getValue() {
+        return value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == this)

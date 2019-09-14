@@ -15,12 +15,17 @@ limitations under the License.
 */
 package io.github.fusionyaml.serialization;
 
-import io.github.fusionyaml.events.SerializationListener;
+import io.github.fusionyaml.events.DeserializationListener;
 import io.github.fusionyaml.object.YamlElement;
+import org.jetbrains.annotations.NotNull;
 
-public interface Serializer<T> {
+public interface Deserializer<T> {
 
-    YamlElement serialize(T obj);
-    void setOnSerialize(SerializationListener listener);
+    T deserialize(@NotNull YamlElement serialized);
+    void setOnDeserialize(@NotNull DeserializationListener listener);
+
+    static <T> T deserializeObject(YamlElement serialized, Class<T> as) {
+        return null;
+    }
 
 }

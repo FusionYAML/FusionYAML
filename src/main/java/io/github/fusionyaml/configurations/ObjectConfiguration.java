@@ -15,13 +15,14 @@ limitations under the License.
 */
 package io.github.fusionyaml.configurations;
 
+import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.exceptions.YamlException;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.parser.DefaultParser;
 import io.github.fusionyaml.parser.YamlParser;
-import io.github.fusionyaml.utils.YamlUtils;
 import io.github.fusionyaml.utils.StorageUtils;
+import io.github.fusionyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -53,12 +54,16 @@ public class ObjectConfiguration extends YamlConfiguration {
      *
      * @param object The {@link Object} that will be deserialized
      */
-    public ObjectConfiguration(Object object) {
-        super();
+    public ObjectConfiguration(Object object, FusionYAML yaml) {
+        super(yaml);
         if (YamlUtils.isPrimitive(object) || object instanceof Collection || object instanceof Map)
             throw new YamlException("This configuration is not intended for Primitive objects, " +
                     String.class + ", " + Collection.class + ", and " + Map.class);
-        super.object = serializer.serializeToElement(object).getAsYamlObject();
+        super.object = objectTypeAdapter.serialize(object).getAsYamlObject();
+    }
+
+    public ObjectConfiguration(Object o) {
+        this(o, new FusionYAML());
     }
 
     /**

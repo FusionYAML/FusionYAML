@@ -16,7 +16,6 @@ limitations under the License.
 package io.github.fusionyaml.object;
 
 import com.google.common.collect.ImmutableList;
-import io.github.fusionyaml.serialization.ObjectSerializer;
 import io.github.fusionyaml.utils.YamlUtils;
 import io.github.fusionyaml.utils.StorageUtils;
 import org.jetbrains.annotations.NotNull;
@@ -38,10 +37,10 @@ import java.util.*;
  */
 public class YamlNode implements YamlElement {
 
-    /**
-     * The constant {@link ObjectSerializer} instance
-     */
-    private static final ObjectSerializer serializer = new ObjectSerializer();
+//    /**
+//     * The constant {@link ObjectSerializer} instance
+//     */
+//    private static final ObjectSerializer serializer = new ObjectSerializer();
 
     /**
      * A {@link Map} containing the node child(ren)
@@ -278,8 +277,8 @@ public class YamlNode implements YamlElement {
     public YamlNode addChild(@NotNull List<String> path, Object value) {
         if (path.size() == 0)
             return this;
-        Object serialized = serializer.serialize(value);
-        YamlElement element = YamlUtils.toElement(serialized, false);
+        //Object serialized = serializer.serialize(value);
+        YamlElement element = YamlUtils.toElement(value, false);
         return set(path, element);
     }
 

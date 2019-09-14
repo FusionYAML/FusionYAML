@@ -15,6 +15,7 @@ limitations under the License.
 */
 package io.github.fusionyaml.events;
 
+import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.serialization.Serializer;
 
 /**
@@ -32,6 +33,6 @@ public interface SerializationListener extends Listener {
      * @param object The {@link Object} that was serialized
      * @param serializedObj The serialized object
      */
-    void onSerialization(Serializer serializer, Object object, Object serializedObj);
+    void onSerialization(Serializer serializer, Object object, YamlElement serializedObj);
 
 }

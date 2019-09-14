@@ -15,7 +15,8 @@ limitations under the License.
 */
 package io.github.fusionyaml.events;
 
-import io.github.fusionyaml.deserialization.Deserializer;
+import io.github.fusionyaml.object.YamlElement;
+import io.github.fusionyaml.serialization.Deserializer;
 
 /**
  * This {@link Listener} is called when an {@link Object} is deserialized in the built-in
@@ -32,6 +33,6 @@ public interface DeserializationListener extends Listener {
      * @param object The deserialized object
      * @param serializedObj The serialized object
      */
-    void onDeserialization(Deserializer deserializer, Object object, Object serializedObj);
+    void onDeserialization(Deserializer deserializer, Object object, YamlElement serializedObj);
 
 }

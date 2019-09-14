@@ -239,11 +239,19 @@ public abstract class YamlParser {
      *
      * @param file The {@link File} that will get its contents retrieved
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
-     * @throws YamlException If an error occurred while mapping
      */
     public void reload(@NotNull File file) throws IOException, YamlException {
         raw = FileUtils.readFileToString(file, Charset.defaultCharset());
-        map();
+    }
+
+    /**
+     * Reloads by changing the raw contents set up during initialization to the
+     * new contents in the passed {@link String}.
+     *
+     * @param raw The new raw contents
+     */
+    public void reload(@NotNull String raw) {
+        this.raw = raw;
     }
 
     /**
@@ -252,15 +260,12 @@ public abstract class YamlParser {
      *
      * @param url The {@link URL} that will get its contents retrieved
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
-     * @throws YamlException if there are issues with loading, reading,
-     * or mapping a {@code string}, {@code object}, or {@link Map}
      */
     public void reload(@NotNull URL url) throws IOException, YamlException {
         raw = URLUtils.readURLToString(url);
-        map();
     }
 
-    public void setDataMap(Map<String, Object> map) {
+    public void reload(Map<String, Object> map) {
         this.data = map;
     }
 

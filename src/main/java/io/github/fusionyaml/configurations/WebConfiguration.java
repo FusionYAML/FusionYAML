@@ -15,11 +15,12 @@ limitations under the License.
 */
 package io.github.fusionyaml.configurations;
 
-import io.github.fusionyaml.utils.URLUtils;
+import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.exceptions.YamlException;
+import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.parser.DefaultParser;
 import io.github.fusionyaml.parser.YamlParser;
-import io.github.fusionyaml.object.YamlObject;
+import io.github.fusionyaml.utils.URLUtils;
 import io.github.fusionyaml.utils.YamlUtils;
 
 import java.io.IOException;
@@ -56,9 +57,14 @@ public class WebConfiguration extends YamlConfiguration {
      * which will then be used to convert it to a {@link YamlObject} instance.
      * @see #WebConfiguration(String)
      */
-    public WebConfiguration(URL url) throws IOException, YamlException {
+    public WebConfiguration(URL url, FusionYAML yaml) throws IOException, YamlException {
+        super(yaml);
         this.url = url;
         synchronize();
+    }
+
+    public WebConfiguration(URL url) throws IOException, YamlException {
+        this(url, new FusionYAML());
     }
 
     /**
@@ -76,6 +82,10 @@ public class WebConfiguration extends YamlConfiguration {
      */
     public WebConfiguration(String url) throws IOException, YamlException {
         this(new URL(url));
+    }
+
+    public WebConfiguration(String url, FusionYAML yaml) throws IOException {
+        this(new URL(url), yaml);
     }
 
     /**

@@ -20,7 +20,7 @@ src/main/java/net/reflxction/run/
 
 !/.idea/runConfigurations
 
-src/test/
+src/io.github.fusionyaml.test/
 settings.gradle
 gradle.properties
 gradlew
@@ -30,10 +30,10 @@ src/main/resources/
 /src/main/java/examples/
 build/libs/
 build/reports/
-build/test-results/
+build/io.github.fusionyaml.test-results/
 build/tmp/
 out/production/resources/
-out/test/resources/
+out/io.github.fusionyaml.test/resources/
 .gradle/
 build/docs/
 
@@ -47,3 +47,5 @@ build/docs/
 .idea/*
 
 src/main/java/io/github/fusionyaml/Test.java
+src/main/java/io/github/fusionyaml/test/*
+lb/*

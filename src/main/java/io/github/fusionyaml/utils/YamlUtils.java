@@ -17,10 +17,7 @@ package io.github.fusionyaml.utils;
 
 import io.github.fusionyaml.object.*;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class not intended for public usage
@@ -42,6 +39,16 @@ public class YamlUtils {
         else return null;
     }
 
+    public static Object toObject0(YamlElement e) {
+        if (e instanceof YamlPrimitive)
+            return e.getAsYamlPrimitive().getValue();
+        else if (e instanceof YamlList)
+            return toObjList(e.getAsYamlList().getList());
+        else if (e instanceof YamlNode || e instanceof YamlObject)
+            return toMap0((e.isYamlNode()) ? e.getAsYamlNode().getChildren() : e.getAsYamlObject().getMap());
+        else return null;
+    }
+
     public static <K, V> Map<String, Object> toStrMap(Map<K, V> map) {
         Map<String, Object> mp = new LinkedHashMap<>();
         map.forEach((k, v) -> mp.put(k.toString(), v));
@@ -54,17 +61,18 @@ public class YamlUtils {
         return map1;
     }
 
-    public static YamlList toYamlList(List<Object> o) {
+    public static YamlList toYamlList(Collection<Object> o) {
         YamlList list = new YamlList();
         o.forEach(b -> list.add(toElement(b, false)));
         return list;
     }
 
-    private static List<Object> toObjList(List<YamlElement> list) {
+    public static List<Object> toObjList(Collection<YamlElement> list) {
         List<Object> l = new LinkedList<>();
         list.forEach(e -> l.add(toObject(e)));
         return l;
     }
+
 
     private static Object toObject(YamlElement element) {
         if (element.isYamlPrimitive()) {

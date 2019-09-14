@@ -117,7 +117,7 @@ public abstract class DataParser extends YamlParser {
     @Override
     public @NotNull String toJson() {
         Gson gson = new Gson();
-        return gson.toJson(raw);
+        return gson.toJson(getMap());
     }
 
     /**

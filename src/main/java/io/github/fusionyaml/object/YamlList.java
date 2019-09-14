@@ -17,6 +17,7 @@ package io.github.fusionyaml.object;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class YamlList implements YamlElement {
     /**
      * The {@link List} of {@link YamlElement}s
      */
-    private List<YamlElement> list = new LinkedList<>();
+    private Collection<YamlElement> list = new LinkedList<>();
 
     /**
      * This constructor requires no objects to be passed into their parameters. An
@@ -40,7 +41,7 @@ public class YamlList implements YamlElement {
 
     /**
      * This constructor requires a {@link List} of {@link YamlElement}s to be
-     * passed into the constructor. The {@link List} containing {@link YamlElement}s
+     * passed into the constructor. The {@link Collection} containing {@link YamlElement}s
      * in this object will be set equal to the value passed into the constructor.
      * <p>
      * It is encouraged to pass in a {@link LinkedList} object for predictable iteration
@@ -49,11 +50,25 @@ public class YamlList implements YamlElement {
      * @param list The {@link List} of {@link YamlElement}s
      */
     public YamlList(List<YamlElement> list) {
+        this((Collection<YamlElement>) list);
+    }
+
+    /**
+     * This constructor requires a {@link Collection} of {@link YamlElement}s to be
+     * passed into the constructor. The {@link Collection} containing {@link YamlElement}s
+     * in this object will be set equal to the value passed into the constructor.
+     * <p>
+     * It is encouraged to pass in a {@link LinkedList} object for predictable iteration
+     * order.
+     *
+     * @param list The {@link Collection} of {@link YamlElement}s
+     */
+    public YamlList(Collection<YamlElement> list) {
         this.list = list;
     }
 
     /**
-     * Adds a {@link YamlElement} entry into the {@link List}. Please note if {@link YamlObject}
+     * Adds a {@link YamlElement} entry into the {@link Collection}. Please note if {@link YamlObject}
      * is passed into the parameter, the object will be converted into a {@link YamlNode}
      *
      * @param value The {@link YamlElement} value
@@ -64,7 +79,7 @@ public class YamlList implements YamlElement {
     }
 
     /**
-     * Adds a {@code boolean} entry into the {@link List}.
+     * Adds a {@code boolean} entry into the {@link Collection}.
      *
      * @param value The {@code boolean} value
      */
@@ -73,7 +88,7 @@ public class YamlList implements YamlElement {
     }
 
     /**
-     * Adds a {@link String} entry into the {@link List}.
+     * Adds a {@link String} entry into the {@link Collection}.
      *
      * @param value The {@link String} value
      */
@@ -82,7 +97,7 @@ public class YamlList implements YamlElement {
     }
 
     /**
-     * Adds a {@link String} entry into the {@link List}.
+     * Adds a {@link String} entry into the {@link Collection}.
      *
      * @param number The {@link String} value
      */
@@ -97,14 +112,19 @@ public class YamlList implements YamlElement {
      *              is found.
      */
     public void remove(int index) {
-        list.remove(index);
+        if (list instanceof List)
+            ((List) list).remove(index);
+        else {
+            LinkedList<YamlElement> aList = new LinkedList<>(list);
+            aList.remove(index);
+            list = aList;
+        }
     }
 
     /**
-     * @return The {@link List} of {@link YamlElement}s that stores data in the
-     * {@link List}
+     * @return The {@link Collection} of {@link YamlElement}s
      */
-    public List<YamlElement> getList() {
+    public Collection<YamlElement> getList() {
         return list;
     }
 

@@ -116,9 +116,9 @@ x: 312
 </ul>
 
 ```java
-Test test = new Test(2, 4, 6);
+Test io.github.fusionyaml.test = new Test(2, 4, 6);
 ObjectSerializer serializer = new ObjectSerializer();
-Object serialized = serializer.serialize(test);
+Object serialized = serializer.serialize(io.github.fusionyaml.test);
 
 ObjectDeserializer deserializer = new ObjectDeserializer();
 Test deserializedTest = deserializer.deserialize((Map) serialized, Test.class);

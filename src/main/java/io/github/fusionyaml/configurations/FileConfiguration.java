@@ -15,12 +15,10 @@ limitations under the License.
 */
 package io.github.fusionyaml.configurations;
 
-import com.google.common.base.Stopwatch;
+import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.exceptions.YamlException;
-import io.github.fusionyaml.parser.DefaultParser;
-import io.github.fusionyaml.parser.MapParser;
-import io.github.fusionyaml.parser.YamlParser;
 import io.github.fusionyaml.object.YamlObject;
+import io.github.fusionyaml.parser.DefaultParser;
 import io.github.fusionyaml.utils.YamlUtils;
 import org.yaml.snakeyaml.DumperOptions;
 
@@ -28,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is a synchronized class that converts {@link File} data into {@link YamlObject} data.
@@ -53,11 +50,16 @@ public class FileConfiguration extends YamlConfiguration {
      * @throws IOException   If an IO error occurred
      * @throws YamlException If the parser map returns null
      */
-    public FileConfiguration(File file) throws IOException, YamlException {
+    public FileConfiguration(File file, FusionYAML yaml) throws IOException, YamlException {
+        super(yaml);
         parser.reload(file);
-        Map<String, Object> map = parser.getMap();
+        Map<String, Object> map = parser.map();
         if (map == null)
             throw new YamlException("parser map returned null");
         object = new YamlObject(YamlUtils.toMap(map), parser.getYamlType());
+    }
+
+    public FileConfiguration(File file) throws IOException, YamlException {
+        this(file, new FusionYAML());
     }
 }

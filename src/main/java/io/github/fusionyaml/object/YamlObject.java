@@ -21,9 +21,8 @@ import com.google.gson.JsonObject;
 import io.github.fusionyaml.configurations.Configuration;
 import io.github.fusionyaml.events.EntryChangeListener;
 import io.github.fusionyaml.parser.YamlParser;
-import io.github.fusionyaml.serialization.ObjectSerializer;
-import io.github.fusionyaml.utils.YamlUtils;
 import io.github.fusionyaml.utils.StorageUtils;
+import io.github.fusionyaml.utils.YamlUtils;
 import net.moltenjson.utils.Gsons;
 import net.moltenjson.utils.ReflectiveTypes;
 import org.jetbrains.annotations.NotNull;
@@ -61,10 +60,10 @@ public class YamlObject implements YamlElement {
      */
     private static final DumperOptions defaultDumperOptions = defaultDumperOptions();
 
-    /**
-     * The constant {@link ObjectSerializer} instance
-     */
-    private static final ObjectSerializer serializer = new ObjectSerializer();
+//    /**
+//     * The constant {@link ObjectSerializer} instance
+//     */
+//    private static final ObjectSerializer serializer = new ObjectSerializer();
 
     /**
      * The constant {@link Gson} instance
@@ -276,8 +275,8 @@ public class YamlObject implements YamlElement {
     public YamlObject set(@NotNull List<String> path, Object value) {
         if (path.size() == 0)
             return this;
-        Object serialized = serializer.serialize(value);
-        YamlElement element = YamlUtils.toElement(serialized, false);
+        //Object serialized = serializer.serialize(value);
+        YamlElement element = YamlUtils.toElement(value, false);
         return set(path, element);
     }
 

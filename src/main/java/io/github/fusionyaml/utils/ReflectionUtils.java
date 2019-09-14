@@ -15,15 +15,13 @@ limitations under the License.
 */
 package io.github.fusionyaml.utils;
 
-import io.github.fusionyaml.deserialization.ObjectDeserializer;
 import io.github.fusionyaml.exceptions.YamlDeserializationException;
+import io.github.fusionyaml.object.YamlObject;
+import io.github.fusionyaml.serialization.ObjectTypeAdapter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class not intended for public usage
@@ -59,8 +57,9 @@ public class ReflectionUtils {
     }
 
     public static boolean isMatch(Map map, List<Field> fields) {
-        if (map.size() != fields.size())
+        if (map.size() != fields.size()) {
             return false;
+        }
         for (Field field : fields) {
             if (!map.containsKey(field.getName()))
                 return false;
@@ -81,18 +80,25 @@ public class ReflectionUtils {
         return false;
     }
 
+    public static <T> Class<?> getTypeFor(T o) {
+        if (o instanceof Collection)
+            return LinkedList.class;
+        else if (o instanceof Map)
+            return LinkedHashMap.class;
+        else return o.getClass();
+    }
 
-    public static void assignFields(Object o, Map map, List<Field> fields, ObjectDeserializer objDeserializer) throws YamlDeserializationException {
+    public static void assignFields(Object o, Map map, List<Field> fields, ObjectTypeAdapter objDeserializer) throws YamlDeserializationException {
         for (Object key : map.keySet()) {
             for (Field field : fields) {
                 if (key.toString().equals(field.getName())) {
                     try {
                         field.setAccessible(true);
                         Object found = map.get(field.getName());
-                        Object deserialized = objDeserializer.deserialize(found);
+                        Object deserialized = objDeserializer.deserialize(YamlUtils.toElement(found, false));
                         if (deserialized == null) continue;
                         if (deserialized instanceof Map)
-                            deserialized = objDeserializer.deserializeObject((Map) deserialized, field.getType());
+                            deserialized = objDeserializer.deserializeObject((YamlObject) YamlUtils.toElement(deserialized, true), field.getType());
                         field.set(o, deserialized);
                     } catch (IllegalAccessException e) {
                         throw new YamlDeserializationException(e);
