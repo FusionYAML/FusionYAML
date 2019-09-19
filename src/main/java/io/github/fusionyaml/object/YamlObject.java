@@ -18,13 +18,12 @@ package io.github.fusionyaml.object;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.configurations.Configuration;
 import io.github.fusionyaml.events.EntryChangeListener;
 import io.github.fusionyaml.parser.YamlParser;
 import io.github.fusionyaml.utils.StorageUtils;
 import io.github.fusionyaml.utils.YamlUtils;
-import net.moltenjson.utils.Gsons;
-import net.moltenjson.utils.ReflectiveTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
@@ -60,11 +59,6 @@ public class YamlObject implements YamlElement {
      */
     private static final DumperOptions defaultDumperOptions = defaultDumperOptions();
 
-//    /**
-//     * The constant {@link ObjectSerializer} instance
-//     */
-//    private static final ObjectSerializer serializer = new ObjectSerializer();
-
     /**
      * The constant {@link Gson} instance
      */
@@ -77,26 +71,60 @@ public class YamlObject implements YamlElement {
     protected Map<String, YamlElement> map = new LinkedHashMap<>();
 
     /**
-     * This constructor requires no objects to be passed into their parameters. An
-     * empty {@link LinkedHashMap} is created upon initialization.
+     * The {@link FusionYAML} instance
      */
-    public YamlObject() {}
+    protected final FusionYAML fusionYAML;
+
+    /**
+     * This constructor requires no objects to be passed into their parameters. An
+     * empty {@link LinkedHashMap} and a {@link FusionYAML} object is created upon
+     * initialization.
+     */
+    public YamlObject() {
+        this(new FusionYAML());
+    }
+
+    /**
+     * This constructor requires no objects to be passed into their parameters. An
+     * empty {@link LinkedHashMap} is created upon initialization. The constructor sets
+     * the {@link FusionYAML} field present this object to the value passed into the
+     * constructor.
+     */
+    public YamlObject(@NotNull FusionYAML yaml) {
+        this.fusionYAML = yaml;
+    }
 
     /**
      * This constructor requires a {@link YamlParser.YamlType}
      * to be passed into the constructor. The {@link YamlParser.YamlType}
-     * will be used when writing to a {@link java.io.File} through {@link Configuration}
+     * will be used when writing to a {@link java.io.File} through {@link Configuration}.
+     * Upon initialization, an empty {@link FusionYAML} object will be created.
      *
      * @param type The {@link YamlParser.YamlType}
      */
     public YamlObject(@NotNull YamlParser.YamlType type) {
+        this(type, new FusionYAML());
+    }
+
+    /**
+     * This constructor requires a {@link YamlParser.YamlType}
+     * to be passed into the constructor. The {@link YamlParser.YamlType}
+     * will be used when writing to a {@link java.io.File} through {@link Configuration}.
+     * The {@link FusionYAML} present this object will be set
+     * equal to the value passed into this constructor.
+     *
+     * @param type The {@link YamlParser.YamlType}
+     */
+    public YamlObject(@NotNull YamlParser.YamlType type, @NotNull FusionYAML yaml) {
+        this(yaml);
         this.type = type;
     }
 
     /**
      * This constructor requires a {@link Map} that contains {@code YAML} data expressed
      * in a map. By using this constructor, {@link #map} will be set equal to the value
-     * passed into the constructor.
+     * passed into the constructor. An empty {@link FusionYAML} object will be created
+     * upon initialization.
      * <p>
      * Calling {@code set} and {@code remove} methods will modify data in the map passed
      * in by adding and removing data, respectively.
@@ -104,13 +132,30 @@ public class YamlObject implements YamlElement {
      * @param data The {@link Map} that contains {@code YAML} data
      */
     public YamlObject(@NotNull Map<String, YamlElement> data) {
+        this(data, new FusionYAML());
+    }
+
+    /**
+     * This constructor requires a {@link Map} that contains {@code YAML} data expressed
+     * in a map. By using this constructor, {@link #map} will be set equal to the value
+     * passed into the constructor. The {@link FusionYAML} present in this
+     * object will be set equal to the value passed into the constructor.
+     * <p>
+     * Calling {@code set} and {@code remove} methods will modify data in the map passed
+     * in by adding and removing data, respectively.
+     *
+     * @param data The {@link Map} that contains {@code YAML} data
+     */
+    public YamlObject(@NotNull Map<String, YamlElement> data, FusionYAML yaml) {
+        this(yaml);
         map = data;
     }
 
     /**
      * This constructor requires a {@link Map} and a {@link YamlParser.YamlType}
      * The {@link Map} passed in is the YAML data. By using this constructor, {@link #map} will be set equal to
-     * the value passed into the constructor.
+     * the value passed into the constructor. The {@link FusionYAML} will be initialized into an empty
+     * {@link FusionYAML} object upon initialization.
      * <p>
      * Calling {@code set} and {@code remove} methods will modify data in the map passed
      * in by adding and removing data, respectively.
@@ -118,7 +163,26 @@ public class YamlObject implements YamlElement {
      * @param data The {@link Map} that contains {@code YAML} data
      * @param type The {@link YamlParser.YamlType}
      */
-    public YamlObject(@NotNull Map<String, YamlElement> data, YamlParser.YamlType type) {
+    public YamlObject(@NotNull Map<String, YamlElement> data, @NotNull YamlParser.YamlType type) {
+        this(new FusionYAML());
+        this.map = data;
+        this.type = type;
+    }
+
+    /**
+     * This constructor requires a {@link Map} and a {@link YamlParser.YamlType}
+     * The {@link Map} passed in is the YAML data. By using this constructor, {@link #map} will be set equal to
+     * the value passed into the constructor. The {@link FusionYAML} present in this object will be set
+     * equal to the value passed into the constructor.
+     * <p>
+     * Calling {@code set} and {@code remove} methods will modify data in the map passed
+     * in by adding and removing data, respectively.
+     *
+     * @param data The {@link Map} that contains {@code YAML} data
+     * @param type The {@link YamlParser.YamlType}
+     */
+    public YamlObject(@NotNull Map<String, YamlElement> data, @NotNull YamlParser.YamlType type, FusionYAML yaml) {
+        this(yaml);
         this.map = data;
         this.type = type;
     }
@@ -275,8 +339,8 @@ public class YamlObject implements YamlElement {
     public YamlObject set(@NotNull List<String> path, Object value) {
         if (path.size() == 0)
             return this;
-        //Object serialized = serializer.serialize(value);
-        YamlElement element = YamlUtils.toElement(value, false);
+        Object serialized = fusionYAML.serialize(value);
+        YamlElement element = YamlUtils.toElement(serialized, false);
         return set(path, element);
     }
 
@@ -361,36 +425,6 @@ public class YamlObject implements YamlElement {
         if (type == YamlParser.YamlType.LIST)
             return yaml.dump(StorageUtils.toList(YamlUtils.toMap0(this)));
         else return yaml.dump(YamlUtils.toMap0(this));
-    }
-
-    // Json
-
-    /**
-     * Loads a {@link YamlObject} from a given {@link JsonObject}. The key-value pairs
-     * are copied to the new {@link YamlObject} object.
-     *
-     * @param object The {@link JsonObject} that will be used to load a {@link YamlObject}
-     *               from the {@link JsonObject} object.
-     * @return The loaded {@link YamlObject}
-     */
-    @NotNull
-    public static YamlObject fromJsonObject(@NotNull JsonObject object) {
-        return new YamlObject(YamlUtils.toMap(Gsons.DEFAULT.fromJson(object, ReflectiveTypes.MAP_TYPE)));
-    }
-
-    /**
-     * Loads a {@link YamlObject} from a given {@link String} written in {@code JSON} syntax.
-     * The key-value pairs are copied.
-     *
-     * @param json The {@link String} written in {@code JSON} syntax that will be used to
-     *             load a {@link YamlObject}
-     * @return The loaded {@link YamlObject}
-     */
-    @NotNull
-    @SuppressWarnings("unchecked") // redundant warnings
-    public static YamlObject readFromJson(String json) {
-        Map<String, Object> jMap = GSON.fromJson(json, Map.class);
-        return new YamlObject(YamlUtils.toMap(jMap));
     }
 
     /**

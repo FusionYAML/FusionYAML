@@ -22,10 +22,6 @@ import org.jetbrains.annotations.NotNull;
 public interface Deserializer<T> {
 
     T deserialize(@NotNull YamlElement serialized);
-    void setOnDeserialize(@NotNull DeserializationListener listener);
-
-    static <T> T deserializeObject(YamlElement serialized, Class<T> as) {
-        return null;
-    }
+    void setOnDeserialize(DeserializationListener listener);
 
 }

@@ -15,7 +15,6 @@ limitations under the License.
 */
 package io.github.fusionyaml.serialization;
 
-import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.exceptions.YamlDeserializationException;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlObject;
@@ -27,9 +26,7 @@ import java.util.Map;
 
 public class MapTypeAdapter extends TypeAdapter<Map<Object, Object>> {
 
-    public MapTypeAdapter(@NotNull FusionYAML fusionYAML) {
-        super(fusionYAML);
-    }
+
 
     @Override
     public Map<Object, Object> deserialize(@NotNull YamlElement serialized) {
@@ -44,7 +41,7 @@ public class MapTypeAdapter extends TypeAdapter<Map<Object, Object>> {
     }
 
     @Override
-    public YamlElement serialize(Map<Object, Object> obj) {
+    public YamlElement serialize(@NotNull Map<Object, Object> obj) {
         Map<String, YamlElement> serializedMap = new LinkedHashMap<>();
         obj.forEach((k, v) -> serializedMap.put(k.toString(), YamlUtils.toElement(v, false)));
         YamlObject object = new YamlObject(serializedMap);

@@ -30,6 +30,10 @@ public class URLUtils {
     public static String readURLToString(URL url) throws IOException {
         URLConnection connection = url.openConnection();
         InputStream stream = connection.getInputStream();
+        return readInputStreamToString(stream);
+    }
+
+    public static String readInputStreamToString(InputStream stream) throws IOException {
         InputStreamReader streamReader = new InputStreamReader(stream);
         BufferedReader reader = new BufferedReader(streamReader);
         String line;

@@ -27,7 +27,6 @@ import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.object.YamlPrimitive;
 import io.github.fusionyaml.parser.DefaultParser;
 import io.github.fusionyaml.parser.YamlParser;
-import io.github.fusionyaml.serialization.ObjectTypeAdapter;
 import io.github.fusionyaml.utils.StorageUtils;
 import io.github.fusionyaml.utils.YamlUtils;
 import org.apache.commons.io.FileUtils;
@@ -57,7 +56,10 @@ public class YamlConfiguration implements Configuration {
      */
     private FileSaveListener saveListener;
 
-    protected final ObjectTypeAdapter objectTypeAdapter;
+    /**
+     * The {@link FusionYAML} instance, which is used for deserialization
+     */
+    protected FusionYAML fusionYAML;
 
     /**
      * The local {@link YamlObject} that contains class data
@@ -82,7 +84,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(Class<T> clazz) {
-        return objectTypeAdapter.deserializeObject(getContents(), clazz);
+        return fusionYAML.deserialize(getContents(), clazz);
     }
 
     /**
@@ -150,7 +152,8 @@ public class YamlConfiguration implements Configuration {
         Object found = parser.getObject(path);
         if (found == null)
             return null;
-        return objectTypeAdapter.deserializeObject(YamlUtils.toElement(found, true).getAsYamlObject(), clazz);
+        YamlElement e = YamlUtils.toElement(found, true);
+        return fusionYAML.deserialize(e, clazz);
     }
 
     /**
@@ -213,7 +216,7 @@ public class YamlConfiguration implements Configuration {
      */
     public YamlConfiguration(YamlObject obj, FusionYAML yaml) {
         object = obj;
-        this.objectTypeAdapter = new ObjectTypeAdapter(yaml);
+        this.fusionYAML = yaml;
     }
 
     protected YamlConfiguration(FusionYAML yaml) {
@@ -354,7 +357,7 @@ public class YamlConfiguration implements Configuration {
             return;
         }
         if (!YamlUtils.isPrimitive(value) && !(value instanceof Map) && !(value instanceof Collection)) {
-            object.set(path, objectTypeAdapter.serialize(value));
+            object.set(path, fusionYAML.serialize(value));
             return;
         }
         YamlElement converted = YamlUtils.toElement(value, false);

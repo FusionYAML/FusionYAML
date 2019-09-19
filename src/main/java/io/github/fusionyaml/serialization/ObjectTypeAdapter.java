@@ -36,31 +36,28 @@ import java.util.Map;
 
 public class ObjectTypeAdapter extends TypeAdapter {
 
-    public ObjectTypeAdapter(@NotNull FusionYAML fusionYAML) {
-        super(fusionYAML);
-    }
 
     private static final Objenesis OBJENESIS = new ObjenesisStd();
 
     @Override
     public Object deserialize(@NotNull YamlElement serialized) {
         if (serialized.isYamlList())
-            return new CollectionTypeAdapter(fusionYAML).deserialize(serialized);
+            return FusionYAML.COLLECTION_TYPE_ADAPTER.deserialize(serialized);
         else if (serialized instanceof YamlObject || serialized instanceof YamlNode)
-            return new MapTypeAdapter(fusionYAML).deserialize(serialized);
+            return FusionYAML.MAP_TYPE_ADAPTER.deserialize(serialized);
         else if (serialized instanceof YamlPrimitive)
-            return new PrimitiveTypeAdapter(fusionYAML).deserialize(serialized);
+            return FusionYAML.PRIMITIVE_TYPE_ADAPTER.deserialize(serialized);
         else return null;
     }
 
     @Override
-    public YamlElement serialize(Object o) {
+    public YamlElement serialize(@NotNull Object o) {
         if (o instanceof Collection)
-            return new CollectionTypeAdapter(fusionYAML).serialize((Collection) o);
+            return new CollectionTypeAdapter().serialize((Collection) o);
         else if (o instanceof Map)
-            return new MapTypeAdapter(fusionYAML).serialize((Map) o);
+            return new MapTypeAdapter().serialize((Map) o);
         else if (YamlUtils.isPrimitive(o))
-            return new PrimitiveTypeAdapter(fusionYAML).serialize(o);
+            return new PrimitiveTypeAdapter().serialize(o);
         try {
             List<Field> fields = ReflectionUtils.getNonStaticFields(o);
             Map<String, YamlElement> map = new LinkedHashMap<>();
@@ -78,6 +75,7 @@ public class ObjectTypeAdapter extends TypeAdapter {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T deserializeObject(YamlObject object, Class<T> clazz) {
         Map<String, Object> map = YamlUtils.toMap0(object);
         T t = OBJENESIS.newInstance(clazz);

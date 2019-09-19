@@ -15,24 +15,17 @@ limitations under the License.
 */
 package io.github.fusionyaml.serialization;
 
-import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.events.DeserializationListener;
 import io.github.fusionyaml.events.SerializationListener;
 import io.github.fusionyaml.object.YamlElement;
-import org.jetbrains.annotations.NotNull;
 
 public abstract class TypeAdapter<T> implements Serializer<T>, Deserializer<T> {
 
     protected DeserializationListener deserializationListener;
     protected SerializationListener serializationListener;
-    protected FusionYAML fusionYAML;
-
-    public TypeAdapter(@NotNull FusionYAML fusionYAML) {
-        this.fusionYAML = fusionYAML;
-    }
 
     @Override
-    public void setOnDeserialize(@NotNull DeserializationListener listener) {
+    public void setOnDeserialize(DeserializationListener listener) {
         this.deserializationListener = listener;
     }
 

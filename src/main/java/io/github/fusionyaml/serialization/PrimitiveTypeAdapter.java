@@ -15,7 +15,6 @@ limitations under the License.
 */
 package io.github.fusionyaml.serialization;
 
-import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.exceptions.YamlDeserializationException;
 import io.github.fusionyaml.exceptions.YamlSerializationException;
 import io.github.fusionyaml.object.YamlElement;
@@ -25,9 +24,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class PrimitiveTypeAdapter extends TypeAdapter<Object> {
 
-    public PrimitiveTypeAdapter(@NotNull FusionYAML fusionYAML) {
-        super(fusionYAML);
-    }
 
     @Override
     public Object deserialize(@NotNull YamlElement serialized) {
@@ -39,7 +35,7 @@ public class PrimitiveTypeAdapter extends TypeAdapter<Object> {
     }
 
     @Override
-    public YamlElement serialize(Object obj) {
+    public YamlElement serialize(@NotNull Object obj) {
         if (!YamlUtils.isPrimitive(obj))
             throw new YamlSerializationException(obj + " is not a primitive nor a string");
         return new YamlPrimitive(obj);

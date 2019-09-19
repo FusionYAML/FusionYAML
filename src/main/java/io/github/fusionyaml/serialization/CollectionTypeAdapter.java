@@ -15,7 +15,6 @@ limitations under the License.
 */
 package io.github.fusionyaml.serialization;
 
-import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.exceptions.YamlDeserializationException;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlList;
@@ -27,9 +26,6 @@ import java.util.LinkedList;
 
 public class CollectionTypeAdapter extends TypeAdapter<Collection<Object>> {
 
-    public CollectionTypeAdapter(@NotNull FusionYAML fusionYAML) {
-        super(fusionYAML);
-    }
 
     @Override
     public Collection<Object> deserialize(@NotNull YamlElement serialized) {
@@ -44,7 +40,7 @@ public class CollectionTypeAdapter extends TypeAdapter<Collection<Object>> {
     }
 
     @Override
-    public YamlElement serialize(Collection<Object> obj) {
+    public YamlElement serialize(@NotNull Collection<Object> obj) {
         YamlList list = YamlUtils.toYamlList(obj);
         callSerializationEvent(obj, list);
         return list;
