@@ -22,8 +22,10 @@ import io.github.fusionyaml.object.YamlPrimitive;
 import io.github.fusionyaml.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A primitive and a {@link String} {@link TypeAdapter}.
+ */
 public class PrimitiveTypeAdapter extends TypeAdapter<Object> {
-
 
     @Override
     public Object deserialize(@NotNull YamlElement serialized) {
@@ -38,6 +40,8 @@ public class PrimitiveTypeAdapter extends TypeAdapter<Object> {
     public YamlElement serialize(@NotNull Object obj) {
         if (!YamlUtils.isPrimitive(obj))
             throw new YamlSerializationException(obj + " is not a primitive nor a string");
-        return new YamlPrimitive(obj);
+        YamlPrimitive primitive = new YamlPrimitive(obj);
+        callSerializationEvent(obj, primitive);
+        return primitive;
     }
 }

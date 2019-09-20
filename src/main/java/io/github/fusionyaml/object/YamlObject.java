@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.configurations.Configuration;
+import io.github.fusionyaml.configurations.YamlConfiguration;
 import io.github.fusionyaml.events.EntryChangeListener;
 import io.github.fusionyaml.parser.YamlParser;
 import io.github.fusionyaml.utils.StorageUtils;
@@ -76,6 +77,11 @@ public class YamlObject implements YamlElement {
     protected final FusionYAML fusionYAML;
 
     /**
+     * The {@link Configuration} for this {@link YamlObject}
+     */
+    private final Configuration configuration;
+
+    /**
      * This constructor requires no objects to be passed into their parameters. An
      * empty {@link LinkedHashMap} and a {@link FusionYAML} object is created upon
      * initialization.
@@ -92,6 +98,7 @@ public class YamlObject implements YamlElement {
      */
     public YamlObject(@NotNull FusionYAML yaml) {
         this.fusionYAML = yaml;
+        this.configuration = new YamlConfiguration(this);
     }
 
     /**
@@ -386,6 +393,16 @@ public class YamlObject implements YamlElement {
      */
     public YamlParser.YamlType getYamlType() {
         return type;
+    }
+
+    /**
+     * Accessing this method from a {@link Configuration} will never return the same {@link Configuration}
+     * object. The object returned is a {@link YamlConfiguration}.
+     *
+     * @return The configuration for this {@link YamlObject}.
+     */
+    public Configuration toConfiguration() {
+        return configuration;
     }
 
     /**

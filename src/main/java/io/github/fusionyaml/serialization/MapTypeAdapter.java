@@ -24,9 +24,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * A {@link Map} TypeAdapter
+ */
 public class MapTypeAdapter extends TypeAdapter<Map<Object, Object>> {
-
-
 
     @Override
     public Map<Object, Object> deserialize(@NotNull YamlElement serialized) {

@@ -29,6 +29,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * A {@link Date} TypeAdapter
+ */
 public class DateTypeAdapter extends TypeAdapter<Date> {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);;
@@ -36,6 +39,9 @@ public class DateTypeAdapter extends TypeAdapter<Date> {
     private final FusionYAML yaml;
     private final Calendar CALENDAR = Calendar.getInstance();
 
+    /**
+     * @param yaml The {@link FusionYAML} object, which will be used to retrieve the {@link org.yaml.snakeyaml.DumperOptions}
+     */
     public DateTypeAdapter(FusionYAML yaml) {
         this.yaml = yaml;
     }
@@ -52,7 +58,9 @@ public class DateTypeAdapter extends TypeAdapter<Date> {
         TimeZone zone = yaml.getDumperOptions().getTimeZone();
         CALENDAR.setTimeZone(zone);
         try {
-            return sdf.parse(val);
+            Date date = sdf.parse(val);
+            callDeserializationEvent(date, serialized);
+            return date;
         } catch (ParseException e) {
             throw new YamlSerializationException(e);
         }
@@ -62,6 +70,8 @@ public class DateTypeAdapter extends TypeAdapter<Date> {
     public YamlElement serialize(@NotNull Date obj) {
         TimeZone zone = yaml.getDumperOptions().getTimeZone();
         CALENDAR.setTimeZone(zone);
-        return new YamlPrimitive(CALENDAR.getTime().toString());
+        YamlPrimitive primitive = new YamlPrimitive(CALENDAR.getTime().toString());
+        callSerializationEvent(obj, primitive);
+        return primitive;
     }
 }

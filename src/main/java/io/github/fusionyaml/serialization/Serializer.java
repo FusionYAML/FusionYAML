@@ -24,8 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * A serializer serializes a java object into a {@link YamlElement}. The {@link Object} can be
- * written into a YAML string. To deserialize a {@link YamlElement}, use a {@link Deserializer},
- * which deserializes a serialized object into an {@link Object} that was initially passed in.
+ * written into a YAML string. To deserialize a {@link YamlElement}, use a {@link Deserializer}.
  * <p>
  * Depending on some serializers, serializing a {@link java.util.Collection} returns a {@link YamlList},
  * serializing a {@link java.util.Map} returns a {@link YamlObject}, and serializing a primitive data or

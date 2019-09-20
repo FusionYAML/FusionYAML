@@ -24,8 +24,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.LinkedList;
 
+/**
+ * A {@link Collection} TypeAdapter.
+ */
 public class CollectionTypeAdapter extends TypeAdapter<Collection<Object>> {
-
 
     @Override
     public Collection<Object> deserialize(@NotNull YamlElement serialized) {

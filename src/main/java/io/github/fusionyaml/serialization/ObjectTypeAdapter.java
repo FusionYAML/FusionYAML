@@ -34,8 +34,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An {@link Object} TypeAdapter
+ */
 public class ObjectTypeAdapter extends TypeAdapter {
-
 
     private static final Objenesis OBJENESIS = new ObjenesisStd();
 
@@ -51,6 +53,7 @@ public class ObjectTypeAdapter extends TypeAdapter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public YamlElement serialize(@NotNull Object o) {
         if (o instanceof Collection)
             return new CollectionTypeAdapter().serialize((Collection) o);
@@ -75,7 +78,14 @@ public class ObjectTypeAdapter extends TypeAdapter {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Deserializes a {@link YamlObject} into a specified {@link Class} of type {@link T}.
+     *
+     * @param object The {@link YamlObject} to deserialize
+     * @param clazz The class to deserialize into
+     * @param <T> The object type
+     * @return The deserialized object. The deserialized object will be of type {@link T}
+     */
     public <T> T deserializeObject(YamlObject object, Class<T> clazz) {
         Map<String, Object> map = YamlUtils.toMap0(object);
         T t = OBJENESIS.newInstance(clazz);
@@ -84,6 +94,7 @@ public class ObjectTypeAdapter extends TypeAdapter {
         if (!match)
             throw new YamlDeserializationException("The map passed in is not the deserialized object type");
         ReflectionUtils.assignFields(t, map, fields, this);
+        callDeserializationEvent(t, object);
         return t;
     }
 
