@@ -59,7 +59,7 @@ public class ObjectConfiguration extends YamlConfiguration {
         if (YamlUtils.isPrimitive(object) || object instanceof Collection || object instanceof Map)
             throw new YamlException("This configuration is not intended for Primitive objects, " +
                     String.class + ", " + Collection.class + ", and " + Map.class);
-        super.object = yaml.serialize(object).getAsYamlObject();
+        super.object = yaml.serialize(object, object.getClass()).getAsYamlObject();
     }
 
     public ObjectConfiguration(Object o) {

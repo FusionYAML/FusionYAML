@@ -15,12 +15,16 @@ limitations under the License.
 */
 package io.github.fusionyaml.utils;
 
+import com.google.common.reflect.TypeToken;
 import io.github.fusionyaml.exceptions.YamlDeserializationException;
 import io.github.fusionyaml.object.YamlObject;
-import io.github.fusionyaml.serialization.ObjectTypeAdapter;
+import io.github.fusionyaml.adapters.ObjectTypeAdapter;
+import net.moltenjson.configuration.select.SelectionHolder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -71,6 +75,26 @@ public class ReflectionUtils {
         return c1.equals(c2) || c1.getSuperclass() != null && contains(c1.getSuperclass(), c2) || containsInterface(c1, c2);
     }
 
+    public static int lps(Class c1, Class c2, int lps) {
+        if (c1.equals(c2)) return lps;
+        if (c1.getSuperclass() != null) {
+            int contains = lps(c1.getSuperclass(), c2, lps + 1);
+            int containsInt = lpsInt(c1, c2, lps + 1);
+            return (containsInt == -1) ? contains : (contains == -1) ? containsInt : Math.min(contains, containsInt);
+        }
+        else return -1;
+    }
+
+    public static int lpsInt(Class c1, Class c2, int lps) {
+        Class[] interfaces = c1.getInterfaces();
+        for (Class clazz : interfaces) {
+            int lpsInt = lpsInt(clazz, c2, lps + 1);
+            if (clazz.equals(c2) || (lpsInt != -1))
+                return (clazz.equals(c2)) ? lps : lpsInt;
+        }
+        return -1;
+    }
+
     private static boolean containsInterface(Class c1, Class c2) {
         Class[] interfaces = c1.getInterfaces();
         for (Class clazz : interfaces) {
@@ -88,17 +112,17 @@ public class ReflectionUtils {
         else return o.getClass();
     }
 
-    public static void assignFields(Object o, Map map, List<Field> fields, ObjectTypeAdapter objDeserializer) throws YamlDeserializationException {
+    public static void assignFields(Object o, Map map, List<Field> fields, ObjectTypeAdapter objDeserializer, Type type) throws YamlDeserializationException {
         for (Object key : map.keySet()) {
             for (Field field : fields) {
                 if (key.toString().equals(field.getName())) {
                     try {
                         field.setAccessible(true);
                         Object found = map.get(field.getName());
-                        Object deserialized = objDeserializer.deserialize(YamlUtils.toElement(found, false));
+                        Object deserialized = objDeserializer.deserialize(YamlUtils.toElement(found, false), type);
                         if (deserialized == null) continue;
                         if (deserialized instanceof Map)
-                            deserialized = objDeserializer.deserializeObject((YamlObject) YamlUtils.toElement(deserialized, true), field.getType());
+                            deserialized = objDeserializer.deserialize(YamlUtils.toElement(deserialized, true), field.getType());
                         field.set(o, deserialized);
                     } catch (IllegalAccessException e) {
                         throw new YamlDeserializationException(e);
@@ -106,6 +130,12 @@ public class ReflectionUtils {
                 }
             }
         }
+    }
+
+    public static Type getGeneric(Field field) {
+        field.setAccessible(true);
+        ParameterizedType type = (ParameterizedType) field.getGenericType();
+        return TypeToken.of(type).resolveType(SelectionHolder.class.getTypeParameters()[0]).getType();
     }
 
 }

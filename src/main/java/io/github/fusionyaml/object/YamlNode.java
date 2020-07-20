@@ -35,7 +35,7 @@ import java.util.*;
  * In the example {@code YAML} below, {@code game} and {@code player} is a {@link YamlNode}.
  * {@code game} is a child node of {@code player}
  */
-public class YamlNode implements YamlElement {
+public class YamlNode extends YamlObject implements YamlElement {
 
 //    /**
 //     * The constant {@link ObjectSerializer} instance

@@ -36,7 +36,7 @@ import java.util.*;
  * into a map which can be also used to convert the raw YAML data to JSON using
  * {@link #toJson()}
  */
-public abstract class YamlParser {
+public abstract class YamlParser implements Parser {
 
     /**
      * The constant {@link Yaml} instance

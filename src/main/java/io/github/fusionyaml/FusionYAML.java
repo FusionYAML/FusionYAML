@@ -22,8 +22,10 @@ import com.google.gson.JsonObject;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.parser.DefaultParser;
+import io.github.fusionyaml.parser.Parser;
 import io.github.fusionyaml.parser.YamlParser;
-import io.github.fusionyaml.serialization.*;
+import io.github.fusionyaml.adapters.*;
+import io.github.fusionyaml.utils.ReflectionUtils;
 import io.github.fusionyaml.utils.YamlUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -62,30 +64,31 @@ public class FusionYAML {
     private static final YamlParser.YamlType DEFAULT_YAML_TYPE = YamlParser.YamlType.MAP;
     private static final DumperOptions YAML_DEFAULT_DUMPER_OPTIONS = defaultDumperOptions();
 
-    // Constant public fields
-    public static final ObjectTypeAdapter OBJECT_TYPE_ADAPTER = new ObjectTypeAdapter();
+    // Constant type adapters
+    public static final ObjectTypeAdapter<Object> OBJECT_TYPE_ADAPTER = new ObjectTypeAdapter();
     public static final CollectionTypeAdapter COLLECTION_TYPE_ADAPTER = new CollectionTypeAdapter();
     public static final MapTypeAdapter MAP_TYPE_ADAPTER = new MapTypeAdapter();
     public static final PrimitiveTypeAdapter PRIMITIVE_TYPE_ADAPTER = new PrimitiveTypeAdapter();
     public static final DateTypeAdapter DATE_TYPE_ADAPTER = new DateTypeAdapter();
 
+
     // Constant object fields
-    private final Map<Class, TypeAdapter> classTypeAdapterMap;
-    private final ObjectTypeAdapter typeAdapter = new ObjectTypeAdapter();
+    private final Map<Type, TypeAdapter> classTypeAdapterMap;
     private final DumperOptions dumperOptions;
     private final Yaml yaml;
 
-    FusionYAML(DumperOptions options, Map<Class, TypeAdapter> adapterMap, List<Class> removeOptional) {
+
+    FusionYAML(DumperOptions options, Map<Type, TypeAdapter> adapterMap, List<Class> removeOptional) {
         classTypeAdapterMap = adapterMap;
         this.dumperOptions = options != null ? options : YAML_DEFAULT_DUMPER_OPTIONS;
         this.yaml = new Yaml(dumperOptions);
-        classTypeAdapterMap.put(Collection.class, new CollectionTypeAdapter());
-        classTypeAdapterMap.put(Map.class, new MapTypeAdapter());
-        classTypeAdapterMap.put(Number.class, new PrimitiveTypeAdapter());
-        classTypeAdapterMap.put(Boolean.class, new PrimitiveTypeAdapter());
-        classTypeAdapterMap.put(String.class, new PrimitiveTypeAdapter());
-        classTypeAdapterMap.put(Character.class, new PrimitiveTypeAdapter());
-        classTypeAdapterMap.put(Object.class, typeAdapter);
+        classTypeAdapterMap.put(Collection.class, new CollectionTypeAdapter(this));
+        classTypeAdapterMap.put(Map.class, new MapTypeAdapter(this));
+        classTypeAdapterMap.put(Number.class, new PrimitiveTypeAdapter(this));
+        classTypeAdapterMap.put(Boolean.class, new PrimitiveTypeAdapter(this));
+        classTypeAdapterMap.put(String.class, new PrimitiveTypeAdapter(this));
+        classTypeAdapterMap.put(Character.class, new PrimitiveTypeAdapter(this));
+        classTypeAdapterMap.put(Object.class, new ObjectTypeAdapter<>(this));
         addOptionalIfNotRemoved(Date.class, new DateTypeAdapter(this), removeOptional);
     }
 
@@ -285,7 +288,7 @@ public class FusionYAML {
      * be deserialized into an appropriate {@link Object} to set its value to the field.
      * <p>
      * On the other hand, if there is no suitable {@link TypeAdapter} and the {@link YamlElement} is not a
-     * {@link YamlObject}, {@link ObjectTypeAdapter#deserialize(YamlElement)} will be called. The method will
+     * {@link YamlObject}, {@link ObjectTypeAdapter#deserialize(YamlElement, Type)} will be called. The method will
      * 'lazy' deserialize the {@link Object}. The outcome may not be as expected.
      * <p>
      * For example, if you added a {@link TypeAdapter} in a different {@link FusionYAML} object and you serialized it
@@ -301,13 +304,10 @@ public class FusionYAML {
      * deserializing
      */
     @SuppressWarnings("unchecked")
-    public <T> T deserialize(YamlElement element, Class<T> as) {
+    public <T> T deserialize(YamlElement element, Type as) {
         TypeAdapter<T> adapter = getTypeAdapter(classTypeAdapterMap, as);
-        if (adapter == null)
-            if (element.isYamlObject())
-                return typeAdapter.deserializeObject(element.getAsYamlObject(), as);
-            else adapter = typeAdapter;
-        return adapter.deserialize(element);
+        if (adapter == null) adapter = new ObjectTypeAdapter<>(this);
+        return adapter.deserialize(element, as);
     }
 
     /**
@@ -464,21 +464,28 @@ public class FusionYAML {
     }
 
 
-    private static <T> TypeAdapter<T> getTypeAdapter(Map<Class, TypeAdapter> classTypeAdapterMap, Class<T> clazz) {
+    private static <T> TypeAdapter<T> getTypeAdapter(Map<Type, TypeAdapter> classTypeAdapterMap, Type as) {
         TypeAdapter adapter = null;
+        int lpsCount = -1;
         for (Map.Entry entry : classTypeAdapterMap.entrySet()) {
-            if (entry.getKey().equals(clazz))
-                adapter = (TypeAdapter<?>) entry.getValue();
+            int lps = ReflectionUtils.lps((Class) as, (Class) entry.getKey(), 0);
+            if (lps != -1) {
+               if (lpsCount > lps || lpsCount == -1) {
+                   lpsCount = lps;
+                   adapter = (TypeAdapter<?>) entry.getValue();
+               }
+            }
         }
+
         return adapter;
     }
 
-    private static Map<String, Object> toMap(Map<Class, TypeAdapter> classTypeAdapterMap, ObjectTypeAdapter typeAdapter, Object o) {
+    private static Map<String, Object> toMap(Map<Type, TypeAdapter> classTypeAdapterMap, ObjectTypeAdapter typeAdapter, Object o, Type typeOfO) {
         TypeAdapter adapter = getTypeAdapter(classTypeAdapterMap, o.getClass());
         YamlElement serialized;
         if (adapter != null)
-            serialized = adapter.serialize(o);
-        else serialized = typeAdapter.serialize(o);
+            serialized = adapter.serialize(o, typeOfO);
+        else serialized = typeAdapter.serialize(o, typeOfO);
         if (!serialized.isYamlObject()) {
             Map<String, YamlElement> map = new LinkedHashMap<>();
             map.put(o.hashCode() + "", serialized);
@@ -505,20 +512,34 @@ public class FusionYAML {
      * @return The serialized {@link Object}
      */
     public String toYAML(Object o) {
-        return yaml.dump(toMap(classTypeAdapterMap, typeAdapter, o));
+        return yaml.dump(toMap(classTypeAdapterMap, OBJECT_TYPE_ADAPTER, o, o.getClass()));
     }
 
     /**
      * Gets the appropriate {@link TypeAdapter} for the class. If no appropriate {@link TypeAdapter} is found, the
-     * method will return an {@link ObjectTypeAdapter}.
+     * method will return an {@link ObjectTypeAdapter} of type V.
      *
      * @param clazz The class
+     * @param <V> The type of the TypeAdapter
      * @return The appropriate {@link TypeAdapter} for the class. If no such {@link TypeAdapter} is found,
-     * an instance of {@link ObjectTypeAdapter} will be returned
+     * an {@link ObjectTypeAdapter} of type V will be returned
      */
-    public TypeAdapter getTypeAdapter(Class<?> clazz) {
-        TypeAdapter adapter = getTypeAdapter(classTypeAdapterMap, clazz);
-        return (adapter == null) ? typeAdapter : adapter;
+    public <V> TypeAdapter<V> getTypeAdapter(Class<?> clazz) {
+        return getTypeAdapter((Type) clazz);
+    }
+
+    /**
+     * Gets the appropriate {@link TypeAdapter} for the class. If no appropriate {@link TypeAdapter} is found, the
+     * method will return {@code null}
+     *
+     * @param type The type
+     * @param <V> The type of the type adapter
+     * @return The appropriate {@link TypeAdapter} for the class. If no such {@link TypeAdapter} is found,
+     * {@code null} is returned
+     */
+    public <V> TypeAdapter<V> getTypeAdapter(Type type) {
+        TypeAdapter<V> adapter = getTypeAdapter(classTypeAdapterMap, type);
+        return adapter == null ? new ObjectTypeAdapter<>() : adapter;
     }
 
     /**
@@ -530,12 +551,16 @@ public class FusionYAML {
      * is a field's name and the field's value, respectively.
      *
      * @param o The {@link Object} to serialize
+     * @param type The {@link Type} of the object passed in. In some cases, the value
+     *             passed in is ignored depending on the type adapter invoked. However, it is
+     *             recommended to pass in the type of the object with a {@link TypeToken} if
+     *             applicable.
      * @return The {@link YamlElement}, which is serialized from a java {@link Object}
      */
     @SuppressWarnings("unchecked")
-    public YamlElement serialize(Object o) {
+    public YamlElement serialize(Object o, Type type) {
         TypeAdapter adapter = getTypeAdapter(o.getClass());
-        return adapter.serialize(o);
+        return adapter.serialize(o, type);
     }
 
 }

@@ -252,6 +252,19 @@ public class YamlPrimitive implements YamlElement {
     }
 
     /**
+     * Checks whether if the value in {@link YamlPrimitive} is a {@link String} or not.
+     * Please note this this method will only work if this class is an instance of
+     * {@link YamlPrimitive}.
+     *
+     * @return Whether if the value in {@link YamlPrimitive} is a {@link String}
+     * @throws UnsupportedOperationException If this method is not an instance of {@link YamlPrimitive}
+     */
+    @Override
+    public boolean isString() {
+        return value instanceof String;
+    }
+
+    /**
      * Casts {@link String} to the value found in this {@link YamlPrimitive} object or
      * converts the value to {@link String} if the value is not an instance of a {@link String}
      * object.

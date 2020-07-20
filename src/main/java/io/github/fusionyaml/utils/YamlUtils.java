@@ -15,8 +15,10 @@ limitations under the License.
 */
 package io.github.fusionyaml.utils;
 
+import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.object.*;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -30,40 +32,48 @@ public class YamlUtils {
             return (YamlElement) o;
         if (isPrimitive(o))
             return new YamlPrimitive(o);
-        if (o instanceof List)
+        if (o instanceof List) {
             return toYamlList((List<Object>) o);
-        if (o instanceof Map && tree)
+        }
+        if (o instanceof Map && tree) {
             return new YamlObject(toMap(toStrMap((Map) o)));
+        }
         if (o instanceof Map)
             return new YamlNode(toMap(toStrMap((Map) o)));
         else return null;
     }
 
-    public static Object toObject0(YamlElement e) {
+    public static <T> T toObject0(YamlElement e) {
         if (e instanceof YamlPrimitive)
-            return e.getAsYamlPrimitive().getValue();
+            return (T) e.getAsYamlPrimitive().getValue();
         else if (e instanceof YamlList)
-            return toObjList(e.getAsYamlList().getList());
+            return (T) toObjList(e.getAsYamlList().getList());
         else if (e instanceof YamlNode || e instanceof YamlObject)
-            return toMap0((e.isYamlNode()) ? e.getAsYamlNode().getChildren() : e.getAsYamlObject().getMap());
+            return (T) toMap0((e.isYamlNode()) ? e.getAsYamlNode().getChildren() : e.getAsYamlObject().getMap());
         else return null;
     }
 
     public static <K, V> Map<String, Object> toStrMap(Map<K, V> map) {
         Map<String, Object> mp = new LinkedHashMap<>();
-        map.forEach((k, v) -> mp.put(k.toString(), v));
+        map.forEach((k, v) -> {
+            mp.put(k.toString(), v);
+        });
         return mp;
     }
 
     public static Map<String, YamlElement> toMap(Map<String, Object> map) {
         Map<String, YamlElement> map1 = new LinkedHashMap<>();
-        map.forEach((k, v) -> map1.put(k, toElement(v, false)));
+        map.forEach((k, v) ->  {
+            map1.put(k, toElement(v, true));
+        });
         return map1;
     }
 
-    public static YamlList toYamlList(Collection<Object> o) {
+    public static <T> YamlList toYamlList(Collection<T> o) {
         YamlList list = new YamlList();
-        o.forEach(b -> list.add(toElement(b, false)));
+        o.forEach(b -> {
+            list.add(toElement(b, true));
+        });
         return list;
     }
 
@@ -157,5 +167,18 @@ public class YamlUtils {
                 "exception=No suitable constructor with 3 arguments found for interface java.util.Map");
     }
 
+    public static String readToString(File file) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line;
+        boolean firstRun = true;
+        while ((line = reader.readLine()) != null) {
+            if (!firstRun) builder.append("\n");
+            else firstRun = false;
+            builder.append(line);
+        }
+        reader.close();
+        return builder.toString();
+    }
 
 }

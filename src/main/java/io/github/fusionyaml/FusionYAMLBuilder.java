@@ -15,7 +15,7 @@ limitations under the License.
 */
 package io.github.fusionyaml;
 
-import io.github.fusionyaml.serialization.TypeAdapter;
+import io.github.fusionyaml.adapters.TypeAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 
@@ -45,6 +45,11 @@ public class FusionYAMLBuilder {
      * {@link TypeAdapter}s will be removed)
      */
     private final List<Class> rem = new ArrayList<>();
+
+    /**
+     * If set to true, comments will be loaded and parsed. This can slightly affect performance.
+     */
+    private boolean loadComments = true;
 
     /**
      * Sets the {@link TypeAdapter} for the class. {@link FusionYAML} will use this {@link TypeAdapter} to
@@ -118,7 +123,8 @@ public class FusionYAMLBuilder {
      * @return A {@link FusionYAML} instance
      */
     public FusionYAML build() {
-        return new FusionYAML(options, classTypeAdapterMap, rem);
+        //todo fix this
+        return new FusionYAML(options, null, rem);
     }
 
 }

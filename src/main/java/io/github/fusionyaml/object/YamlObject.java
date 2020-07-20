@@ -16,6 +16,7 @@ limitations under the License.
 package io.github.fusionyaml.object;
 
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.github.fusionyaml.FusionYAML;
@@ -30,6 +31,8 @@ import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -212,6 +215,11 @@ public class YamlObject implements YamlElement {
             listener.onChange(this, Collections.singletonList(key), value);
     }
 
+    public <T> T getAs(List<String> path, Type type) {
+        ParameterizedType pType = (ParameterizedType) type;
+        return null;
+    }
+
     /**
      * Sets a {@link YamlElement} value in a given key. If the value is {@code null},
      * the key with its value will be removed. If the value is an instance of
@@ -346,7 +354,7 @@ public class YamlObject implements YamlElement {
     public YamlObject set(@NotNull List<String> path, Object value) {
         if (path.size() == 0)
             return this;
-        Object serialized = fusionYAML.serialize(value);
+        Object serialized = fusionYAML.serialize(value, value.getClass());
         YamlElement element = YamlUtils.toElement(serialized, false);
         return set(path, element);
     }

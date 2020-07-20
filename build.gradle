@@ -30,6 +30,7 @@ dependencies {
     // Objnesis
     compile group: 'org.objenesis', name: 'objenesis', version: '3.0.1'
 
+
 }
 
 repositories {

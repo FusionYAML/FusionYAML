@@ -18,6 +18,7 @@ package io.github.fusionyaml.object;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -74,8 +75,7 @@ public class YamlList implements YamlElement {
      * @param value The {@link YamlElement} value
      */
     public void add(@NotNull YamlElement value) {
-        YamlElement val = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
-        list.add(val);
+        list.add(value);
     }
 
     /**

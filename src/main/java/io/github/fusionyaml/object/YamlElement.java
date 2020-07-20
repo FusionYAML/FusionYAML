@@ -209,6 +209,19 @@ public interface YamlElement {
         throw new UnsupportedOperationException(getClass().getName());
     }
 
+
+    /**
+     * Checks whether if the value in {@link YamlPrimitive} is a {@link String} or not.
+     * Please note this this method will only work if this class is an instance of
+     * {@link YamlPrimitive}.
+     *
+     * @return Whether if the value in {@link YamlPrimitive} is a {@link String}
+     * @throws UnsupportedOperationException If this method is not an instance of {@link YamlPrimitive}
+     */
+    default boolean isString() {
+        throw new UnsupportedOperationException(getClass().getName());
+    }
+
     /**
      * Casts {@link YamlList} to this class's instance after checking if this class
      * is indeed an instance of {@link YamlList}.
@@ -290,5 +303,6 @@ public interface YamlElement {
     default String getAsString() {
         throw new UnsupportedOperationException(getClass().getName());
     }
+
 
 }
