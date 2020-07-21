@@ -16,10 +16,10 @@ limitations under the License.
 package io.github.fusionyaml.parser;
 
 import com.google.common.base.Stopwatch;
+import io.github.fusionyaml.utils.FileUtils;
 import io.github.fusionyaml.utils.URLUtils;
 import io.github.fusionyaml.utils.YamlUtils;
 import io.github.fusionyaml.exceptions.YamlParseFailedException;
-import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -63,7 +63,7 @@ public class DefaultParser extends DataParser {
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
     public DefaultParser(@NotNull File file) throws IOException {
-        this(FileUtils.readFileToString(file, Charset.defaultCharset()));
+        this(FileUtils.readToString(file));
     }
 
     /**

@@ -20,13 +20,15 @@ import io.github.fusionyaml.object.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Class not intended for public usage
  */
 public class YamlUtils {
 
-    public static YamlElement toElement(Object o, boolean tree) {
+    public static YamlElement toElement(Object o) {
         if (o == null) return null;
         if (o instanceof YamlElement)
             return (YamlElement) o;
@@ -35,11 +37,9 @@ public class YamlUtils {
         if (o instanceof List) {
             return toYamlList((List<Object>) o);
         }
-        if (o instanceof Map && tree) {
+        if (o instanceof Map) {
             return new YamlObject(toMap(toStrMap((Map) o)));
         }
-        if (o instanceof Map)
-            return new YamlNode(toMap(toStrMap((Map) o)));
         else return null;
     }
 
@@ -48,8 +48,8 @@ public class YamlUtils {
             return (T) e.getAsYamlPrimitive().getValue();
         else if (e instanceof YamlList)
             return (T) toObjList(e.getAsYamlList().getList());
-        else if (e instanceof YamlNode || e instanceof YamlObject)
-            return (T) toMap0((e.isYamlNode()) ? e.getAsYamlNode().getChildren() : e.getAsYamlObject().getMap());
+        else if (e instanceof YamlObject)
+            return (T) toMap0(e.getAsYamlObject().getMap());
         else return null;
     }
 
@@ -64,15 +64,15 @@ public class YamlUtils {
     public static Map<String, YamlElement> toMap(Map<String, Object> map) {
         Map<String, YamlElement> map1 = new LinkedHashMap<>();
         map.forEach((k, v) ->  {
-            map1.put(k, toElement(v, true));
+            map1.put(k, toElement(v));
         });
-        return map1;
+         return map1;
     }
 
     public static <T> YamlList toYamlList(Collection<T> o) {
         YamlList list = new YamlList();
         o.forEach(b -> {
-            list.add(toElement(b, true));
+            list.add(toElement(b));
         });
         return list;
     }
@@ -98,9 +98,6 @@ public class YamlUtils {
         }
         else if (element.isYamlList())
             return toObjList(((YamlList) element).getList());
-        else if (element.isYamlNode()) {
-            return toMap0(element.getAsYamlNode().getChildren());
-        }
         else if (element.isYamlObject())
             return toMap0(element.getAsYamlObject().getMap());
         else return null;
@@ -118,7 +115,7 @@ public class YamlUtils {
 
     private static Map<Object, Object> toMap0(Map<String, YamlElement> map) {
         Map<Object, Object> empty = new LinkedHashMap<>();
-        map.forEach((k, v) -> empty.put(k, (v instanceof YamlNode) ? toMap0(((YamlNode) v).getChildren()) : toObject(v)));
+        map.forEach((k, v) -> empty.put(k, toObject(v)));
         return empty;
     }
 
@@ -167,18 +164,5 @@ public class YamlUtils {
                 "exception=No suitable constructor with 3 arguments found for interface java.util.Map");
     }
 
-    public static String readToString(File file) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line;
-        boolean firstRun = true;
-        while ((line = reader.readLine()) != null) {
-            if (!firstRun) builder.append("\n");
-            else firstRun = false;
-            builder.append(line);
-        }
-        reader.close();
-        return builder.toString();
-    }
 
 }

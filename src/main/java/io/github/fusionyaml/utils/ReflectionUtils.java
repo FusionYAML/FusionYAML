@@ -119,10 +119,10 @@ public class ReflectionUtils {
                     try {
                         field.setAccessible(true);
                         Object found = map.get(field.getName());
-                        Object deserialized = objDeserializer.deserialize(YamlUtils.toElement(found, false), type);
+                        Object deserialized = objDeserializer.deserialize(YamlUtils.toElement(found), found.getClass());
                         if (deserialized == null) continue;
                         if (deserialized instanceof Map)
-                            deserialized = objDeserializer.deserialize(YamlUtils.toElement(deserialized, true), field.getType());
+                            deserialized = objDeserializer.deserialize(YamlUtils.toElement(deserialized), field.getType());
                         field.set(o, deserialized);
                     } catch (IllegalAccessException e) {
                         throw new YamlDeserializationException(e);

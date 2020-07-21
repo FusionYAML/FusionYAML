@@ -18,10 +18,10 @@ package io.github.fusionyaml.parser;
 import com.google.gson.Gson;
 import io.github.fusionyaml.exceptions.YamlParseFailedException;
 import io.github.fusionyaml.object.YamlElement;
+import io.github.fusionyaml.utils.FileUtils;
 import io.github.fusionyaml.utils.StorageUtils;
 import io.github.fusionyaml.utils.URLUtils;
 import io.github.fusionyaml.utils.YamlUtils;
-import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +55,7 @@ public abstract class DataParser extends YamlParser {
      * @throws IOException Any IO errors will cause an {@link IOException} to be thrown
      */
     public DataParser(@NotNull File file) throws IOException {
-        this(FileUtils.readFileToString(file, Charset.defaultCharset()));
+        this(FileUtils.readToString(file));
     }
 
     /**
@@ -207,7 +207,7 @@ public abstract class DataParser extends YamlParser {
     public @Nullable YamlElement getElement(@NotNull List<String> path) {
         if (path.size() == 0) return null;
         Object o = getObject(path);
-        return YamlUtils.toElement(o, path.size() == 1 && !(o instanceof Map));
+        return YamlUtils.toElement(o);
     }
 
     /**

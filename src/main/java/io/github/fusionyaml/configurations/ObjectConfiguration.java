@@ -23,6 +23,7 @@ import io.github.fusionyaml.parser.DefaultParser;
 import io.github.fusionyaml.parser.YamlParser;
 import io.github.fusionyaml.utils.StorageUtils;
 import io.github.fusionyaml.utils.YamlUtils;
+import io.github.fusionyaml.adapters.TypeAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -37,7 +38,13 @@ import java.util.Map;
  * you can only change values and not remove them.
  * <p>
  * To deserialize the {@link Object}, call {@link #toObject(Class)}.
+ *
+ * @deprecated An {@link Object} can be serialized by finding an appropriate {@link TypeAdapter} in
+ *             a {@link FusionYAML} object. The values in the resulting {@link YamlElement} can be
+ *             manipulated either from within the object itself or by just creating an instance of
+ *             {@link YamlConfiguration}. A better configuration may be added in a future update.
  */
+@Deprecated
 public class ObjectConfiguration extends YamlConfiguration {
 
     /**
@@ -185,7 +192,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     @Override
     public void set(@NotNull List<String> path, YamlElement value) {
-        Object o = YamlUtils.toElement(value, true);
+        Object o = YamlUtils.toElement(value);
         set(path, o);
     }
 

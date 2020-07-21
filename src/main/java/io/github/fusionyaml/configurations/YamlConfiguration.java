@@ -153,7 +153,7 @@ public class YamlConfiguration implements Configuration {
         Object found = parser.getObject(path);
         if (found == null)
             return null;
-        YamlElement e = YamlUtils.toElement(found, true);
+        YamlElement e = YamlUtils.toElement(found);
         return fusionYAML.deserialize(e, clazz);
     }
 
@@ -361,7 +361,7 @@ public class YamlConfiguration implements Configuration {
             object.set(path, fusionYAML.serialize(value, value.getClass()));
             return;
         }
-        YamlElement converted = YamlUtils.toElement(value, false);
+        YamlElement converted = YamlUtils.toElement(value);
         YamlElement data = (converted != null) ? converted : new YamlPrimitive(value.toString());
         object.set(path, data);
         if (changeListener != null)
@@ -695,7 +695,7 @@ public class YamlConfiguration implements Configuration {
     @Override
     public YamlElement getElement(@NotNull List<String> path, YamlElement defValue) {
         Object obj = getObject(path, defValue);
-        return YamlUtils.toElement(obj, true);
+        return YamlUtils.toElement(obj);
     }
 
     /**

@@ -162,18 +162,6 @@ public interface YamlElement {
     }
 
     /**
-     * Checks whether if this class is an instance of {@link YamlNode} or
-     * not. This method returns a value equivalent to using the {@code instanceof}
-     * keyword.
-     *
-     * @return Whether this class is an instance of {@link YamlNode} or not.
-     * @see #getAsYamlNode()
-     */
-    default boolean isYamlNode() {
-        return this instanceof YamlNode;
-    }
-
-    /**
      * Checks whether if the value in {@link YamlPrimitive} is a {@link Number} or not.
      * Please note this this method will only work if this class is an instance of
      * {@link YamlPrimitive}.
@@ -234,20 +222,6 @@ public interface YamlElement {
         if (isYamlList())
             return (YamlList) this;
         else throw new IllegalStateException("Not a YAML list: " + this);
-    }
-
-    /**
-     * Casts {@link YamlNode} to this class's instance after checking if this class
-     * is indeed an instance of {@link YamlNode}.
-     *
-     * @return A {@link YamlNode} casted to this class
-     * @throws IllegalStateException If this class is not an instance of {@link YamlNode}
-     * @see #isYamlNode()
-     */
-    default YamlNode getAsYamlNode() {
-        if (isYamlNode())
-            return (YamlNode) this;
-        else throw new IllegalStateException("Not a YAML node: " + this);
     }
 
     /**

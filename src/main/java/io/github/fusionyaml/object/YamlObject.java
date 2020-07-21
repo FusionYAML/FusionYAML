@@ -20,6 +20,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.github.fusionyaml.FusionYAML;
+import io.github.fusionyaml.adapters.TypeAdapter;
 import io.github.fusionyaml.configurations.Configuration;
 import io.github.fusionyaml.configurations.YamlConfiguration;
 import io.github.fusionyaml.events.EntryChangeListener;
@@ -208,23 +209,28 @@ public class YamlObject implements YamlElement {
         if (value == null)
             map.remove(key);
         else {
-            YamlElement v = (value instanceof YamlObject) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
-            map.put(key, v);
+            map.put(key, value);
         }
         if (listener != null)
             listener.onChange(this, Collections.singletonList(key), value);
     }
 
-    public <T> T getAs(List<String> path, Type type) {
-        ParameterizedType pType = (ParameterizedType) type;
-        return null;
+    /**
+     * Deserializes this {@link YamlObject} into an object of {@link Type}
+     * {@code T}
+     *
+     * @param type The type
+     * @param <T>  The object type
+     * @return An object of type {@code T}
+     */
+    public <T> T getAs(Type type) {
+        TypeAdapter<T> adapter = fusionYAML.getTypeAdapter(type);
+        return adapter.deserialize(this, type);
     }
 
     /**
      * Sets a {@link YamlElement} value in a given key. If the value is {@code null},
-     * the key with its value will be removed. If the value is an instance of
-     * {@link YamlObject}, it will be converted to {@link YamlNode} the key will
-     * become a node.
+     * the key with its value will be removed.
      *
      * @param key The key that holds the value
      * @param value The value the key holds
@@ -280,9 +286,7 @@ public class YamlObject implements YamlElement {
      * {@link String} in the previous index except the {@link String} at index zero,
      * which is the uppermost parent.
      * <p>
-     * If the value is set to {@code null}, the key and its value will be removed. If
-     * the value passed in is an instance of {@link YamlObject}, it'll be converted into
-     * a {@link YamlNode}.
+     * If the value is set to {@code null}, the key and its value will be removed.
      *
      * @param paths The path to the value.
      * @param value The value the path holds
@@ -298,14 +302,13 @@ public class YamlObject implements YamlElement {
         }
         if (listener != null)
             listener.onChange(this, paths, value);
-        YamlElement theValue = (value.isYamlObject()) ? new YamlNode(value.getAsYamlObject().getMap()) : value;
         if (paths.size() == 1) {
-            set(paths.get(0), theValue);
+            set(paths.get(0), value);
             return this;
         }
         // path is nested
         Map<String, Object> map = YamlUtils.toMap0(this);
-        Map<String, Object> newMap = YamlUtils.setNested(map, paths, theValue);
+        Map<String, Object> newMap = YamlUtils.setNested(map, paths, value);
         this.map = YamlUtils.toMap(YamlUtils.toStrMap(newMap));
         return this;
     }
@@ -355,7 +358,7 @@ public class YamlObject implements YamlElement {
         if (path.size() == 0)
             return this;
         Object serialized = fusionYAML.serialize(value, value.getClass());
-        YamlElement element = YamlUtils.toElement(serialized, false);
+        YamlElement element = YamlUtils.toElement(serialized);
         return set(path, element);
     }
 

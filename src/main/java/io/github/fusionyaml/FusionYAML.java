@@ -22,26 +22,28 @@ import com.google.gson.JsonObject;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.parser.DefaultParser;
-import io.github.fusionyaml.parser.Parser;
 import io.github.fusionyaml.parser.YamlParser;
 import io.github.fusionyaml.adapters.*;
+import io.github.fusionyaml.utils.FileUtils;
 import io.github.fusionyaml.utils.ReflectionUtils;
 import io.github.fusionyaml.utils.YamlUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * This is the main class used to manage YAML stuff. Load YAML with {@link #load(Map)} and
- * {@link #load(Map, YamlParser.YamlType)}, convert YAML to JSON with toJSON methods, serialize deserialize
+ * This is the main class used to manage YAML stuff. Load YAML with {@link #fromYaml(Map)} and
+ * {@link #fromYaml(Map, YamlParser.YamlType)}, convert YAML to JSON with toJSON methods, serialize deserialize
  * {@link Object}s with deserialize and deserialize methods, and retrieve {@link TypeAdapter}s with
  * {@link #getTypeAdapter(Class)}
  * <p>
  * To construct a {@link FusionYAML} object with your {@link TypeAdapter}s incorporated into the object, use
  * a {@link FusionYAMLBuilder}. Instead of using a {@link YamlParser} to convert a YAML string into a {@link Map}
- * of {@link String}s and {@link Object}s, you can use this object and call {@link #load(String)}. Moreover, you
+ * of {@link String}s and {@link Object}s, you can use this object and call {@link #fromYaml(String)}. Moreover, you
  * can simply parse raw YAML with {@link #parseYAML(String)} and {@link #parseYAML(String, YamlParser)}.
  * <p>
  * You can also load YAML from JSON using fromJSON methods. Upon invoking some toJSON methods, the method converts
@@ -141,9 +143,25 @@ public class FusionYAML {
      * @param raw The raw YAML {@link String}
      * @return The {@link YamlObject} loaded from a raw YAML {@link String}
      */
-    public YamlObject load(String raw) {
+    public YamlObject fromYaml(String raw) {
         Map<String, YamlElement> mem = YamlUtils.toMap(parseYAML(raw));
         return new YamlObject(mem, DEFAULT_PARSER.getYamlType());
+    }
+
+    /**
+     * Reads YAML from the {@link Reader} provided and then loads it into a {@link Map} of {@link String}s
+     * and {@link Object} before converting it into a {@link YamlObject}
+     * <p>
+     * {@link io.github.fusionyaml.exceptions.YamlParseFailedException} may be thrown if an error
+     * occurred while parsing or if the parser can't construe elements in the string.
+     * {@link IOException} may also be thrown if an IO error occurred.
+     *
+     * @param reader The reader from which the contents will be extracted
+     * @return A {@link YamlObject} loaded from the reader
+     * @throws IOException If an IO error had occurred while reading
+     */
+    public YamlObject fromYaml(Reader reader) throws IOException {
+        return fromYaml(FileUtils.readToString(reader));
     }
 
     /**
@@ -185,7 +203,7 @@ public class FusionYAML {
     /**
      * Loads the JSON {@link String} into a {@link YamlObject}. The raw JSON {@link String} will first be
      * converted to a {@link Map} of {@link String}s and {@link Object}s before loading it to a {@link YamlObject}
-     * via {@link #load(Map, YamlParser.YamlType)}.
+     * via {@link #fromYaml(Map, YamlParser.YamlType)}.
      * <p>
      * The {@link io.github.fusionyaml.parser.YamlParser.YamlType} is also needed because YAML is saved to
      * a {@link String} or a {@link java.io.File} (etc), the structure of the YAML will be the same as what
@@ -197,13 +215,13 @@ public class FusionYAML {
      */
     public YamlObject fromJSON(String raw, YamlParser.YamlType type) {
         Map<String, Object> contents = GSON_DEFAULT.fromJson(raw, MAP_TYPE);
-        return load(contents, type);
+        return fromYaml(contents, type);
     }
 
     /**
      * Loads the JSON {@link String} into a {@link YamlObject}. The raw JSON {@link String} will first be
      * converted to a {@link Map} of {@link String}s and {@link Object}s before loading it to a {@link YamlObject}
-     * via {@link #load(Map, YamlParser.YamlType)}.
+     * via {@link #fromYaml(Map, YamlParser.YamlType)}.
      * <p>
      * The {@link io.github.fusionyaml.parser.YamlParser.YamlType} will be set to a default YAML type, which is
      * map type.
@@ -256,7 +274,7 @@ public class FusionYAML {
      * @param type The {@link io.github.fusionyaml.parser.YamlParser.YamlType}
      * @return The {@link YamlObject} loaded from a {@link Map} of {@link String}s and {@link Object}s
      */
-    public YamlObject load(Map<String, Object> map, YamlParser.YamlType type) {
+    public YamlObject fromYaml(Map<String, Object> map, YamlParser.YamlType type) {
         Map<String, YamlElement> mem = YamlUtils.toMap(map);
         return new YamlObject(mem, type);
     }
@@ -270,8 +288,8 @@ public class FusionYAML {
      *            is yet to be loaded into a {@link YamlObject}
      * @return The {@link YamlObject} loaded from a {@link Map} of {@link String}s and {@link Object}s
      */
-    public YamlObject load(Map<String, Object> map) {
-        return this.load(map, DEFAULT_YAML_TYPE);
+    public YamlObject fromYaml(Map<String, Object> map) {
+        return this.fromYaml(map, DEFAULT_YAML_TYPE);
     }
 
     /**
