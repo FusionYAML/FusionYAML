@@ -20,6 +20,7 @@ import java.util.Map;
 public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
 
     private Objenesis genesis = new ObjenesisStd();
+    private ObjectInstantiator instantiator = new ObjectInstantiator(fusionYAML);
 
     public ObjectTypeAdapter(FusionYAML yaml) {
         super(yaml);
@@ -37,16 +38,16 @@ public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
         // obtain name & values from field, store them
         // and then create a YamlObject containing these values
         try {
-            List<Field> fields = ReflectionUtils.getNonStaticFields(obj);
-            Map<String, YamlElement> map = new LinkedHashMap<>();
-            for (Field field : fields) {
-                boolean prev = field.isAccessible();
-                field.setAccessible(true);
-                map.put(field.getName(), fusionYAML.serialize(field.get(obj), obj.getClass()));
-                field.setAccessible(prev);
-            }
-            return new YamlObject(map, fusionYAML);
-        } catch (IllegalAccessException e) {
+            List<Field> fields = instantiator.getFieldsForSerialization(type);
+//            Map<String, YamlElement> map = new LinkedHashMap<>();
+//            for (Field field : fields) {
+//                boolean prev = field.isAccessible();
+//                field.setAccessible(true);
+//                map.put(field.getName(), fusionYAML.serialize(field.get(obj), obj.getClass()));
+//                field.setAccessible(prev);
+//            }
+            return new YamlObject(instantiator.toSerializedMap(obj, type), fusionYAML);
+        } catch (Exception e) {
             throw new YamlSerializationException(e);
         }
     }
@@ -63,7 +64,7 @@ public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
         List<Field> fields = ReflectionUtils.getNonStaticFields(obj);
         if (!ReflectionUtils.isMatch(map, fields))
             throw new YamlDeserializationException("The map passed in is not the deserialized object type");
-        ReflectionUtils.assignFields(obj, map, fields, this, type);
+        instantiator.assignFields(obj, map, type);
         return obj;
     }
 }

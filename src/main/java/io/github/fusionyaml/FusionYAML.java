@@ -481,12 +481,24 @@ public class FusionYAML {
         return toJSON(yaml, false);
     }
 
+    private static Type adjPrimitive(Type type) {
+        if (type.getTypeName().equals("int")) return Integer.class;
+        if (type.getTypeName().equals("double")) return Double.class;
+        if (type.getTypeName().equals("float")) return Float.class;
+        if (type.getTypeName().equals("char")) return Character.class;
+        if (type.getTypeName().equals("byte")) return Byte.class;
+        if (type.getTypeName().equals("long")) return Long.class;
+        if (type.getTypeName().equals("short")) return Short.class;
+        if (type.getTypeName().equals("boolean")) return Boolean.class;
+        return type;
+    }
 
     private static <T> TypeAdapter<T> getTypeAdapter(Map<Type, TypeAdapter> classTypeAdapterMap, Type as) {
         TypeAdapter adapter = null;
         int lpsCount = -1;
+        Type adj = adjPrimitive(as);
         for (Map.Entry entry : classTypeAdapterMap.entrySet()) {
-            int lps = ReflectionUtils.lps((Class) as, (Class) entry.getKey(), 0);
+            int lps = ReflectionUtils.lps((Class) adj, (Class) entry.getKey(), 0);
             if (lps != -1) {
                if (lpsCount > lps || lpsCount == -1) {
                    lpsCount = lps;
