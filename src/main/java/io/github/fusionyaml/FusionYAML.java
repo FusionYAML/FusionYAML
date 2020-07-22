@@ -23,7 +23,7 @@ import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlObject;
 import io.github.fusionyaml.parser.DefaultParser;
 import io.github.fusionyaml.parser.YamlParser;
-import io.github.fusionyaml.adapters.*;
+import io.github.fusionyaml.serialization.*;
 import io.github.fusionyaml.utils.FileUtils;
 import io.github.fusionyaml.utils.ReflectionUtils;
 import io.github.fusionyaml.utils.YamlUtils;
@@ -84,12 +84,13 @@ public class FusionYAML {
         classTypeAdapterMap = adapterMap;
         this.dumperOptions = options != null ? options : YAML_DEFAULT_DUMPER_OPTIONS;
         this.yaml = new Yaml(dumperOptions);
-        classTypeAdapterMap.put(Collection.class, new CollectionTypeAdapter(this));
-        classTypeAdapterMap.put(Map.class, new MapTypeAdapter(this));
+        classTypeAdapterMap.put(Collection.class, new CollectionTypeAdapter<>(this));
+        classTypeAdapterMap.put(Map.class, new MapTypeAdapter<>(this));
         classTypeAdapterMap.put(Number.class, new PrimitiveTypeAdapter(this));
         classTypeAdapterMap.put(Boolean.class, new PrimitiveTypeAdapter(this));
         classTypeAdapterMap.put(String.class, new PrimitiveTypeAdapter(this));
         classTypeAdapterMap.put(Character.class, new PrimitiveTypeAdapter(this));
+        classTypeAdapterMap.put(Enum.class, new EnumTypeAdapter<>(this));
         classTypeAdapterMap.put(Object.class, new ObjectTypeAdapter<>(this));
         addOptionalIfNotRemoved(Date.class, new DateTypeAdapter(this), removeOptional);
     }

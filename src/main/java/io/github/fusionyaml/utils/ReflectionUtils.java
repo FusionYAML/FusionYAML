@@ -17,8 +17,7 @@ package io.github.fusionyaml.utils;
 
 import com.google.common.reflect.TypeToken;
 import io.github.fusionyaml.exceptions.YamlDeserializationException;
-import io.github.fusionyaml.object.YamlObject;
-import io.github.fusionyaml.adapters.ObjectTypeAdapter;
+import io.github.fusionyaml.serialization.ObjectTypeAdapter;
 import net.moltenjson.configuration.select.SelectionHolder;
 
 import java.lang.reflect.Field;

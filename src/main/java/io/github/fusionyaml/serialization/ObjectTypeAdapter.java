@@ -1,4 +1,4 @@
-package io.github.fusionyaml.adapters;
+package io.github.fusionyaml.serialization;
 
 import com.google.common.reflect.TypeToken;
 import io.github.fusionyaml.FusionYAML;
@@ -13,7 +13,6 @@ import org.objenesis.ObjenesisStd;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 

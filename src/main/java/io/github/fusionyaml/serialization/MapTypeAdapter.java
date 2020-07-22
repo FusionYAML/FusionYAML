@@ -1,14 +1,11 @@
-package io.github.fusionyaml.adapters;
+package io.github.fusionyaml.serialization;
 
-import com.google.common.reflect.TypeToken;
 import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlObject;
-import io.github.fusionyaml.utils.YamlUtils;
 
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 public class MapTypeAdapter<V> extends TypeAdapter<Map<String, V>> {

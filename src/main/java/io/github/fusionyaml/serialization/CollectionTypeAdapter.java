@@ -1,6 +1,5 @@
-package io.github.fusionyaml.adapters;
+package io.github.fusionyaml.serialization;
 
-import com.google.common.reflect.TypeToken;
 import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.object.YamlElement;
 import io.github.fusionyaml.object.YamlList;

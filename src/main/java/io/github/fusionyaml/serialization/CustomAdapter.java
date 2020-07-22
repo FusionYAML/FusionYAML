@@ -1,8 +1,6 @@
-package io.github.fusionyaml.annotations;
+package io.github.fusionyaml.serialization;
 
-import io.github.fusionyaml.adapters.ObjectTypeAdapter;
-import io.github.fusionyaml.adapters.PrimitiveTypeAdapter;
-import io.github.fusionyaml.adapters.TypeAdapter;
+import io.github.fusionyaml.serialization.TypeAdapter;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

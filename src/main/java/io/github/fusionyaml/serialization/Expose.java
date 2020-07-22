@@ -1,4 +1,4 @@
-package io.github.fusionyaml.annotations;
+package io.github.fusionyaml.serialization;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,5 +7,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Exclude {
+public @interface Expose {
+
+    boolean serialization() default true;
+    boolean deserialization() default true;
+
 }

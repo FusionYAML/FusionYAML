@@ -23,7 +23,7 @@ import io.github.fusionyaml.parser.DefaultParser;
 import io.github.fusionyaml.parser.YamlParser;
 import io.github.fusionyaml.utils.StorageUtils;
 import io.github.fusionyaml.utils.YamlUtils;
-import io.github.fusionyaml.adapters.TypeAdapter;
+import io.github.fusionyaml.serialization.TypeAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

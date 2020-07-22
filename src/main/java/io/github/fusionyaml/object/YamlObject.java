@@ -16,11 +16,10 @@ limitations under the License.
 package io.github.fusionyaml.object;
 
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.github.fusionyaml.FusionYAML;
-import io.github.fusionyaml.adapters.TypeAdapter;
+import io.github.fusionyaml.serialization.TypeAdapter;
 import io.github.fusionyaml.configurations.Configuration;
 import io.github.fusionyaml.configurations.YamlConfiguration;
 import io.github.fusionyaml.events.EntryChangeListener;
@@ -32,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.LinkedHashMap;

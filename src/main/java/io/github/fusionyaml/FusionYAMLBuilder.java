@@ -15,7 +15,7 @@ limitations under the License.
 */
 package io.github.fusionyaml;
 
-import io.github.fusionyaml.adapters.TypeAdapter;
+import io.github.fusionyaml.serialization.TypeAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 

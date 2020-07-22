@@ -1,4 +1,4 @@
-package io.github.fusionyaml.adapters;
+package io.github.fusionyaml.serialization;
 
 import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.object.YamlElement;
