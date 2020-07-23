@@ -141,7 +141,7 @@ public class ObjectInstantiator {
     }
 
     public <T> TypeAdapter<T> getTypeAdapter(Field field) throws IllegalAccessException, InstantiationException {
-        CustomAdapter adapter = field.getAnnotation(CustomAdapter.class);
+        YamlAdapter adapter = field.getAnnotation(YamlAdapter.class);
         return adapter != null ? adapter.value().newInstance() : fusionYAML.getTypeAdapter(field.getType());
     }
 

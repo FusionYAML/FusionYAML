@@ -80,7 +80,7 @@ public class FusionYAML {
     private final Yaml yaml;
 
 
-    FusionYAML(DumperOptions options, Map<Type, TypeAdapter> adapterMap, List<Class> removeOptional) {
+    FusionYAML(DumperOptions options, Map<Type, TypeAdapter> adapterMap, List<Type> removeOptional) {
         classTypeAdapterMap = adapterMap;
         this.dumperOptions = options != null ? options : YAML_DEFAULT_DUMPER_OPTIONS;
         this.yaml = new Yaml(dumperOptions);
@@ -91,11 +91,12 @@ public class FusionYAML {
         classTypeAdapterMap.put(String.class, new PrimitiveTypeAdapter(this));
         classTypeAdapterMap.put(Character.class, new PrimitiveTypeAdapter(this));
         classTypeAdapterMap.put(Enum.class, new EnumTypeAdapter<>(this));
+        classTypeAdapterMap.put(new TypeToken<Object[]>(){}.getType(), new ArrayTypeAdapter<>(this));
         classTypeAdapterMap.put(Object.class, new ObjectTypeAdapter<>(this));
         addOptionalIfNotRemoved(Date.class, new DateTypeAdapter(this), removeOptional);
     }
 
-    private boolean addOptionalIfNotRemoved(Class<?> c, TypeAdapter adapter, List<Class> removeOptional) {
+    private boolean addOptionalIfNotRemoved(Class<?> c, TypeAdapter<?> adapter, List<Type> removeOptional) {
         if (!removeOptional.contains(c)) {
             classTypeAdapterMap.put(c, adapter);
             return true;
@@ -498,8 +499,11 @@ public class FusionYAML {
         TypeAdapter adapter = null;
         int lpsCount = -1;
         Type adj = adjPrimitive(as);
+        //boolean array = ((Class) as).isArray();
         for (Map.Entry entry : classTypeAdapterMap.entrySet()) {
-            int lps = ReflectionUtils.lps((Class) adj, (Class) entry.getKey(), 0);
+            System.out.println(TypeToken.of(adj).getRawType() + "rt");
+            int lps = ReflectionUtils.lps((adj instanceof Class) ? (Class) adj :
+                    TypeToken.of(adj).getRawType(), (Class) entry.getKey(), 0);
             if (lps != -1) {
                if (lpsCount > lps || lpsCount == -1) {
                    lpsCount = lps;

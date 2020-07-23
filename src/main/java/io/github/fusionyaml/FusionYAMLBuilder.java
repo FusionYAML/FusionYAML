@@ -19,6 +19,7 @@ import io.github.fusionyaml.serialization.TypeAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ public class FusionYAMLBuilder {
     /**
      * The {@link Map} containing custom {@link TypeAdapter}s
      */
-    private final Map<Class, TypeAdapter> classTypeAdapterMap = new HashMap<>();
+    private final Map<Type, TypeAdapter> classTypeAdapterMap = new HashMap<>();
 
     /**
      * The {@link DumperOptions}
@@ -44,12 +45,7 @@ public class FusionYAMLBuilder {
      * The map containing {@link Class}es where its {@link TypeAdapter}s will be removed (only optional
      * {@link TypeAdapter}s will be removed)
      */
-    private final List<Class> rem = new ArrayList<>();
-
-    /**
-     * If set to true, comments will be loaded and parsed. This can slightly affect performance.
-     */
-    private boolean loadComments = true;
+    private final List<Type> rem = new ArrayList<>();
 
     /**
      * Sets the {@link TypeAdapter} for the class. {@link FusionYAML} will use this {@link TypeAdapter} to
@@ -59,7 +55,7 @@ public class FusionYAMLBuilder {
      * @param adapter The {@link TypeAdapter} for the class
      * @return This instance
      */
-    public FusionYAMLBuilder setTypeAdapterFor(@NotNull Class<?> clazz, TypeAdapter adapter) {
+    public FusionYAMLBuilder setTypeAdapterFor(@NotNull Type clazz, TypeAdapter adapter) {
         if (adapter == null)
             return removeTypeAdapterFor(clazz);
         classTypeAdapterMap.put(clazz, adapter);
@@ -76,7 +72,7 @@ public class FusionYAMLBuilder {
      * @param adapter The {@link TypeAdapter} for the class
      * @return This instance
      */
-    public FusionYAMLBuilder setTypeAdapterForIfNotExists(@NotNull Class<?> clazz, TypeAdapter adapter) {
+    public FusionYAMLBuilder setTypeAdapterForIfNotExists(@NotNull Type clazz, TypeAdapter adapter) {
         if (adapter == null)
             return removeTypeAdapterFor(clazz);
         if (!classTypeAdapterMap.containsKey(clazz)) {
@@ -99,7 +95,7 @@ public class FusionYAMLBuilder {
      * @param clazz The class
      * @return This instance
      */
-    public FusionYAMLBuilder removeTypeAdapterFor(@NotNull Class<?> clazz) {
+    public FusionYAMLBuilder removeTypeAdapterFor(@NotNull Type clazz) {
         classTypeAdapterMap.remove(clazz);
         rem.add(clazz);
         return this;
@@ -123,7 +119,6 @@ public class FusionYAMLBuilder {
      * @return A {@link FusionYAML} instance
      */
     public FusionYAML build() {
-        //todo fix this
         return new FusionYAML(options, null, rem);
     }
 

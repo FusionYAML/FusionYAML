@@ -15,13 +15,9 @@ limitations under the License.
 */
 package io.github.fusionyaml.utils;
 
-import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.object.*;
 
-import java.io.*;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Class not intended for public usage
@@ -46,7 +42,7 @@ public class YamlUtils {
     public static <T> T toObject0(YamlElement e) {
         if (e instanceof YamlPrimitive)
             return (T) e.getAsYamlPrimitive().getValue();
-        else if (e instanceof YamlList)
+        else if (e instanceof YamlArray)
             return (T) toObjList(e.getAsYamlList().getList());
         else if (e instanceof YamlObject)
             return (T) toMap0(e.getAsYamlObject().getMap());
@@ -69,8 +65,8 @@ public class YamlUtils {
          return map1;
     }
 
-    public static <T> YamlList toYamlList(Collection<T> o) {
-        YamlList list = new YamlList();
+    public static <T> YamlArray toYamlList(Collection<T> o) {
+        YamlArray list = new YamlArray();
         o.forEach(b -> {
             list.add(toElement(b));
         });
@@ -97,7 +93,7 @@ public class YamlUtils {
                 return primitive.getAsString();
         }
         else if (element.isYamlList())
-            return toObjList(((YamlList) element).getList());
+            return toObjList(((YamlArray) element).getList());
         else if (element.isYamlObject())
             return toMap0(element.getAsYamlObject().getMap());
         else return null;

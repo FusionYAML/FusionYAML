@@ -1,8 +1,9 @@
 package io.github.fusionyaml.serialization;
 
+import com.google.common.reflect.TypeToken;
 import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.object.YamlElement;
-import io.github.fusionyaml.object.YamlList;
+import io.github.fusionyaml.object.YamlArray;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -21,15 +22,16 @@ public class CollectionTypeAdapter<T> extends TypeAdapter<Collection<T>>  {
     @Override
     public YamlElement serialize(Collection<T> obj, Type type) {
         LinkedList<YamlElement> in = new LinkedList<>();
-        obj.forEach(e -> in.add(fusionYAML.serialize(e, type)));
-        return new YamlList(in);
+        obj.forEach(e -> in.add(fusionYAML.serialize(e, e.getClass())));
+        return new YamlArray(in);
     }
 
     @Override
     public Collection<T> deserialize(YamlElement element, Type typeOfT) {
-        YamlList list = element.getAsYamlList();
+        YamlArray list = element.getAsYamlList();
         Collection<T> collection = new LinkedList<>();
-        list.getList().forEach(e -> {
+        list.forEach(e -> {
+            System.out.println(e + "_ IN LIST");
             collection.add(fusionYAML.deserialize(e, typeOfT));
         });
         return collection;

@@ -27,7 +27,7 @@ import java.util.List;
  * Its data can be retrieved by {@link #getList()} and modified by
  * {@link #add(YamlElement)} and {@link #remove(int)}
  */
-public class YamlList implements YamlElement {
+public class YamlArray implements YamlElement, Iterable<YamlElement> {
 
     /**
      * The {@link List} of {@link YamlElement}s
@@ -38,7 +38,7 @@ public class YamlList implements YamlElement {
      * This constructor requires no objects to be passed into their parameters. An
      * empty {@link LinkedList} is created upon initialization.
      */
-    public YamlList() {}
+    public YamlArray() {}
 
     /**
      * This constructor requires a {@link List} of {@link YamlElement}s to be
@@ -50,7 +50,7 @@ public class YamlList implements YamlElement {
      *
      * @param list The {@link List} of {@link YamlElement}s
      */
-    public YamlList(List<YamlElement> list) {
+    public YamlArray(List<YamlElement> list) {
         this((Collection<YamlElement>) list);
     }
 
@@ -64,13 +64,12 @@ public class YamlList implements YamlElement {
      *
      * @param list The {@link Collection} of {@link YamlElement}s
      */
-    public YamlList(Collection<YamlElement> list) {
+    public YamlArray(Collection<YamlElement> list) {
         this.list = list;
     }
 
     /**
-     * Adds a {@link YamlElement} entry into the {@link Collection}. Please note if {@link YamlObject}
-     * is passed into the parameter, the object will be converted into a {@link YamlNode}
+     * Adds a {@link YamlElement} entry into the {@link Collection}.
      *
      * @param value The {@link YamlElement} value
      */
@@ -128,4 +127,14 @@ public class YamlList implements YamlElement {
         return list;
     }
 
+    /**
+     * Returns an iterator over elements of type {@code T}.
+     *
+     * @return an Iterator.
+     */
+    @NotNull
+    @Override
+    public Iterator<YamlElement> iterator() {
+        return list.iterator();
+    }
 }

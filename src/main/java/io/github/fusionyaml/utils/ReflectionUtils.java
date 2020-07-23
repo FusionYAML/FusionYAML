@@ -74,8 +74,18 @@ public class ReflectionUtils {
         return c1.equals(c2) || c1.getSuperclass() != null && contains(c1.getSuperclass(), c2) || containsInterface(c1, c2);
     }
 
+    private static int lpsA(Class a, Class b) {
+        if ((a.isArray() && !b.isArray()) || (b.isArray() && !a.isArray())) return -1;
+        return -1;
+    }
+
     public static int lps(Class c1, Class c2, int lps) {
+        if ((c1.isArray() && !c2.isArray()) || c2.isArray() && !c1.isArray()) return -1;
+        if (c1.isArray()) {
+            return lps(c1.getComponentType(), c2.getComponentType(), lps);
+        }
         if (c1.equals(c2)) return lps;
+        if (c1.isInterface()) return lpsInt(c1, c2, lps);
         if (c1.getSuperclass() != null) {
             int contains = lps(c1.getSuperclass(), c2, lps + 1);
             int containsInt = lpsInt(c1, c2, lps + 1);
@@ -89,7 +99,7 @@ public class ReflectionUtils {
         for (Class clazz : interfaces) {
             int lpsInt = lpsInt(clazz, c2, lps + 1);
             if (clazz.equals(c2) || (lpsInt != -1))
-                return (clazz.equals(c2)) ? lps : lpsInt;
+                return (clazz.equals(c2)) ? lps + 1 : lpsInt;
         }
         return -1;
     }

@@ -138,15 +138,15 @@ public interface YamlElement {
     }
 
     /**
-     * Checks whether if this class is an instance of {@link YamlList} or
+     * Checks whether if this class is an instance of {@link YamlArray} or
      * not. This method returns a value equivalent to using the {@code instanceof}
      * keyword.
      *
-     * @return Whether this class is an instance of {@link YamlList} or not.
+     * @return Whether this class is an instance of {@link YamlArray} or not.
      * @see #getAsYamlList()
      */
     default boolean isYamlList() {
-        return this instanceof YamlList;
+        return this instanceof YamlArray;
     }
 
     /**
@@ -211,16 +211,16 @@ public interface YamlElement {
     }
 
     /**
-     * Casts {@link YamlList} to this class's instance after checking if this class
-     * is indeed an instance of {@link YamlList}.
+     * Casts {@link YamlArray} to this class's instance after checking if this class
+     * is indeed an instance of {@link YamlArray}.
      *
-     * @return A {@link YamlList} casted to this class
-     * @throws IllegalStateException If this class is not an instance of {@link YamlList}
+     * @return A {@link YamlArray} casted to this class
+     * @throws IllegalStateException If this class is not an instance of {@link YamlArray}
      * @see #isYamlList()
      */
-    default YamlList getAsYamlList() {
+    default YamlArray getAsYamlList() {
         if (isYamlList())
-            return (YamlList) this;
+            return (YamlArray) this;
         else throw new IllegalStateException("Not a YAML list: " + this);
     }
 
