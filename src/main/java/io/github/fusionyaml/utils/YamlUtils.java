@@ -43,7 +43,7 @@ public class YamlUtils {
         if (e instanceof YamlPrimitive)
             return (T) e.getAsYamlPrimitive().getValue();
         else if (e instanceof YamlArray)
-            return (T) toObjList(e.getAsYamlList().getList());
+            return (T) toObjList(e.getAsYamlArray().getList());
         else if (e instanceof YamlObject)
             return (T) toMap0(e.getAsYamlObject().getMap());
         else return null;
@@ -92,7 +92,7 @@ public class YamlUtils {
             else
                 return primitive.getAsString();
         }
-        else if (element.isYamlList())
+        else if (element.isYamlArray())
             return toObjList(((YamlArray) element).getList());
         else if (element.isYamlObject())
             return toMap0(element.getAsYamlObject().getMap());

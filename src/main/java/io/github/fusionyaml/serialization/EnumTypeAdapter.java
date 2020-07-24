@@ -40,6 +40,6 @@ public class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
     public T deserialize(YamlElement element, Type type) {
         Class<T> tEnum = (Class<T>) type;
         String name = element.getAsString();
-        return Enum.valueOf(tEnum, name.replace(tEnum.getDeclaringClass().getName(), ""));
+        return Enum.valueOf(tEnum, name.replace(tEnum.getDeclaringClass().getName() + ".", ""));
     }
 }

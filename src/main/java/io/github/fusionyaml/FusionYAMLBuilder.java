@@ -119,7 +119,7 @@ public class FusionYAMLBuilder {
      * @return A {@link FusionYAML} instance
      */
     public FusionYAML build() {
-        return new FusionYAML(options, null, rem);
+        return new FusionYAML(options, classTypeAdapterMap, rem);
     }
 
 }

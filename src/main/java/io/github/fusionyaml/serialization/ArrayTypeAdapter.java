@@ -5,10 +5,9 @@ import com.google.common.reflect.TypeToken;
 import io.github.fusionyaml.FusionYAML;
 import io.github.fusionyaml.object.YamlArray;
 import io.github.fusionyaml.object.YamlElement;
+import io.github.fusionyaml.utils.YamlUtils;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -50,15 +49,14 @@ public class ArrayTypeAdapter<T> extends TypeAdapter<T[]> {
         Type compt = ((Class) typeOfT).getComponentType();
         int num = CharMatcher.is('[').countIn(((Class) typeOfT).getName());
         TypeAdapter<T> adapter = fusionYAML.getTypeAdapter(typeOfT);
-        Object obj = new LinkedList<>();
+        LinkedList obj = new LinkedList<>();
         //Object o = adapter.deserialize(element, typeOfT);
-        System.out.println(new TypeToken<Object[]>(){}.getType().getTypeName());
-
-        element.getAsYamlList().forEach(e -> ((LinkedList) obj).add(fusionYAML.deserialize(e, typeOfT)));
+        Type type = TypeToken.of(typeOfT).getRawType();
+        element.getAsYamlArray().forEach(e -> ((LinkedList) obj).add(fusionYAML.deserialize(e, YamlUtils.toObject0(e).getClass())));
         System.out.println(obj);
         //if (!o.getClass().getName().equals("[" + ((Class) typeOfT).getName()))
           //  return null;
-        return null;
+        return (T[]) obj.toArray();
     }
 
 }

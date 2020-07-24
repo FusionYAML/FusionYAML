@@ -93,16 +93,9 @@ public class FusionYAML {
         classTypeAdapterMap.put(Enum.class, new EnumTypeAdapter<>(this));
         classTypeAdapterMap.put(new TypeToken<Object[]>(){}.getType(), new ArrayTypeAdapter<>(this));
         classTypeAdapterMap.put(Object.class, new ObjectTypeAdapter<>(this));
-        addOptionalIfNotRemoved(Date.class, new DateTypeAdapter(this), removeOptional);
+        classTypeAdapterMap.put(Date.class, new DateTypeAdapter(this));
     }
 
-    private boolean addOptionalIfNotRemoved(Class<?> c, TypeAdapter<?> adapter, List<Type> removeOptional) {
-        if (!removeOptional.contains(c)) {
-            classTypeAdapterMap.put(c, adapter);
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Initializes this class by setting default {@link TypeAdapter}s to important class types.
@@ -597,5 +590,50 @@ public class FusionYAML {
         TypeAdapter adapter = getTypeAdapter(o.getClass());
         return adapter.serialize(o, type);
     }
+
+    private static boolean builtInAdapter(TypeAdapter<?> adapter) {
+        return adapter instanceof ArrayTypeAdapter || adapter instanceof CollectionTypeAdapter ||
+                adapter instanceof DateTypeAdapter || adapter instanceof EnumTypeAdapter       ||
+                adapter instanceof MapTypeAdapter  || adapter instanceof ObjectTypeAdapter     ||
+                adapter instanceof PrimitiveTypeAdapter;
+    }
+
+    public static class Builder {
+
+        private YamlOptions opt = new YamlOptions();
+        private Map<Type, TypeAdapter> ctaMap = new LinkedHashMap<>();
+
+        public Builder addTypeAdapter(TypeAdapter<?> adapter, Type type) {
+            ctaMap.put(type, adapter);
+            return this;
+        }
+
+        public Builder addTypeAdapterIfNotExists(TypeAdapter<?> adapter, Type type) {
+            if (!builtInAdapter(adapter) && !ctaMap.containsValue(adapter))
+                ctaMap.put(type, adapter);
+            return this;
+        }
+
+        public Builder onlyExposed(boolean onlyExposed) {
+            opt.setOnlyExposed(onlyExposed);
+            return this;
+        }
+
+        public Builder enumNameMentioned(boolean onlyEnumNameMentioned) {
+            opt.setMentionEnumName(onlyEnumNameMentioned);
+            return this;
+        }
+
+        public Builder includeInterfaceWithNoAdapters(boolean incl) {
+            opt.setIncludeInterfacesWithNoAdapters(incl);
+            return this;
+        }
+
+        // todo add more
+
+    }
+
+
+
 
 }

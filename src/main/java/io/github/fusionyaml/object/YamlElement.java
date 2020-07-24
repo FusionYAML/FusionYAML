@@ -143,9 +143,9 @@ public interface YamlElement {
      * keyword.
      *
      * @return Whether this class is an instance of {@link YamlArray} or not.
-     * @see #getAsYamlList()
+     * @see #getAsYamlArray()
      */
-    default boolean isYamlList() {
+    default boolean isYamlArray() {
         return this instanceof YamlArray;
     }
 
@@ -216,12 +216,12 @@ public interface YamlElement {
      *
      * @return A {@link YamlArray} casted to this class
      * @throws IllegalStateException If this class is not an instance of {@link YamlArray}
-     * @see #isYamlList()
+     * @see #isYamlArray()
      */
-    default YamlArray getAsYamlList() {
-        if (isYamlList())
+    default YamlArray getAsYamlArray() {
+        if (isYamlArray())
             return (YamlArray) this;
-        else throw new IllegalStateException("Not a YAML list: " + this);
+        else throw new IllegalStateException("Not a YAML array: " + this);
     }
 
     /**

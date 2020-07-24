@@ -447,7 +447,7 @@ public class YamlObject implements YamlElement {
     @NotNull
     @Override
     public String toString() {
-        Yaml yaml = new Yaml(defaultDumperOptions);
+        Yaml yaml = new Yaml(fusionYAML.getDumperOptions());
         if (type == YamlParser.YamlType.LIST)
             return yaml.dump(StorageUtils.toList(YamlUtils.toMap0(this)));
         else return yaml.dump(YamlUtils.toMap0(this));
