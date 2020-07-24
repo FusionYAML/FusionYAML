@@ -19,14 +19,14 @@ import java.util.*;
  * This class is mainly used in {@link ObjectTypeAdapter} and is not intended for
  * public usage unless there is a need to retrieve information or modify
  */
-public class ObjectInstantiator {
+public class ObjectSerializationManager {
 
     /**
      * An instance of {@link FusionYAML}
      */
     private FusionYAML fusionYAML;
 
-    public ObjectInstantiator(FusionYAML yaml) {
+    public ObjectSerializationManager(FusionYAML yaml) {
         this.fusionYAML = yaml;
     }
 
@@ -124,7 +124,7 @@ public class ObjectInstantiator {
     }
 
     public boolean doOnlyExposed(Type type) {
-        return ((Class<?>) type).getAnnotation(OnlyExposed.class) != null;
+        return ((Class<?>) type).getAnnotation(OnlyExposed.class) != null || fusionYAML.getYamlOptions().isOnlyExposed();
     }
 
     public Expose getExpose(Field field) {

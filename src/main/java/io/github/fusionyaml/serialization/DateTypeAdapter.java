@@ -35,7 +35,7 @@ public class DateTypeAdapter extends TypeAdapter<Date> {
 
     @Override
     public YamlElement serialize(@NotNull Date obj, Type type) {
-        TimeZone zone = fusionYAML.getDumperOptions().getTimeZone();
+        TimeZone zone = fusionYAML.getYamlOptions().getTimeZone();
         CALENDAR.setTimeZone(zone);
         return new YamlPrimitive(CALENDAR.getTime().toString());
     }
@@ -45,7 +45,7 @@ public class DateTypeAdapter extends TypeAdapter<Date> {
         if (!serialized.isYamlPrimitive())
             throw new YamlDeserializationException("The " + YamlElement.class + "passed in is not a serialized form of " + TimeZone.class);
         String val = serialized.getAsYamlPrimitive().getAsString();
-        TimeZone zone = fusionYAML.getDumperOptions().getTimeZone();
+        TimeZone zone = fusionYAML.getYamlOptions().getTimeZone();
         CALENDAR.setTimeZone(zone);
         try {
             return sdf.parse(val);

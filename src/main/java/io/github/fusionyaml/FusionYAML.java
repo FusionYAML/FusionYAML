@@ -65,6 +65,7 @@ public class FusionYAML {
     private static final YamlParser DEFAULT_PARSER = new DefaultParser(DOCUMENT_BEGIN + DOCUMENT_END);
     private static final YamlParser.YamlType DEFAULT_YAML_TYPE = YamlParser.YamlType.MAP;
     private static final DumperOptions YAML_DEFAULT_DUMPER_OPTIONS = defaultDumperOptions();
+    private static final YamlOptions YAML_DEFAULT_OPTIONS = new YamlOptions();
 
     // Constant type adapters
     public static final ObjectTypeAdapter<Object> OBJECT_TYPE_ADAPTER = new ObjectTypeAdapter();
@@ -76,14 +77,14 @@ public class FusionYAML {
 
     // Constant object fields
     private final Map<Type, TypeAdapter> classTypeAdapterMap;
-    private final DumperOptions dumperOptions;
+    private final YamlOptions options;
     private final Yaml yaml;
 
 
-    FusionYAML(DumperOptions options, Map<Type, TypeAdapter> adapterMap, List<Type> removeOptional) {
+    FusionYAML(YamlOptions options, Map<Type, TypeAdapter> adapterMap) {
         classTypeAdapterMap = adapterMap;
-        this.dumperOptions = options != null ? options : YAML_DEFAULT_DUMPER_OPTIONS;
-        this.yaml = new Yaml(dumperOptions);
+        this.options = options != null ? options : YAML_DEFAULT_OPTIONS;
+        this.yaml = new Yaml(options == null ? YAML_DEFAULT_OPTIONS.dumperOptions() : options.dumperOptions());
         classTypeAdapterMap.put(Collection.class, new CollectionTypeAdapter<>(this));
         classTypeAdapterMap.put(Map.class, new MapTypeAdapter<>(this));
         classTypeAdapterMap.put(Number.class, new PrimitiveTypeAdapter(this));
@@ -106,14 +107,14 @@ public class FusionYAML {
      * block flow style.
      */
     public FusionYAML() {
-        this(YAML_DEFAULT_DUMPER_OPTIONS, new HashMap<>(), new ArrayList<>());
+        this(YAML_DEFAULT_OPTIONS, new HashMap<>());
     }
 
     /**
-     * @return The {@link DumperOptions} in this {@link FusionYAML} object
+     * @return The YAML options
      */
-    public DumperOptions getDumperOptions() {
-        return dumperOptions;
+    public YamlOptions getYamlOptions() {
+        return options;
     }
 
     /**
@@ -492,11 +493,10 @@ public class FusionYAML {
         TypeAdapter adapter = null;
         int lpsCount = -1;
         Type adj = adjPrimitive(as);
-        //boolean array = ((Class) as).isArray();
         for (Map.Entry entry : classTypeAdapterMap.entrySet()) {
-            System.out.println(TypeToken.of(adj).getRawType() + "rt");
             int lps = ReflectionUtils.lps((adj instanceof Class) ? (Class) adj :
                     TypeToken.of(adj).getRawType(), (Class) entry.getKey(), 0);
+            System.out.println(((Class) adj) + " " + entry.getKey() + " " + lps);
             if (lps != -1) {
                if (lpsCount > lps || lpsCount == -1) {
                    lpsCount = lps;
@@ -504,6 +504,7 @@ public class FusionYAML {
                }
             }
         }
+        System.out.println(as + " " + adapter);
 
         return adapter;
     }
@@ -598,10 +599,14 @@ public class FusionYAML {
                 adapter instanceof PrimitiveTypeAdapter;
     }
 
+    /**
+     * A builder for the {@link FusionYAML} class
+     */
     public static class Builder {
 
-        private YamlOptions opt = new YamlOptions();
         private Map<Type, TypeAdapter> ctaMap = new LinkedHashMap<>();
+        private YamlOptions.Builder builder = new YamlOptions.Builder();
+
 
         public Builder addTypeAdapter(TypeAdapter<?> adapter, Type type) {
             ctaMap.put(type, adapter);
@@ -615,21 +620,93 @@ public class FusionYAML {
         }
 
         public Builder onlyExposed(boolean onlyExposed) {
-            opt.setOnlyExposed(onlyExposed);
+            builder.setOnlyExposed(onlyExposed);
             return this;
         }
 
         public Builder enumNameMentioned(boolean onlyEnumNameMentioned) {
-            opt.setMentionEnumName(onlyEnumNameMentioned);
+            builder.setMentionEnumName(onlyEnumNameMentioned);
             return this;
         }
 
         public Builder includeInterfaceWithNoAdapters(boolean incl) {
-            opt.setIncludeInterfacesWithNoAdapters(incl);
+            builder.setIncludeInterfacesWithNoAdapters(incl);
             return this;
         }
 
-        // todo add more
+        public Builder canonical(boolean canonical) {
+            builder.setCanonical(canonical);
+            return this;
+        }
+
+        public Builder preserveComments(boolean preserve) {
+            builder.setPreserveComments(preserve);
+            return this;
+        }
+
+        public Builder allowUnicode(boolean allowUnicode) {
+            builder.setAllowUnicode(allowUnicode);
+            return this;
+        }
+
+        public Builder prettyFlow(boolean prettyFlow) {
+            builder.setPrettyFlow(prettyFlow);
+            return this;
+        }
+
+        public Builder splitLinesOverWidth(boolean splitLines) {
+            builder.setSplitLines(splitLines);
+            return this;
+        }
+
+        public Builder indent(int indent) {
+            builder.setIndent(indent);
+            return this;
+        }
+
+        public Builder width(int width) {
+            builder.setWidth(width);
+            return this;
+        }
+
+        public Builder maxKeyLength(int maxKeyLength) {
+            builder.setMaxKeyLength(maxKeyLength);
+            return this;
+        }
+
+        public Builder timezone(TimeZone timeZone) {
+            builder.setTimezone(timeZone);
+            return this;
+        }
+
+        public Builder scalarStyle(DumperOptions.ScalarStyle scalarStyle) {
+            builder.setScalarStyle(scalarStyle);
+            return this;
+        }
+
+        public Builder version(DumperOptions.Version version) {
+            builder.setVersion(version);
+            return this;
+        }
+
+        public Builder linebreak(DumperOptions.LineBreak lineBreak) {
+            builder.setLineBreak(lineBreak);
+            return this;
+        }
+
+        public Builder nonPrintableStyle(DumperOptions.NonPrintableStyle nonPrintableStyle) {
+            builder.setNonPrintableStyle(nonPrintableStyle);
+            return this;
+        }
+
+        public Builder flowStyle(DumperOptions.FlowStyle flowStyle) {
+            builder.setFlowStyle(flowStyle);
+            return this;
+        }
+
+        public FusionYAML build() {
+            return new FusionYAML(builder.build(), new LinkedHashMap<>());
+        }
 
     }
 

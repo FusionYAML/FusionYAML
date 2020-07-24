@@ -19,7 +19,7 @@ import java.util.Map;
 public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
 
     private Objenesis genesis = new ObjenesisStd();
-    private ObjectInstantiator instantiator = new ObjectInstantiator(fusionYAML);
+    private ObjectSerializationManager instantiator = new ObjectSerializationManager(fusionYAML);
 
     public ObjectTypeAdapter(FusionYAML yaml) {
         super(yaml);
@@ -37,14 +37,6 @@ public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
         // obtain name & values from field, store them
         // and then create a YamlObject containing these values
         try {
-            List<Field> fields = instantiator.getFieldsForSerialization(type);
-//            Map<String, YamlElement> map = new LinkedHashMap<>();
-//            for (Field field : fields) {
-//                boolean prev = field.isAccessible();
-//                field.setAccessible(true);
-//                map.put(field.getName(), fusionYAML.serialize(field.get(obj), obj.getClass()));
-//                field.setAccessible(prev);
-//            }
             return new YamlObject(instantiator.toSerializedMap(obj, type), fusionYAML);
         } catch (Exception e) {
             throw new YamlSerializationException(e);

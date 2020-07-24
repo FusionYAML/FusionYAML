@@ -10,7 +10,7 @@ import java.util.TimeZone;
  */
 public class YamlOptions {
 
-    private DumperOptions options;
+    private DumperOptions options = new DumperOptions();
     private boolean onlyExposed = false;
     private boolean mentionEnumName = false;
     private boolean includeInterfacesWithNoAdapters = false;
@@ -34,180 +34,6 @@ public class YamlOptions {
         options.setDefaultScalarStyle(DumperOptions.ScalarStyle.DOUBLE_QUOTED);
     }
 
-    /**
-     * @param onlyExposed If set to true, FusionYAML will serialize or deserialize only with
-     *                    fields with the {@link io.github.fusionyaml.serialization.Expose} annotation
-     * @return this object
-     */
-    public YamlOptions setOnlyExposed(boolean onlyExposed) {
-        this.onlyExposed = onlyExposed;
-        return this;
-    }
-
-    /**
-     * @param mentionEnumName If set to true, the EnumTypeAdapter will only mention enum's name and
-     *                        not the path if otherwise.
-     * @return this object
-     */
-    public YamlOptions setMentionEnumName(boolean mentionEnumName) {
-        this.mentionEnumName = mentionEnumName;
-        return this;
-    }
-
-    /**
-     * @param includeInterfacesWithNoAdapters If set to true, interfaces with no type adapters will be exempt from
-     *                                        serialization and deserialization
-     * @return this object
-     */
-    public YamlOptions setIncludeInterfacesWithNoAdapters(boolean includeInterfacesWithNoAdapters) {
-        this.includeInterfacesWithNoAdapters = includeInterfacesWithNoAdapters;
-        return this;
-    }
-
-    /**
-     * @param canonical If set to true, a canonical YAML document will be produced instead
-     * @return this object
-     */
-    public YamlOptions setCanonical(boolean canonical) {
-        this.canonical = canonical;
-        options.setCanonical(canonical);
-        return this;
-    }
-
-    /**
-     * @param preserveComments If set to true, comments are preserved and saved. Please note that this
-     *                         may affect performance as it would force FusionYAML to manually insert
-     *                         them since snakeyaml doesn't preserve them
-     * @return This object
-     */
-    public YamlOptions setPreserveComments(boolean preserveComments) {
-        this.preserveComments = preserveComments;
-        return this;
-    }
-
-    /**
-     * @param allowUnicode If set to true, unicode characters will be allowed
-     * @return this object
-     */
-    public YamlOptions setAllowUnicode(boolean allowUnicode) {
-        this.allowUnicode = allowUnicode;
-        options.setAllowUnicode(allowUnicode);
-        return this;
-    }
-
-    /**
-     * @param prettyFlow If set to true, the YAML dumper will be forced to produce a pretty
-     *                   YAML document. This only works when the FlowStyle is set to FLOW
-     * @return this object
-     */
-    public YamlOptions setPrettyFlow(boolean prettyFlow) {
-        this.prettyFlow = prettyFlow;
-        options.setPrettyFlow(prettyFlow);
-        return this;
-    }
-
-    /**
-     * @param splitLines If set to true, lines will be split if they exceed the preferred width
-     * @return this object
-     */
-    public YamlOptions setSplitLines(boolean splitLines) {
-        this.splitLines = splitLines;
-        options.setSplitLines(splitLines);
-        return this;
-    }
-
-    /**
-     * @param indent Indentation from the margin
-     * @return this object
-     */
-    public YamlOptions setIndent(int indent) {
-        this.indent = indent;
-        options.setIndent(indent);
-        return this;
-    }
-
-    /**
-     * @param width The maximum preferred width
-     * @return this object
-     */
-    public YamlOptions setWidth(int width) {
-        this.width = width;
-        options.setWidth(width);
-        return this;
-    }
-
-    /**
-     * @param maxKeyLength The maximum simple key length
-     * @return This object
-     */
-    public YamlOptions setMaxKeyLength(int maxKeyLength) {
-        this.maxKeyLength = maxKeyLength;
-        options.setMaxSimpleKeyLength(maxKeyLength);
-        return this;
-    }
-
-    /**
-     * @param timezone The preferred {@link TimeZone}, which will be
-     *                 utilized when serializing and deserializing dates
-     * @return This object
-     */
-    public YamlOptions setTimezone(TimeZone timezone) {
-        this.timeZone = timezone;
-        options.setTimeZone(timezone);
-        return this;
-    }
-
-    /**
-     * @param style The preferred {@link org.yaml.snakeyaml.DumperOptions.ScalarStyle}
-     * @return This object
-     */
-    public YamlOptions setScalarStyle(DumperOptions.ScalarStyle style) {
-        this.scalarStyle = style;
-        options.setDefaultScalarStyle(style);
-        return this;
-    }
-
-    /**
-     * @param version The YAML {@link org.yaml.snakeyaml.DumperOptions.Version}, which
-     *                is supported up to v1.1
-     * @return This object
-     */
-    public YamlOptions setVersion(DumperOptions.Version version) {
-        this.version = version;
-        options.setVersion(version);
-        return this;
-    }
-
-    /**
-     * @param lineBreak The {@link org.yaml.snakeyaml.DumperOptions.LineBreak} which
-     *                  may possibly vary depending on the operating system.
-     * @return This object
-     */
-    public YamlOptions setLineBreak(DumperOptions.LineBreak lineBreak) {
-        this.lineBreak = lineBreak;
-        options.setLineBreak(lineBreak);
-        return this;
-    }
-
-    /**
-     * @param nonPrintableStyle The preferred {@link org.yaml.snakeyaml.DumperOptions.NonPrintableStyle}
-     * @return This object
-     */
-    public YamlOptions setNonPrintableStyle(DumperOptions.NonPrintableStyle nonPrintableStyle) {
-        this.nonPrintableStyle = nonPrintableStyle;
-        options.setNonPrintableStyle(nonPrintableStyle);
-        return this;
-    }
-
-    /**
-     * @param flowStyle The preferred {@link org.yaml.snakeyaml.DumperOptions.FlowStyle}
-     * @return This object
-     */
-    public YamlOptions setFlowStyle(DumperOptions.FlowStyle flowStyle) {
-        this.flowStyle = flowStyle;
-        options.setDefaultFlowStyle(flowStyle);
-        return this;
-    }
 
     /**
      * @return Whether
@@ -284,5 +110,189 @@ public class YamlOptions {
         return options;
     }
 
+    public static class Builder {
+
+        private YamlOptions options = new YamlOptions();
+
+        /**
+         * @param onlyExposed If set to true, FusionYAML will serialize or deserialize only with
+         *                    fields with the {@link io.github.fusionyaml.serialization.Expose} annotation
+         * @return this object
+         */
+        public Builder setOnlyExposed(boolean onlyExposed) {
+            options.onlyExposed = onlyExposed;
+            return this;
+        }
+
+        /**
+         * @param mentionEnumName If set to true, the EnumTypeAdapter will only mention enum's name and
+         *                        not the path if otherwise.
+         * @return this object
+         */
+        public Builder setMentionEnumName(boolean mentionEnumName) {
+            options.mentionEnumName = mentionEnumName;
+            return this;
+        }
+
+        /**
+         * @param includeInterfacesWithNoAdapters If set to true, interfaces with no type adapters will be exempt from
+         *                                        serialization and deserialization
+         * @return this object
+         */
+        public Builder setIncludeInterfacesWithNoAdapters(boolean includeInterfacesWithNoAdapters) {
+            options.includeInterfacesWithNoAdapters = includeInterfacesWithNoAdapters;
+            return this;
+        }
+
+        /**
+         * @param canonical If set to true, a canonical YAML document will be produced instead
+         * @return this object
+         */
+        public Builder setCanonical(boolean canonical) {
+            options.canonical = canonical;
+            options.options.setCanonical(canonical);
+            return this;
+        }
+
+        /**
+         * @param preserveComments If set to true, comments are preserved and saved. Please note that this
+         *                         may affect performance as it would force FusionYAML to manually insert
+         *                         them since snakeyaml doesn't preserve them
+         * @return This object
+         */
+        public Builder setPreserveComments(boolean preserveComments) {
+            options.preserveComments = preserveComments;
+            return this;
+        }
+
+        /**
+         * @param allowUnicode If set to true, unicode characters will be allowed
+         * @return this object
+         */
+        public Builder setAllowUnicode(boolean allowUnicode) {
+            options.allowUnicode = allowUnicode;
+            options.options.setAllowUnicode(allowUnicode);
+            return this;
+        }
+
+        /**
+         * @param prettyFlow If set to true, the YAML dumper will be forced to produce a pretty
+         *                   YAML document. This only works when the FlowStyle is set to FLOW
+         * @return this object
+         */
+        public Builder setPrettyFlow(boolean prettyFlow) {
+            options.prettyFlow = prettyFlow;
+            options.options.setPrettyFlow(prettyFlow);
+            return this;
+        }
+
+        /**
+         * @param splitLines If set to true, lines will be split if they exceed the preferred width
+         * @return this object
+         */
+        public Builder setSplitLines(boolean splitLines) {
+            options.splitLines = splitLines;
+            options.options.setSplitLines(splitLines);
+            return this;
+        }
+
+        /**
+         * @param indent Indentation from the margin
+         * @return this object
+         */
+        public Builder setIndent(int indent) {
+            options.indent = indent;
+            options.options.setIndent(indent);
+            return this;
+        }
+
+        /**
+         * @param width The maximum preferred width
+         * @return this object
+         */
+        public Builder setWidth(int width) {
+            options.width = width;
+            options.options.setWidth(width);
+            return this;
+        }
+
+        /**
+         * @param maxKeyLength The maximum simple key length
+         * @return This object
+         */
+        public Builder setMaxKeyLength(int maxKeyLength) {
+            options.maxKeyLength = maxKeyLength;
+            options.options.setMaxSimpleKeyLength(maxKeyLength);
+            return this;
+        }
+
+        /**
+         * @param timezone The preferred {@link TimeZone}, which will be
+         *                 utilized when serializing and deserializing dates
+         * @return This object
+         */
+        public Builder setTimezone(TimeZone timezone) {
+            options.timeZone = timezone;
+            options.options.setTimeZone(timezone);
+            return this;
+        }
+
+        /**
+         * @param style The preferred {@link org.yaml.snakeyaml.DumperOptions.ScalarStyle}
+         * @return This object
+         */
+        public Builder setScalarStyle(DumperOptions.ScalarStyle style) {
+            options.scalarStyle = style;
+            options.options.setDefaultScalarStyle(style);
+            return this;
+        }
+
+        /**
+         * @param version The YAML {@link org.yaml.snakeyaml.DumperOptions.Version}, which
+         *                is supported up to v1.1
+         * @return This object
+         */
+        public Builder setVersion(DumperOptions.Version version) {
+            options.version = version;
+            options.options.setVersion(version);
+            return this;
+        }
+
+        /**
+         * @param lineBreak The {@link org.yaml.snakeyaml.DumperOptions.LineBreak} which
+         *                  may possibly vary depending on the operating system.
+         * @return This object
+         */
+        public Builder setLineBreak(DumperOptions.LineBreak lineBreak) {
+            options.lineBreak = lineBreak;
+            options.options.setLineBreak(lineBreak);
+            return this;
+        }
+
+        /**
+         * @param nonPrintableStyle The preferred {@link org.yaml.snakeyaml.DumperOptions.NonPrintableStyle}
+         * @return This object
+         */
+        public Builder setNonPrintableStyle(DumperOptions.NonPrintableStyle nonPrintableStyle) {
+            options.nonPrintableStyle = nonPrintableStyle;
+            options.options.setNonPrintableStyle(nonPrintableStyle);
+            return this;
+        }
+
+        /**
+         * @param flowStyle The preferred {@link org.yaml.snakeyaml.DumperOptions.FlowStyle}
+         * @return This object
+         */
+        public Builder setFlowStyle(DumperOptions.FlowStyle flowStyle) {
+            options.flowStyle = flowStyle;
+            options.options.setDefaultFlowStyle(flowStyle);
+            return this;
+        }
+
+        public YamlOptions build() {
+            return options;
+        }
+
+    }
 
 }

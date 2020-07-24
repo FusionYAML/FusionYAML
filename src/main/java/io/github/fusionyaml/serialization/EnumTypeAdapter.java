@@ -10,7 +10,7 @@ import java.lang.reflect.Type;
 
 public class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
 
-    private ObjectInstantiator instantiator = new ObjectInstantiator(fusionYAML);
+    private ObjectSerializationManager instantiator = new ObjectSerializationManager(fusionYAML);
 
     public EnumTypeAdapter(FusionYAML fusionYAML) {
         super(fusionYAML);
@@ -29,8 +29,10 @@ public class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
                 if (f.get(null).equals(obj)) field = f;
             }
             if (field == null) throw new YamlSerializationException("Can't find field for enum object " + obj);
-            return new YamlPrimitive(obj.getDeclaringClass().getName() + "." +
-                    instantiator.getSerializedName(field));
+            String serName = instantiator.getSerializedName(field);
+            String name = fusionYAML.getYamlOptions().onlyEnumNameMentioned() ? serName :
+                    obj.getDeclaringClass().getName() + "." + serName;
+            return new YamlPrimitive(name);
         } catch (Exception e) {
             throw new YamlSerializationException(e);
         }

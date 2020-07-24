@@ -28,7 +28,10 @@ import java.util.Map;
 /**
  * A {@link FusionYAML} builder where you can set some options that'll be immutable in a {@link FusionYAML}
  * object.
+ *
+ * @deprecated Use {@link FusionYAML.Builder} instead.
  */
+@Deprecated
 public class FusionYAMLBuilder {
 
     /**
@@ -119,7 +122,7 @@ public class FusionYAMLBuilder {
      * @return A {@link FusionYAML} instance
      */
     public FusionYAML build() {
-        return new FusionYAML(options, classTypeAdapterMap, rem);
+        return new FusionYAML(null, classTypeAdapterMap);
     }
 
 }

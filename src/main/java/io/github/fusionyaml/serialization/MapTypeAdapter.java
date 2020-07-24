@@ -23,7 +23,7 @@ public class MapTypeAdapter<V> extends TypeAdapter<Map<String, V>> {
         YamlObject o = new YamlObject();
         if (obj.values().size() == 0) return o;
         Map<String, YamlElement> map = new LinkedHashMap<>();
-        obj.forEach((k, v) -> map.put(k, fusionYAML.serialize(v, typeOfV)));
+        obj.forEach((k, v) -> map.put(k, fusionYAML.serialize(v, v.getClass())));
         return new YamlObject(map, fusionYAML);
     }
 

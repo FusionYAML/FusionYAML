@@ -39,8 +39,7 @@ import java.util.Map;
 
 /**
  * A {@code YamlObject} stores {@code YAML} key-value pairs in a {@link java.util.LinkedHashMap}
- * ready to be converted into {@code JSON} and a {@code YAML} {@link String}. You can also convert
- * this object is {@link JsonObject} via {@link #toJsonObject()}
+ * ready to be converted into {@code JSON} and a {@code YAML} {@link String}.
  * <p>
  * A {@link YamlObject} can be thought of key-value pairs that can be retrieved, modified, and
  * stored.
@@ -56,17 +55,7 @@ public class YamlObject implements YamlElement {
      * The {@link EntryChangeListener} for this object
      */
     private EntryChangeListener listener;
-
-    /**
-     * The default {@link DumperOptions}
-     */
-    private static final DumperOptions defaultDumperOptions = defaultDumperOptions();
-
-    /**
-     * The constant {@link Gson} instance
-     */
-    private static final Gson GSON = new Gson();
-
+    
     /**
      * A {@link LinkedHashMap} containing key-value pairs which essentially are where
      * all the {@code YAML} data are stored.
@@ -430,56 +419,56 @@ public class YamlObject implements YamlElement {
         return new YamlPrimitive(o);
     }
 
-    /**
-     * Gets the parsed {@link String} in YAML syntax from the {@link Map} that stores
-     * key-value pairs, which are retrievable by {@link #getMap()}
-     * <p>
-     * Calling this method is equivalent to calling {@link #toString()}] as this method
-     * returns a parsed {@link String} in YAML syntax.
-     *
-     * @return The parsed {@link String} in YAML syntax.
-     */
-    @NotNull
-    public String toYamlString() {
-        return toString();
-    }
-
-    @NotNull
-    @Override
-    public String toString() {
-        Yaml yaml = new Yaml(fusionYAML.getDumperOptions());
-        if (type == YamlParser.YamlType.LIST)
-            return yaml.dump(StorageUtils.toList(YamlUtils.toMap0(this)));
-        else return yaml.dump(YamlUtils.toMap0(this));
-    }
-
-    /**
-     * @return The key-value pairs written in {@code JSON} syntax
-     */
-    public String toJsonString() {
-        return new Gson().toJson(YamlUtils.toMap0(this));
-    }
-
-    /**
-     * Loads a {@link JsonObject} from this object. The key-value pairs are
-     * copied into the new {@link JsonObject} syntax.
-     *
-     * @return The loaded {@link JsonObject}
-     */
-    @NotNull
-    public JsonObject toJsonObject() {
-        return GSON.fromJson(toJsonString(), JsonObject.class);
-    }
-
-    /**
-     * @return The default {@link DumperOptions}
-     */
-    @NotNull
-    private static DumperOptions defaultDumperOptions() {
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        return options;
-    }
+//    /**
+//     * Gets the parsed {@link String} in YAML syntax from the {@link Map} that stores
+//     * key-value pairs, which are retrievable by {@link #getMap()}
+//     * <p>
+//     * Calling this method is equivalent to calling {@link #toString()}] as this method
+//     * returns a parsed {@link String} in YAML syntax.
+//     *
+//     * @return The parsed {@link String} in YAML syntax.
+//     */
+//    @NotNull
+//    public String toYamlString() {
+//        return toString();
+//    }
+//
+//    @NotNull
+//    @Override
+//    public String toString() {
+//        Yaml yaml = new Yaml(new DumperOptions());
+//        if (type == YamlParser.YamlType.LIST)
+//            return yaml.dump(StorageUtils.toList(YamlUtils.toMap0(this)));
+//        else return yaml.dump(YamlUtils.toMap0(this));
+//    }
+//
+//    /**
+//     * @return The key-value pairs written in {@code JSON} syntax
+//     */
+//    public String toJsonString() {
+//        return new Gson().toJson(YamlUtils.toMap0(this));
+//    }
+//
+//    /**
+//     * Loads a {@link JsonObject} from this object. The key-value pairs are
+//     * copied into the new {@link JsonObject} syntax.
+//     *
+//     * @return The loaded {@link JsonObject}
+//     */
+//    @NotNull
+//    public JsonObject toJsonObject() {
+//        return GSON.fromJson(toJsonString(), JsonObject.class);
+//    }
+//
+//    /**
+//     * @return The default {@link DumperOptions}
+//     */
+//    @NotNull
+//    private static DumperOptions defaultDumperOptions() {
+//        DumperOptions options = new DumperOptions();
+//        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+//        return options;
+//    }
 
     /**
      * Sets the {@link EntryChangeListener} for the object. When an entry changed by adding,

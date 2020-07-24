@@ -85,6 +85,9 @@ public class ReflectionUtils {
             return lps(c1.getComponentType(), c2.getComponentType(), lps);
         }
         if (c1.equals(c2)) return lps;
+        // prevent object.class from appearing as the
+        // nearest superclass when a class is an implementation of an interface
+        if ((c1.getInterfaces().length > 0) && c2.equals(Object.class)) return Integer.MAX_VALUE;
         if (c1.isInterface()) return lpsInt(c1, c2, lps);
         if (c1.getSuperclass() != null) {
             int contains = lps(c1.getSuperclass(), c2, lps + 1);
