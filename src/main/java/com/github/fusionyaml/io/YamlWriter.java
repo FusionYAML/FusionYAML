@@ -5,18 +5,19 @@ import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.document.YamlComment;
 import com.github.fusionyaml.exceptions.YamlException;
 import com.github.fusionyaml.object.YamlObject;
+import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.util.*;
 
-public abstract class YamlWriter extends Writer {
+public abstract class YamlWriter extends Writer implements AutoCloseable {
 
-    private BufferedWriter buffedWriter;
-    private Writer writer;
-    private int buff;
-    private int line;
+    protected BufferedWriter buffedWriter;
+    protected Writer writer;
+    protected int buff;
+    protected int line;
 
     public YamlWriter(Writer writer, int buff) {
         this.writer = writer;
@@ -33,7 +34,7 @@ public abstract class YamlWriter extends Writer {
             throw new YamlException(new FileNotFoundException("File doesn't exist"));
         this.writer = createFW(file);
         this.buff = buff;
-        this.buffedWriter = new BufferedWriter(writer);
+        this.buffedWriter = new BufferedWriter(writer, buff);
     }
 
     public YamlWriter(File file) {
@@ -67,25 +68,23 @@ public abstract class YamlWriter extends Writer {
             this.write(dumped);
             return;
         }
-        YamlReader reader = new YamlReader(dumped) {
-        };
-        List<String> list = reader.readToList();
-        List<Integer> skip = new LinkedList<>();
+        List<String> list = new LinkedList<>(Splitter.on("\n").splitToList(dumped));
+        List<Integer> skip = new ArrayList<>();
         comments.forEach(c -> skip.add(c.getLineNumber()));
+        int maxLn = skip.stream().mapToInt(v -> v).max().getAsInt();
+        int maxCol = comments.stream().mapToInt(YamlComment::getColumn).max().getAsInt();
+        CommentManager.createSpace(list, maxLn, maxCol);
+        CommentManager manager = new CommentManager();
         for (YamlComment comment : comments) {
-            CommentPlacementManager.createSpace(list, comment.getLineNumber(), comment.getColumn());
-            skip.removeAll(Collections.singletonList(comment.getLineNumber()));
-            CommentPlacementManager manager = new CommentPlacementManager(comment.getText(), comment.isInline(),
-                    comment.getColumn(), comment.getLineNumber(), list, new LinkedList<>(skip));
-            skip.add(comment.getLineNumber());
-            String cmt = manager.addComment(fusionYAML.getYamlOptions().getWidth());
-            list.set(manager.ln, cmt);
+            CommentManager.IntStringWrapper cmt =
+                    manager.addComment(list, comment, fusionYAML.getYamlOptions().getWidth());
+            list.set(cmt.num, cmt.str);
         }
         writeList(list);
         flush();
     }
 
-    private void writeList(List<String> list) throws IOException {
+    protected void writeList(List<String> list) throws IOException {
         boolean first = true;
         StringBuilder builder = new StringBuilder();
         for (String str : list) {
@@ -96,52 +95,6 @@ public abstract class YamlWriter extends Writer {
         write(builder.toString());
     }
 
-    private Map<String, Integer> addComment(int line, int horizontalDist, FusionYAML yaml,
-                                            boolean seperateOverWidth, String text, List<String> data) {
-
-        LinkedList<String> dataNew = new LinkedList<>(data);
-
-        String lineText;
-        String aft;
-        String prev;
-
-        if (line - 1 >= 0 && line - 1 < dataNew.size()) lineText = dataNew.get(line - 1);
-        else lineText = "";
-        if (line >= 0 && line < dataNew.size()) aft = dataNew.get(line);
-        else aft = "";
-        if (line - 2 >= 0 && line - 2 < dataNew.size()) prev = dataNew.get(line - 2);
-        else prev = "";
-
-        int width = lineText.length() + text.length();
-        int disty = (seperateOverWidth && width > yaml.getYamlOptions().getWidth()) ?
-                (line - 1 < 0) ? line + 1 : line - 1 : line;
-        int distx = disty != line ? 0 : horizontalDist;
-
-        String lineT = (line == disty) ? lineText : (line - 2 == disty) ? prev : aft;
-        String after = (lineT.length() > horizontalDist) ? lineT.substring(horizontalDist) : "";
-        String before = (lineT.length() > horizontalDist) ? lineT.substring(0, horizontalDist) : lineT;
-        distx += after.length() - 1;
-        while (disty >= dataNew.size()) dataNew.add("");
-        while (lineT.length() + 1 > distx) distx++;
-
-        StringBuilder ntBuilder = new StringBuilder();
-        int index = Math.max(disty - 1, 0);
-        StringBuilder cb = new StringBuilder(dataNew.get(index));
-
-        while (cb.length() <= distx) cb.append(" ");
-        char[] chars = cb.toString().toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            ntBuilder.append(chars[i]);
-            if (i + 1 == distx)
-                ntBuilder.append("#").append(text);
-        }
-
-        dataNew.set(index, ntBuilder.toString());
-        Map<String, Integer> map = new LinkedHashMap<>();
-        map.put(ntBuilder.toString(), disty - 1);
-        return map;
-    }
-
     /**
      * Writes a string.
      *
@@ -150,7 +103,7 @@ public abstract class YamlWriter extends Writer {
      */
     @Override
     public void write(@NotNull String str) throws IOException {
-        super.write(str);
+        buffedWriter.write(str);
     }
 
     /**

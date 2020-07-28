@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class YamlReader extends Reader {
+public abstract class YamlReader extends Reader implements AutoCloseable {
 
     protected BufferedReader buffReader;
     protected Reader reader;
@@ -92,15 +92,15 @@ public abstract class YamlReader extends Reader {
                     builder.append((char) c);
             }
         }
-        return (start) ? new ReadComment(dx, lines, inline, builder.toString()) : null;
+        return (start) ? new YamlComment(inline, lines, dx, builder.toString()) : null;
     }
 
     public Set<YamlComment> readComments(boolean resetFirst) throws IOException {
         if (resetFirst)
             super.reset();
-        ArrayList<ReadComment> arrayList = new ArrayList<>();
-        ReadComment current;
-        while ((current = (ReadComment) nextComment()) != null) {
+        ArrayList<YamlComment> arrayList = new ArrayList<>();
+        YamlComment current;
+        while ((current = nextComment()) != null) {
             arrayList.add(current);
         }
         return new HashSet<>(arrayList);
@@ -175,47 +175,6 @@ public abstract class YamlReader extends Reader {
             builder.append(ln);
         }
         return builder.toString();
-    }
-
-    protected ArrayList<String> readToList() throws IOException {
-        ArrayList<String> arrayList = new ArrayList<>();
-        char[] chars = readToString().toCharArray();
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] != '\n' && i + 1 != chars.length)
-                builder.append(chars[i]);
-            else {
-
-                arrayList.add(builder.toString());
-                builder = new StringBuilder();
-            }
-        }
-        ;
-        return arrayList;
-    }
-
-    static class ReadComment extends YamlComment {
-
-        public final int horizontalDist;
-        public final int verticalDist;
-        public final String text;
-
-        public ReadComment(int horizontalDist, int verticalDist, boolean inline, String text) {
-            super(inline, verticalDist, horizontalDist, text);
-            this.horizontalDist = horizontalDist;
-            this.verticalDist = verticalDist;
-            this.text = text;
-        }
-
-        @Override
-        public boolean equals(Object o2) {
-            if (!(o2 instanceof ReadComment))
-                return false;
-            ReadComment c2 = (ReadComment) o2;
-            return c2.horizontalDist == horizontalDist && c2.verticalDist == verticalDist &&
-                    c2.text.equals(text);
-        }
-
     }
 
 }
