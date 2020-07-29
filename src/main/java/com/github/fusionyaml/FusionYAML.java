@@ -655,11 +655,6 @@ public class FusionYAML {
             return this;
         }
 
-        public Builder includeInterfaceWithNoAdapters(boolean incl) {
-            builder.setIncludeInterfacesWithNoAdapters(incl);
-            return this;
-        }
-
         public Builder excludeNullValues(boolean excl) {
             builder.setExcludeNullValues(excl);
             return this;

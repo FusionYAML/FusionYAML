@@ -35,7 +35,7 @@ public class FileConfiguration extends YamlConfiguration {
     /**
      * The file
      */
-    private File file;
+    private final File file;
 
     /**
      * This constructor requires a {@link File} instance. The {@link File} contents will then

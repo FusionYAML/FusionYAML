@@ -35,9 +35,18 @@ public class SmartRelativeRenderer extends CommentRenderer {
             else builder.append("\n");
             builder.append(str);
         }
-        String str = comment.isInline() ? ln + " " + builder.toString() : (builder.toString() + "\n" + ln);
+        String str = comment.isInline() ? ln + " " + builder.toString() : (space(iCol) +
+                builder.toString() + "\n" + ln);
         HashMap<String, Integer> map = new HashMap<>();
         map.put(str, iLn);
         return new LinkedList<>(map.entrySet()).get(0);
     }
+
+    private String space(int space) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < space; i++)
+            builder.append(" ");
+        return builder.toString();
+    }
+
 }

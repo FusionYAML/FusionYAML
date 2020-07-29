@@ -586,7 +586,7 @@ public class YamlConfiguration implements Configuration {
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
         Object obj = YamlUtils.getObject(object.getMap(), path, new HashMap(), path.get(0), true, 0);
-        if (obj == null) return null;
+        if (obj == null || obj == YamlNull.NULL) return null;
         Object found = fusionYAML.deserialize((YamlElement) obj, obj.getClass());
         return (found != null) ? found : defValue;
     }

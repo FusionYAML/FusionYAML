@@ -14,7 +14,6 @@ public class YamlOptions {
     private DumperOptions options;
     private boolean onlyExposed = false;
     private boolean mentionEnumName = false;
-    private boolean includeInterfacesWithNoAdapters = false;
     private boolean excludeNullValues = false;
     private boolean canonical = false;
     private boolean preserveComments = false;
@@ -30,11 +29,12 @@ public class YamlOptions {
     private DumperOptions.Version version = DumperOptions.Version.V1_1;
     private DumperOptions.LineBreak lineBreak = DumperOptions.LineBreak.UNIX;
     private DumperOptions.NonPrintableStyle nonPrintableStyle = DumperOptions.NonPrintableStyle.BINARY;
-    private DumperOptions.FlowStyle flowStyle = DumperOptions.FlowStyle.FLOW;
+    private DumperOptions.FlowStyle flowStyle = DumperOptions.FlowStyle.BLOCK;
 
     public YamlOptions() {
         options = new DumperOptions();
         options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
     }
 
 
@@ -44,10 +44,6 @@ public class YamlOptions {
 
     public boolean onlyEnumNameMentioned() {
         return mentionEnumName;
-    }
-
-    public boolean isIncludeInterfacesWithNoAdapters() {
-        return includeInterfacesWithNoAdapters;
     }
 
     public boolean isCanonical() {
@@ -139,16 +135,6 @@ public class YamlOptions {
          */
         public Builder setMentionEnumName(boolean mentionEnumName) {
             options.mentionEnumName = mentionEnumName;
-            return this;
-        }
-
-        /**
-         * @param includeInterfacesWithNoAdapters If set to true, interfaces with no type adapters will be exempt from
-         *                                        serialization and deserialization
-         * @return this object
-         */
-        public Builder setIncludeInterfacesWithNoAdapters(boolean includeInterfacesWithNoAdapters) {
-            options.includeInterfacesWithNoAdapters = includeInterfacesWithNoAdapters;
             return this;
         }
 

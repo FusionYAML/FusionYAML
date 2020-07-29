@@ -14,6 +14,7 @@ public abstract class TypeAdapter<T> {
     }
 
     public abstract YamlElement serialize(T obj, Type type);
+
     public abstract T deserialize(YamlElement element, Type type);
 
 }
