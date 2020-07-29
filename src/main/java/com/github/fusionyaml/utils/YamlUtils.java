@@ -26,7 +26,7 @@ import java.util.*;
 public class YamlUtils {
 
     public static YamlElement toElement(Object o) {
-        if (o == null) return null;
+        if (o == null) return YamlNull.NULL;
         if (o instanceof YamlElement)
             return (YamlElement) o;
         if (isPrimitive(o))
@@ -182,5 +182,32 @@ public class YamlUtils {
                 "exception=No suitable constructor with 3 arguments found for interface java.util.Map");
     }
 
+
+    public static List<String> toList(String path, char separator) {
+        List<String> paths = new LinkedList<>();
+        char[] chars = path.toCharArray();
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == separator || i + 1 == chars.length) {
+                if (i + 1 == chars.length)
+                    str.append(chars[i]);
+                paths.add(str.toString());
+                str = new StringBuilder();
+                continue;
+            }
+            str.append(chars[i]);
+        }
+        return paths;
+    }
+
+    public static <T> List<Map> toList(Map<String, T> map) {
+        List<Map> list = new LinkedList<>();
+        map.forEach((k, v) -> {
+            Map<String, T> map2 = new LinkedHashMap<>();
+            map2.put(k, v);
+            list.add(map2);
+        });
+        return list;
+    }
 
 }

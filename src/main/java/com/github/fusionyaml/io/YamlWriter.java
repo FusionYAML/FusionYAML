@@ -1,16 +1,14 @@
 package com.github.fusionyaml.io;
 
-import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.document.YamlComment;
 import com.github.fusionyaml.exceptions.YamlException;
 import com.github.fusionyaml.object.YamlObject;
-import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 public abstract class YamlWriter extends Writer implements AutoCloseable {
 
@@ -59,30 +57,8 @@ public abstract class YamlWriter extends Writer implements AutoCloseable {
         return null;
     }
 
-    public void write(@NotNull YamlObject obj, FusionYAML fusionYAML, Set<YamlComment> comments)
-            throws IOException {
-        Map<String, Object> dumpable = $DataBridge.toDumpableMap(obj.getMap());
-        Yaml yaml = new Yaml($DataBridge.getDumperOptions(fusionYAML.getYamlOptions()));
-        String dumped = yaml.dump(dumpable);
-        if (comments.size() == 0) {
-            this.write(dumped);
-            return;
-        }
-        List<String> list = new LinkedList<>(Splitter.on("\n").splitToList(dumped));
-        List<Integer> skip = new ArrayList<>();
-        comments.forEach(c -> skip.add(c.getLineNumber()));
-        int maxLn = skip.stream().mapToInt(v -> v).max().getAsInt();
-        int maxCol = comments.stream().mapToInt(YamlComment::getColumn).max().getAsInt();
-        CommentManager.createSpace(list, maxLn, maxCol);
-        CommentManager manager = new CommentManager();
-        for (YamlComment comment : comments) {
-            CommentManager.IntStringWrapper cmt =
-                    manager.addComment(list, comment, fusionYAML.getYamlOptions().getWidth());
-            list.set(cmt.num, cmt.str);
-        }
-        writeList(list);
-        flush();
-    }
+    public abstract void write(@NotNull YamlObject obj, FusionYAML fusionYAML, Set<YamlComment> comment)
+            throws IOException;
 
     protected void writeList(List<String> list) throws IOException {
         boolean first = true;

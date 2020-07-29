@@ -1,12 +1,12 @@
 package com.github.fusionyaml;
 
-import com.github.fusionyaml.object.YamlArray;
-import com.github.fusionyaml.object.YamlElement;
-import com.github.fusionyaml.object.YamlPrimitive;
+import com.github.fusionyaml.object.*;
 import com.github.fusionyaml.serialization.TypeAdapter;
 import org.yaml.snakeyaml.DumperOptions;
 
 import java.util.*;
+
+import static com.github.fusionyaml.utils.YamlUtils.*;
 
 /**
  * This class is not intended for public usage.
@@ -22,6 +22,7 @@ public class $DataBridge {
      * @return An object that could be dumped using smakeyaml's library
      */
     public static Object toDumpableObject(YamlElement element) {
+        if (element == null) return null;
         if (element.isYamlPrimitive()) {
             YamlPrimitive primitive = element.getAsYamlPrimitive();
             if (primitive.isNumber())
@@ -37,6 +38,20 @@ public class $DataBridge {
         else if (element.isYamlObject())
             return toDumpableMap(element.getAsYamlObject().getMap());
         else return null;
+    }
+
+    public static YamlElement toElement(Object o) {
+        if (o == null) return YamlNull.NULL;
+        if (o instanceof YamlElement)
+            return (YamlElement) o;
+        if (isPrimitive(o))
+            return new YamlPrimitive(o);
+        if (o instanceof List) {
+            return toYamlList((List<Object>) o);
+        }
+        if (o instanceof Map) {
+            return new YamlObject(toMap(toStrMap((Map) o)));
+        } else return YamlNull.NULL;
     }
 
     /**

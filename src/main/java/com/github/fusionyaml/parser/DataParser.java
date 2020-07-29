@@ -18,9 +18,9 @@ package com.github.fusionyaml.parser;
 import com.github.fusionyaml.exceptions.YamlParseFailedException;
 import com.github.fusionyaml.object.YamlElement;
 import com.github.fusionyaml.utils.FileUtils;
-import com.github.fusionyaml.utils.StorageUtils;
 import com.github.fusionyaml.utils.URLUtils;
 import com.github.fusionyaml.utils.YamlUtils;
+import com.google.common.base.Splitter;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -139,7 +139,7 @@ public abstract class DataParser extends YamlParser {
             return null;
         if (path.startsWith(".") || path.endsWith("."))
             return null;
-        List<String> paths = StorageUtils.toList(path, dirSeparator);
+        List<String> paths = Splitter.on(dirSeparator).splitToList(path);
         return getObject(paths);
     }
 
@@ -191,7 +191,7 @@ public abstract class DataParser extends YamlParser {
      */
     @Override
     public @Nullable YamlElement getElement(@NotNull String path, char dirSeparator) {
-        return getElement(StorageUtils.toList(path, dirSeparator));
+        return getElement(Splitter.on(dirSeparator).splitToList(path));
     }
 
     /**

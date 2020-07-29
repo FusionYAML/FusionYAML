@@ -11,7 +11,7 @@ import java.util.TimeZone;
  */
 public class YamlOptions {
 
-    private DumperOptions options = new DumperOptions();
+    private DumperOptions options;
     private boolean onlyExposed = false;
     private boolean mentionEnumName = false;
     private boolean includeInterfacesWithNoAdapters = false;
@@ -21,6 +21,7 @@ public class YamlOptions {
     private boolean allowUnicode = true;
     private boolean prettyFlow = false;
     private boolean splitLines = true;
+    private boolean allowStartAndEndIndicators = false;
     private int indent = 2;
     private int width = 80;
     private int maxKeyLength = 128;
@@ -37,9 +38,6 @@ public class YamlOptions {
     }
 
 
-    /**
-     * @return Whether
-     */
     public boolean isOnlyExposed() {
         return onlyExposed;
     }
@@ -70,6 +68,10 @@ public class YamlOptions {
 
     public boolean isSplitLines() {
         return splitLines;
+    }
+
+    public boolean isAllowDocStartAndEnd() {
+        return allowStartAndEndIndicators;
     }
 
     public boolean isExcludeNullVals() {
@@ -208,6 +210,20 @@ public class YamlOptions {
         public Builder setSplitLines(boolean splitLines) {
             options.splitLines = splitLines;
             options.options.setSplitLines(splitLines);
+            return this;
+        }
+
+        /**
+         * @param allowIndicators If set to true, yaml document start and end indicators will
+         *                        be placed. If there are more than one documents, however, the
+         *                        writer will include the indicators to avoid confusion regardless
+         *                        of the option set here.
+         * @return this object
+         */
+        public Builder setAllowDocStartAndEnd(boolean allowIndicators) {
+            options.allowStartAndEndIndicators = allowIndicators;
+            options.options.setExplicitStart(allowIndicators);
+            options.options.setExplicitEnd(allowIndicators);
             return this;
         }
 

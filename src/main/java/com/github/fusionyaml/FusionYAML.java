@@ -690,6 +690,11 @@ public class FusionYAML {
             return this;
         }
 
+        public Builder allowDocStartAndEnd(boolean docStartAndEnd) {
+            builder.setAllowDocStartAndEnd(docStartAndEnd);
+            return this;
+        }
+
         public Builder indent(int indent) {
             builder.setIndent(indent);
             return this;

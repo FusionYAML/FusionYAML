@@ -16,8 +16,8 @@ limitations under the License.
 package com.github.fusionyaml.object;
 
 import com.github.fusionyaml.configurations.Configuration;
-import com.github.fusionyaml.utils.StorageUtils;
 import com.github.fusionyaml.utils.YamlUtils;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 
@@ -266,7 +266,7 @@ public class YamlNode implements YamlElement {
      * @return this object
      */
     public YamlNode addChild(@NotNull String path, char separator, Object value) {
-        return addChild(StorageUtils.toList(path, separator), value);
+        return addChild(Splitter.on(separator).splitToList(path), value);
     }
 
     /**
@@ -293,7 +293,9 @@ public class YamlNode implements YamlElement {
      * @return Gets the child nodes stored in an {@link com.google.common.collect.ImmutableMap}
      */
     public ImmutableList<YamlNode> getChildNodes() {
-        return StorageUtils.toImmutableList(childNodes);
+        ImmutableList.Builder<YamlNode> builder = new ImmutableList.Builder<>();
+        childNodes.forEach(builder::add);
+        return builder.build();
     }
 
 }

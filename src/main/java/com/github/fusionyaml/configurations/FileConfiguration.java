@@ -16,16 +16,14 @@ limitations under the License.
 package com.github.fusionyaml.configurations;
 
 import com.github.fusionyaml.FusionYAML;
+import com.github.fusionyaml.document.YamlComment;
 import com.github.fusionyaml.exceptions.YamlException;
+import com.github.fusionyaml.io.DocumentReader;
 import com.github.fusionyaml.object.YamlObject;
-import com.github.fusionyaml.parser.DefaultParser;
-import com.github.fusionyaml.utils.YamlUtils;
 import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * This class is a synchronized class that converts {@link File} data into {@link YamlObject} data.
@@ -35,9 +33,9 @@ import java.util.Map;
 public class FileConfiguration extends YamlConfiguration {
 
     /**
-     * The constant {@link DefaultParser} instance
+     * The file
      */
-    private static final DefaultParser parser = new DefaultParser(new LinkedHashMap<>());
+    private File file;
 
     /**
      * This constructor requires a {@link File} instance. The {@link File} contents will then
@@ -52,14 +50,31 @@ public class FileConfiguration extends YamlConfiguration {
      */
     public FileConfiguration(File file, FusionYAML yaml) throws IOException, YamlException {
         super(yaml);
-        parser.reload(file);
-        Map<String, Object> map = parser.map();
-        if (map == null)
-            throw new YamlException("parser map returned null");
-        object = new YamlObject(YamlUtils.toMap(map), parser.getYamlType());
+        this.file = file;
+        this.reload();
     }
 
     public FileConfiguration(File file) throws IOException, YamlException {
         this(file, new FusionYAML());
     }
+
+    public void reload() throws IOException {
+        try (DocumentReader reader = new DocumentReader(file)) {
+            this.object = reader.toYamlObject(fusionYAML);
+        }
+        try (DocumentReader reader = new DocumentReader(file)) {
+            YamlComment comment;
+            while ((comment = reader.nextComment()) != null)
+                comments.add(comment);
+        }
+    }
+
+    public void save() throws IOException {
+        this.save(file);
+    }
+
+    public File getFile() {
+        return file;
+    }
+
 }

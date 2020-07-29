@@ -25,7 +25,6 @@ public class YamlComment {
      */
     private final String text;
 
-
     public YamlComment(boolean inline, int line, int col, String text) {
         this.inline = inline;
         this.line = line;

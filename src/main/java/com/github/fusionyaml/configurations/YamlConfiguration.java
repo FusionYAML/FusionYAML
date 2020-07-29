@@ -15,20 +15,25 @@ limitations under the License.
 */
 package com.github.fusionyaml.configurations;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
+import com.github.fusionyaml.document.YamlComment;
 import com.github.fusionyaml.events.ConfigurationChangeListener;
 import com.github.fusionyaml.events.FileSaveListener;
 import com.github.fusionyaml.events.Listener;
 import com.github.fusionyaml.exceptions.UnsupportedYamlException;
 import com.github.fusionyaml.exceptions.YamlDeserializationException;
+import com.github.fusionyaml.io.DocumentWriter;
+import com.github.fusionyaml.io.YamlWriter;
 import com.github.fusionyaml.object.YamlElement;
+import com.github.fusionyaml.object.YamlNull;
 import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.object.YamlPrimitive;
-import com.github.fusionyaml.parser.DefaultParser;
 import com.github.fusionyaml.parser.YamlParser;
+import com.github.fusionyaml.serialization.TypeAdapter;
 import com.github.fusionyaml.utils.FileUtils;
-import com.github.fusionyaml.utils.StorageUtils;
 import com.github.fusionyaml.utils.YamlUtils;
+import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -36,6 +41,8 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -65,6 +72,11 @@ public class YamlConfiguration implements Configuration {
     protected YamlObject object;
 
     /**
+     * A list of comments
+     */
+    protected List<YamlComment> comments = new ArrayList<>();
+
+    /**
      * The default {@link DumperOptions}. If {@link #save(File)} is called, this object will
      * be used to call {@link #save(DumperOptions, File)}
      */
@@ -82,7 +94,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(Class<T> clazz) {
-        return fusionYAML.deserialize(getContents(), clazz);
+        return toObject((Type) clazz);
     }
 
     /**
@@ -101,7 +113,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(String path, Class<T> clazz) {
-        return toObject(Collections.singletonList(path), clazz);
+        return toObject(Collections.singletonList(path), (Type) clazz);
     }
 
     /**
@@ -122,7 +134,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(String path, char separator, Class<T> clazz) {
-        return toObject(StorageUtils.toList(path, separator), clazz);
+        return toObject(Splitter.on(separator).splitToList(path), (Type) clazz);
     }
 
     /**
@@ -145,13 +157,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(List<String> path, Class<T> clazz) {
-        YamlParser parser = new DefaultParser(YamlUtils.toMap0(getContents()));
-        parser.map();
-        Object found = parser.getObject(path);
-        if (found == null)
-            return null;
-        YamlElement e = YamlUtils.toElement(found);
-        return fusionYAML.deserialize(e, clazz);
+        return toObject(path, (Type) clazz);
     }
 
     /**
@@ -173,7 +179,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public <T> T toObject(String[] path, Class<T> clazz) {
-        return toObject(new LinkedList<>(Arrays.asList(path)), clazz);
+        return toObject(new LinkedList<>(Arrays.asList(path)), (Type) clazz);
     }
 
     /**
@@ -230,7 +236,11 @@ public class YamlConfiguration implements Configuration {
      *
      * @param options The {@link DumperOptions}, which contains convenient options to fit your needs
      * @param file    The file that'll be saved to. If the file doesn't exist, the file will
-     *  @throws IOException Thrown if any IO error occurred.
+     * @throws IOException Thrown if any IO error occurred.
+     * @deprecated This is an outdated function. Use {@link #save(File)}. The latter function is
+     * more efficient; moreover, you can use {@link FusionYAML.Builder} to build a customizable
+     * {@link FusionYAML} as well as a {@link com.github.fusionyaml.YamlOptions}. This function is
+     * also not updated, so there may be issues with it.
      */
     @Override
     public void save(DumperOptions options, @NotNull File file) throws IOException {
@@ -240,12 +250,25 @@ public class YamlConfiguration implements Configuration {
         if (object.getYamlType() == YamlParser.YamlType.MAP)
             data = yaml.dump(map);
         else if (object.getYamlType() == YamlParser.YamlType.LIST)
-            data = yaml.dump(StorageUtils.toList(map));
+            data = yaml.dump(YamlUtils.toList(map));
         else throw new UnsupportedYamlException("The YAML type is unsupported");
-        int buff = data.length() < 32768 ? 32768 : 65536;
-        FileUtils.writeToFile(data, new FileWriter(file), buff);
+        FileUtils.writeToFile(data, new FileWriter(file), 8192);
         if (saveListener != null)
             saveListener.onSave(this, file);
+    }
+
+    /**
+     * Writes the contents into the target using a given {@link Writer}
+     *
+     * @param writer The writer
+     * @param buffer The buffer size
+     * @throws IOException If an IO error occurs
+     */
+    @Override
+    public void save(@NotNull Writer writer, int buffer) throws IOException {
+        try (YamlWriter docWriter = new DocumentWriter(writer, buffer)) {
+            docWriter.write(object, fusionYAML, new HashSet<>(comments));
+        }
     }
 
     /**
@@ -257,7 +280,27 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public void save(@NotNull File file) throws IOException {
-        save(defOptions, file);
+        save(new FileWriter(file), nearestBuff(file.length()));
+    }
+
+    /**
+     * Writes the contents into the target using a given {@link Writer}
+     *
+     * @param writer The writer
+     * @throws IOException If an IO error occurs
+     */
+    @Override
+    public void save(@NotNull Writer writer) throws IOException {
+        save(writer, 65536);
+    }
+
+    private static int nearestBuff(long num) {
+        if (num > 524288) return 524288;
+        int buff = 4096;
+        while (num > buff) {
+            buff *= 2;
+        }
+        return Math.min(buff, 524288);
     }
 
     /**
@@ -265,20 +308,14 @@ public class YamlConfiguration implements Configuration {
      * value set to it. If the path does exist, the value in the path will be changed into the new
      * value provided.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      * <p>
-     * If an {@link Object} other than the following is passed, the value will be set by converting it
-     * to a {@link String} using the {@link #toString()} method present in the {@link Object}'s instance:
-     * <ul>
-     *     <li>primitive data types</li>
-     *     <li>string</li>
-     *     <li>maps</li>
-     *     <li>lists</li>
-     *     <li>YamlElements and its children</li>
-     * </ul>
-     *  @param path The path to the value
+     * The object passed in will be serialized using the appropriate
+     * {@link TypeAdapter}
      *
+     * @param path  The path to the value
      * @param value The value the path contains
      */
     @Override
@@ -295,27 +332,21 @@ public class YamlConfiguration implements Configuration {
      * is the part of the path used before the separator. Calling this method while not using a separator
      * in the path is equivalent to calling {@link #set(String, Object)}.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String, char)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      * <p>
-     * If an {@link Object} other than the following is passed, the value will be set by converting it
-     * to a {@link String} using the {@link #toString()} method present in the {@link Object}'s instance:
-     * <ul>
-     *     <li>primitive data types</li>
-     *     <li>string</li>
-     *     <li>maps</li>
-     *     <li>lists</li>
-     *     <li>YamlElements and its children</li>
-     * </ul>
-     *  @param path The path to the value
+     * The object passed in will be serialized using the appropriate
+     * {@link TypeAdapter}
      *
+     * @param path      The path to the value
      * @param separator The path separator. When used, the value will be set under the parent, which is
      *                  the section before the separator.
      * @param value     The value the path contains
      */
     @Override
     public void set(@NotNull String path, char separator, Object value) {
-        set(StorageUtils.toList(path, separator), value);
+        set(Splitter.on(separator).splitToList(path), value);
     }
 
     /**
@@ -327,20 +358,14 @@ public class YamlConfiguration implements Configuration {
      * {@link List} is the child of the previous parent except the first index, which is the uppermost
      * parent.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(List)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      * <p>
-     * If an {@link Object} other than the following is passed, the value will be set by converting it
-     * to a {@link String} using the {@link #toString()} method present in the {@link Object}'s instance:
-     * <ul>
-     *     <li>primitive data types</li>
-     *     <li>string</li>
-     *     <li>maps</li>
-     *     <li>lists</li>
-     *     <li>YamlElements and its children</li>
-     * </ul>
-     *  @param path The path to the value
+     * The object passed in will be serialized using the appropriate
+     * {@link TypeAdapter}
      *
+     * @param path The path to the value
      * @param value The value the path contains
      */
     @Override
@@ -369,10 +394,11 @@ public class YamlConfiguration implements Configuration {
      * value set to it. If the path does exist, the value in the path will be changed into the new
      * value provided.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      *
-     * @param path  The path to the value
+     * @param path The path to the value
      * @param value The value the path contains
      */
     @Override
@@ -389,17 +415,18 @@ public class YamlConfiguration implements Configuration {
      * is the part of the path used before the separator. Calling this method while not using a separator
      * in the path is equivalent to calling {@link #set(String, Object)}.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String, char)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      *
-     * @param path      The path to the value
+     * @param path The path to the value
      * @param separator The path separator. When used, the value will be set under the parent, which is
      *                  the section before the separator.
-     * @param value     The value the path contains
+     * @param value The value the path contains
      */
     @Override
     public void set(@NotNull String path, char separator, YamlElement value) {
-        set(StorageUtils.toList(path, separator), value);
+        set(Splitter.on(separator).splitToList(path), value);
     }
 
     /**
@@ -411,8 +438,9 @@ public class YamlConfiguration implements Configuration {
      * {@link List} is the child of the previous parent except the first index, which is the uppermost
      * parent.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(List)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      *
      * @param path  The path to the value
      * @param value The value the path contains
@@ -421,6 +449,78 @@ public class YamlConfiguration implements Configuration {
     public void set(@NotNull List<String> path, YamlElement value) {
         set(path, (Object) value);
     }
+
+    /**
+     * Adds a {@link YamlComment} to the configuration. The comment will be
+     * visible when dumped to a string or any {@link Writer}.
+     * <p>
+     * Please note that info about the line number and columns are not final,
+     * since comments are relative to one another. For example, if - for any
+     * reason - a comment is split into two, every succeeding comment will be
+     * shifted one line down.
+     *
+     * @param comment A {@link YamlComment} object
+     */
+    @Override
+    public void addComment(YamlComment comment) {
+        comments.add(comment);
+    }
+
+    /**
+     * Adds {@link YamlComment}s to the configuration. The comments will be
+     * visible when dumped to a string, file, or any {@link Writer}.
+     * <p>
+     * Please note that info about the line number and columns are not final,
+     * since comments are relative to one another. For example, if - for any
+     * reason - a comment is split into two, every comment that appears after
+     * it will be shifted one line down.
+     *
+     * @param comments {@link YamlComment} objects
+     */
+    @Override
+    public void addComments(YamlComment... comments) {
+        this.comments.addAll(Arrays.asList(comments));
+    }
+
+    /**
+     * Removes a comment from this {@link Configuration}. The comment won't appear
+     * when dumped to a string, file, or any {@link Writer}.
+     *
+     * @param comment A {@link YamlComment} object
+     */
+    @Override
+    public void removeComment(YamlComment comment) {
+        comments.remove(comment);
+    }
+
+    /**
+     * Removes comment(s) from this {@link Configuration}. The comment(s) won't appear
+     * when dumped to a string, file, or any {@link Writer}.
+     *
+     * @param comments {@link YamlComment} objects
+     */
+    @Override
+    public void removeComments(YamlComment... comments) {
+        this.comments.removeAll(Arrays.asList(comments));
+    }
+
+    /**
+     * Removes all comments from this {@link Configuration}, causing them to not
+     * appear when dumped to a string, file, or any {@link Writer}
+     */
+    @Override
+    public void removeAllComments() {
+        comments.clear();
+    }
+
+    /**
+     * @return The registered comments in this object.
+     */
+    @Override
+    public List<YamlComment> getComments() {
+        return comments;
+    }
+
 
     /**
      * Removes the key-value pair found in the path. A path is essentially a key.
@@ -444,7 +544,8 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public void removePath(@NotNull String path, char separator) {
-        set(StorageUtils.toList(path, separator), null);
+        set(Splitter.on(separator)
+                .splitToList(path), null);
     }
 
     /**
@@ -484,8 +585,9 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
-        YamlParser parser = new DefaultParser(YamlUtils.toMap0(object));
-        Object found = parser.getObject(path);
+        Object obj = YamlUtils.getObject(object.getMap(), path, new HashMap(), path.get(0), true, 0);
+        if (obj == null) return null;
+        Object found = fusionYAML.deserialize((YamlElement) obj, obj.getClass());
         return (found != null) ? found : defValue;
     }
 
@@ -527,7 +629,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull String path, char separator, Object defValue) {
-        return StorageUtils.toList(path, separator);
+        return getObject(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -549,7 +651,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull String path, char separator) {
-        return getObject(StorageUtils.toList(path, separator));
+        return getObject(Splitter.on(separator).splitToList(path));
     }
 
     /**
@@ -631,7 +733,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public String getString(@NotNull String path, char separator, String defValue) {
-        return getString(StorageUtils.toList(path, separator), defValue);
+        return getString(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -691,7 +793,7 @@ public class YamlConfiguration implements Configuration {
     @Override
     public YamlElement getElement(@NotNull List<String> path, YamlElement defValue) {
         Object obj = getObject(path, defValue);
-        return YamlUtils.toElement(obj);
+        return $DataBridge.toElement(obj);
     }
 
     /**
@@ -706,7 +808,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull List<String> path) {
-        return getElement(path, null);
+        return getElement(path, YamlNull.NULL);
     }
 
     /**
@@ -726,7 +828,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull String path, char separator, YamlElement defValue) {
-        return getElement(StorageUtils.toList(path, separator), defValue);
+        return getElement(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -745,7 +847,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull String path, char separator) {
-        return getElement(StorageUtils.toList(path, separator), null);
+        return getElement(Splitter.on(separator).splitToList(path), YamlNull.NULL);
     }
 
     /**
@@ -758,7 +860,8 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull String path, YamlElement defValue) {
-        return null;
+        YamlElement element = getElement(path);
+        return element == null ? defValue : element;
     }
 
     /**
@@ -821,7 +924,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public boolean getBoolean(@NotNull String path, char separator, boolean defValue) {
-        return getBoolean(StorageUtils.toList(path, separator), false);
+        return getBoolean(Splitter.on(separator).splitToList(path), false);
     }
 
     /**
@@ -916,7 +1019,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull String path, char separator, byte defValue) {
-        return getByte(StorageUtils.toList(path, separator), defValue);
+        return getByte(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -935,7 +1038,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public byte getByte(@NotNull String path, char separator) {
-        return getByte(StorageUtils.toList(path, separator), (byte) 0);
+        return getByte(Splitter.on(separator).splitToList(path), (byte) 0);
     }
 
     /**
@@ -1011,7 +1114,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull String path, char separator, short defValue) {
-        return getShort(StorageUtils.toList(path, separator), defValue);
+        return getShort(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -1030,7 +1133,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public short getShort(@NotNull String path, char separator) {
-        return getShort(StorageUtils.toList(path, separator), (short) 0);
+        return getShort(Splitter.on(separator).splitToList(path), (short) 0);
     }
 
     /**
@@ -1106,7 +1209,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull String path, char separator, float defValue) {
-        return getFloat(StorageUtils.toList(path, separator), defValue);
+        return getFloat(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -1125,7 +1228,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public float getFloat(@NotNull String path, char separator) {
-        return getFloat(StorageUtils.toList(path, separator));
+        return getFloat(Splitter.on(separator).splitToList(path));
     }
 
     /**
@@ -1201,7 +1304,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public double getDouble(@NotNull String path, char separator, double defValue) {
-        return getDouble(StorageUtils.toList(path, separator), defValue);
+        return getDouble(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -1296,7 +1399,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public int getInt(@NotNull String path, char separator, int defValue) {
-        return getInt(StorageUtils.toList(path, separator), defValue);
+        return getInt(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -1391,7 +1494,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public long getLong(@NotNull String path, char separator, long defValue) {
-        return getLong(StorageUtils.toList(path, separator), defValue);
+        return getLong(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -1486,7 +1589,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public List getList(@NotNull String path, char separator, List defValue) {
-        return getList(StorageUtils.toList(path, separator), defValue);
+        return getList(Splitter.on(separator).splitToList(path), defValue);
     }
 
     /**
@@ -1531,6 +1634,93 @@ public class YamlConfiguration implements Configuration {
     @Override
     public List getList(@NotNull String path) {
         return getList(path, null);
+    }
+
+    /**
+     * Deserializes the whole {@link Configuration} into an object of a similar type
+     * as to what has been passed in. Calling this method is equivalent to calling
+     * {@link FusionYAML#deserialize(YamlElement, Type)}
+     *
+     * @param type The type
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while deserializing
+     */
+    @Override
+    public <T> T toObject(Type type) {
+        return fusionYAML.deserialize(object, type);
+    }
+
+    /**
+     * Deserializes the value found in the path passed in. The value will be extracted
+     * and then an appropriate deserializer will be fetched.
+     *
+     * @param path The path to the object
+     * @param type The type of the object
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while deserializing
+     */
+    @Override
+    public <T> T toObject(String path, Type type) {
+        return toObject(Collections.singletonList(path), type);
+    }
+
+    /**
+     * Deserializes the value found in the path. The seperator serves as the splitter
+     * where each occurrence will cause the configuration to search for the value nested
+     * under the path before the occurrence.
+     * <p>
+     * For example:
+     * {@code
+     * key:
+     * nested1:
+     * nested2: 8
+     * }
+     * To retrieve the value in nested2:
+     * {@code
+     * Integer integer = toObject("key.nested1.nested2", '.', Integer.class);
+     * }
+     *
+     * @param path      The path
+     * @param seperator The seperator
+     * @param type      The type of the object
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while deserializing
+     */
+    @Override
+    public <T> T toObject(String path, char seperator, Type type) {
+        return toObject(Splitter.on(seperator).splitToList(path), type);
+    }
+
+    /**
+     * Deserializes the values found in a {@link List} of paths where each index
+     * represents a shift to the value of the nested path under the previous index.
+     *
+     * @param path The path
+     * @param type The type of the object
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while
+     *                                      deserializing
+     */
+    @Override
+    public <T> T toObject(List<String> path, Type type) {
+        Object obj =
+                YamlUtils.getObject(object.getMap(), path, new HashMap(), path.get(0), true, 0);
+        return fusionYAML.deserialize((YamlElement) obj, type);
+    }
+
+    /**
+     * Deserializes the values found in an array of strings where each index represents
+     * a shift to the value of the nested path under the previous index.
+     *
+     * @param path The path
+     * @param type The type of the object
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while
+     *                                      deserializign
+     */
+    @Override
+    public <T> T toObject(String[] path, Type type) {
+        return toObject(Arrays.asList(path), type);
     }
 
     /**

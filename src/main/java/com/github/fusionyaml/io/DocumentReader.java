@@ -2,6 +2,7 @@ package com.github.fusionyaml.io;
 
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.object.YamlElement;
+import com.github.fusionyaml.object.YamlNull;
 import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.parser.DefaultParser;
 
@@ -40,7 +41,8 @@ public class DocumentReader extends YamlReader {
         DefaultParser parser = new DefaultParser(str);
         Map<String, Object> parsed = parser.map();
         parsed.forEach((key, value) -> {
-            map.put(key, yaml.serialize(value, value.getClass()));
+            if (value != null) map.put(key, yaml.serialize(value, value.getClass()));
+            else map.put(key, YamlNull.NULL);
         });
         return new YamlObject(map);
     }

@@ -22,8 +22,8 @@ import com.github.fusionyaml.configurations.YamlConfiguration;
 import com.github.fusionyaml.events.EntryChangeListener;
 import com.github.fusionyaml.parser.YamlParser;
 import com.github.fusionyaml.serialization.TypeAdapter;
-import com.github.fusionyaml.utils.StorageUtils;
 import com.github.fusionyaml.utils.YamlUtils;
+import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -319,7 +319,7 @@ public class YamlObject implements YamlElement {
      * @return this object
      */
     public YamlObject set(@NotNull String path, char separator, Object value) {
-        return set(StorageUtils.toList(path, separator), value);
+        return set(Splitter.on(separator).splitToList(path), value);
     }
 
     /**

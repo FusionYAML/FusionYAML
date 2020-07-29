@@ -22,8 +22,8 @@ import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.parser.DefaultParser;
 import com.github.fusionyaml.parser.YamlParser;
 import com.github.fusionyaml.serialization.TypeAdapter;
-import com.github.fusionyaml.utils.StorageUtils;
 import com.github.fusionyaml.utils.YamlUtils;
+import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -119,7 +119,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     @Override
     public void set(@NotNull String path, char separator, Object value) {
-        set(StorageUtils.toList(path, separator), value);
+        set(Splitter.on(separator).splitToList(path), value);
     }
 
     /**
@@ -177,7 +177,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     @Override
     public void set(@NotNull String path, char separator, YamlElement value) {
-        set(StorageUtils.toList(path, separator), value);
+        set(Splitter.on(separator).splitToList(path), value);
     }
 
     /**

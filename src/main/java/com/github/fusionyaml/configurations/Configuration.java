@@ -16,12 +16,13 @@ limitations under the License.
 package com.github.fusionyaml.configurations;
 
 import com.github.fusionyaml.FusionYAML;
-import com.github.fusionyaml.YamlOptions;
+import com.github.fusionyaml.document.YamlComment;
 import com.github.fusionyaml.events.ConfigurationChangeListener;
 import com.github.fusionyaml.events.FileSaveListener;
 import com.github.fusionyaml.events.Listener;
 import com.github.fusionyaml.exceptions.YamlDeserializationException;
 import com.github.fusionyaml.object.YamlElement;
+import com.github.fusionyaml.object.YamlNull;
 import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.serialization.TypeAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +31,8 @@ import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.lang.reflect.Type;
 import java.util.List;
 
 
@@ -44,6 +47,12 @@ import java.util.List;
  * <p>
  * When saving, the {@link YamlObject} will be converted into a {@link String} and will be written
  * on a file, URL, etc.
+ * <p>
+ * Please note that a {@link Configuration} represents a single document
+ *
+ * @see YamlConfiguration
+ * @see FileConfiguration
+ * @see WebConfiguration
  */
 public interface Configuration {
 
@@ -54,9 +63,10 @@ public interface Configuration {
      * @param file    The file that'll be saved to. If the file doesn't exist, the file will
      *                be created with the data saved to it.
      * @throws IOException Thrown if any IO error occurred.
-     * @deprecated The options will be retrieved from {@link FusionYAML}.
-     * {@link YamlOptions} contains more options for the new
-     * version for FusionYAML
+     * @deprecated This is an outdated function. Use {@link #save(File)}. The latter function is
+     * more efficient; moreover, you can use {@link FusionYAML.Builder} to build a customizable
+     * {@link FusionYAML} as well as a {@link com.github.fusionyaml.YamlOptions}. This function
+     * is also not updated, so there may be issues with it.
      */
     @Deprecated
     void save(@Nullable DumperOptions options, @NotNull File file) throws IOException;
@@ -71,12 +81,31 @@ public interface Configuration {
     void save(@NotNull File file) throws IOException;
 
     /**
+     * Writes the contents into the target using a given {@link Writer}
+     *
+     * @param writer The writer
+     * @param buffer The buffer size
+     * @throws IOException If an IO error occurs
+     */
+    void save(@NotNull Writer writer, int buffer) throws IOException;
+
+
+    /**
+     * Writes the contents into the target using a given {@link Writer}
+     *
+     * @param writer The writer
+     * @throws IOException If an IO error occurs
+     */
+    void save(Writer writer) throws IOException;
+
+    /**
      * Sets the value in the path. If the path didn't exist, a new path will be created with the
      * value set to it. If the path does exist, the value in the path will be changed into the new
      * value provided.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      * <p>
      * The object passed in will be serialized using the appropriate
      * {@link TypeAdapter}
@@ -95,8 +124,9 @@ public interface Configuration {
      * is the part of the path used before the separator. Calling this method while not using a separator
      * in the path is equivalent to calling {@link #set(String, Object)}.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String, char)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      * <p>
      * The object passed in will be serialized using the appropriate
      * {@link TypeAdapter}
@@ -117,8 +147,9 @@ public interface Configuration {
      * {@link List} is the child of the previous parent except the first index, which is the uppermost
      * parent.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(List)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      * <p>
      * The object passed in will be serialized using the appropriate
      * {@link TypeAdapter}
@@ -133,8 +164,9 @@ public interface Configuration {
      * value set to it. If the path does exist, the value in the path will be changed into the new
      * value provided.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      *
      * @param path The path to the value
      * @param value The value the path contains
@@ -150,8 +182,9 @@ public interface Configuration {
      * is the part of the path used before the separator. Calling this method while not using a separator
      * in the path is equivalent to calling {@link #set(String, Object)}.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(String, char)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      *
      * @param path The path to the value
      * @param separator The path separator. When used, the value will be set under the parent, which is
@@ -169,13 +202,67 @@ public interface Configuration {
      * {@link List} is the child of the previous parent except the first index, which is the uppermost
      * parent.
      * <p>
-     * If {@code null} is passed as the value, the path will be removed. Doing so is equivalent
-     * to calling {@link #removePath(List)}.
+     * Depending on the options set in the {@link FusionYAML.Builder}, if {@code null} is passed
+     * in, the path-value pair may (or may not) be removed. Calling {@link #removePath(String)} (or
+     * any of its overloaded methods) guarantees removal of the key-value pair.
      *
-     * @param path The path to the value
+     * @param path  The path to the value
      * @param value The value the path contains
      */
     void set(@NotNull List<String> path, YamlElement value);
+
+    /**
+     * Adds a {@link YamlComment} to the configuration. The comment will be
+     * visible when dumped to a string or any {@link java.io.Writer}.
+     * <p>
+     * Please note that info about the line number and columns are not final,
+     * since comments are relative to one another. For example, if - for any
+     * reason - a comment is split into two, every succeeding comment will be
+     * shifted one line down.
+     *
+     * @param comment A {@link YamlComment} object
+     */
+    void addComment(YamlComment comment);
+
+    /**
+     * Adds {@link YamlComment}s to the configuration. The comments will be
+     * visible when dumped to a string, file, or any {@link java.io.Writer}.
+     * <p>
+     * Please note that info about the line number and columns are not final,
+     * since comments are relative to one another. For example, if - for any
+     * reason - a comment is split into two, every comment that appears after
+     * it will be shifted one line down.
+     *
+     * @param comments {@link YamlComment} objects
+     */
+    void addComments(YamlComment... comments);
+
+    /**
+     * Removes a comment from this {@link Configuration}. The comment won't appear
+     * when dumped to a string, file, or any {@link java.io.Writer}.
+     *
+     * @param comment A {@link YamlComment} object
+     */
+    void removeComment(YamlComment comment);
+
+    /**
+     * Removes comment(s) from this {@link Configuration}. The comment(s) won't appear
+     * when dumped to a string, file, or any {@link java.io.Writer}.
+     *
+     * @param comments {@link YamlComment} objects
+     */
+    void removeComments(YamlComment... comments);
+
+    /**
+     * Removes all comments from this {@link Configuration}, causing them to not
+     * appear when dumped to a string, file, or any {@link java.io.Writer}
+     */
+    void removeAllComments();
+
+    /**
+     * @return The registered comments in this object.
+     */
+    List<YamlComment> getComments();
 
     /**
      * Removes the key-value pair found in the path. A path is essentially a key.
@@ -408,9 +495,10 @@ public interface Configuration {
     YamlElement getElement(@NotNull List<String> path);
 
     /**
-     * This method retrieves the {@link YamlElement} in a given path with a given default value if the {@link YamlElement}
-     * isn't found. The separator is a {@code char} when used, it is a descent, and therefore, the method
-     * will look for the {@link YamlElement} under the path before the separator is used.
+     * This method retrieves the {@link YamlElement} in a given path with a given default value if the
+     * {@link YamlElement} isn't found. The separator is a {@code char} when used, it is a descent, and
+     * therefore, the method will look for the {@link YamlElement} under the path before the separator
+     * is used.
      * <p>
      * For example, trying to retrieve the value of "player.stats.wins" is equal to calling
      * {@link #getElement(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
@@ -427,7 +515,7 @@ public interface Configuration {
     /**
      * This method retrieves the {@link YamlElement} in a given path. The separator is a {@code char} when used,
      * it is a descent, and therefore, the method will look for the {@link YamlElement} under the path before
-     * the separator is used. If a {@link YamlElement} is not found in the given path, {@code null} is returned.
+     * the separator is used. If a {@link YamlElement} is not found in the given path, {@link YamlNull} is returned.
      * <p>
      * For example, trying to retrieve the value of "player.stats.wins" is equal to calling
      * {@link #getElement(List)} with a {@link List} with 3 indexes, namely player, stats, and wins,
@@ -1066,6 +1154,81 @@ public interface Configuration {
      * @return The {@link List} found in the given path or {@code null} if otherwise
      */
     List getList(@NotNull String path);
+
+    /**
+     * Deserializes the whole {@link Configuration} into an object of a similar type
+     * as to what has been passed in. Calling this method is equivalent to calling
+     * {@link FusionYAML#deserialize(YamlElement, Type)}
+     *
+     * @param type The type
+     * @param <T>  The type
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while deserializing
+     */
+    <T> T toObject(Type type);
+
+    /**
+     * Deserializes the value found in the path passed in. The value will be extracted
+     * and then an appropriate deserializer will be fetched.
+     *
+     * @param path The path to the object
+     * @param type The type of the object
+     * @param <T>  The type
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while deserializing
+     */
+    <T> T toObject(String path, Type type);
+
+    /**
+     * Deserializes the value found in the path. The seperator serves as the splitter
+     * where each occurrence will cause the configuration to search for the value nested
+     * under the path before the occurrence.
+     * <p>
+     * For example:
+     * {@code
+     * key:
+     * nested1:
+     * nested2: 8
+     * }
+     * To retrieve the value in nested2:
+     * {@code
+     * Integer integer = toObject("key.nested1.nested2", '.', Integer.class);
+     * }
+     *
+     * @param path      The path
+     * @param seperator The seperator
+     * @param type      The type of the object
+     * @param <T>       The type
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while deserializing
+     */
+    <T> T toObject(String path, char seperator, Type type);
+
+    /**
+     * Deserializes the values found in a {@link List} of paths where each index
+     * represents a shift to the value of the nested path under the previous index.
+     *
+     * @param path The path
+     * @param type The type of the object
+     * @param <T>  The type
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while
+     *                                      deserializing
+     */
+    <T> T toObject(List<String> path, Type type);
+
+    /**
+     * Deserializes the values found in an array of strings where each index represents
+     * a shift to the value of the nested path under the previous index.
+     *
+     * @param path The path
+     * @param type The type of the object
+     * @param <T>  The type
+     * @return The deserialized object of type {@link T}
+     * @throws YamlDeserializationException Thrown if an error occurred while
+     *                                      deserializign
+     */
+    <T> T toObject(String[] path, Type type);
 
     /**
      * Deserializes the whole configuration into an {@link Object}. If the configuration contains
