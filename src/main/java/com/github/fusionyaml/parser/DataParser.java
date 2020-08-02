@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.github.fusionyaml.parser;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.exceptions.YamlParseFailedException;
 import com.github.fusionyaml.object.YamlElement;
 import com.github.fusionyaml.utils.FileUtils;
@@ -206,7 +207,7 @@ public abstract class DataParser extends YamlParser {
     public @Nullable YamlElement getElement(@NotNull List<String> path) {
         if (path.size() == 0) return null;
         Object o = getObject(path);
-        return YamlUtils.toElement(o);
+        return $DataBridge.toElement(o);
     }
 
     /**

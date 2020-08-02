@@ -6,8 +6,6 @@ import org.yaml.snakeyaml.DumperOptions;
 
 import java.util.*;
 
-import static com.github.fusionyaml.utils.YamlUtils.*;
-
 /**
  * This class is not intended for public usage.
  */
@@ -36,7 +34,7 @@ public class $DataBridge {
         } else if (element.isYamlArray())
             return toDumpableList(((YamlArray) element).getList());
         else if (element.isYamlObject())
-            return toDumpableMap(element.getAsYamlObject().getMap());
+            return toDumpableMap(element.getAsYamlObject());
         else return null;
     }
 
@@ -47,11 +45,47 @@ public class $DataBridge {
         if (isPrimitive(o))
             return new YamlPrimitive(o);
         if (o instanceof List) {
-            return toYamlList((List<Object>) o);
+            YamlArray list = new YamlArray();
+            List<Object> objList = (List<Object>) o;
+            objList.forEach(b -> {
+                list.add($DataBridge.toElement(b));
+            });
+            return list;
         }
         if (o instanceof Map) {
-            return new YamlObject(toMap(toStrMap((Map) o)));
+            Map map = (Map) o;
+            return toYamlObject(toStringMap(map));
         } else return YamlNull.NULL;
+    }
+
+    public static Map<String, Object> toStringMap(Map map) {
+        Map<String, Object> mem = new LinkedHashMap<>();
+        map.forEach((k, v) -> mem.put(k.toString(), v));
+        return mem;
+    }
+
+    public static YamlObject toYamlObject0(Map<String, Object> map) {
+        return toYamlObject(map);
+    }
+
+    public static Map<String, YamlElement> toYamlElementMap(YamlObject object) {
+        Map<String, YamlElement> map = new LinkedHashMap<>();
+        object.forEach(map::put);
+        return map;
+    }
+
+    public static <T> T toObject(YamlElement e) {
+        if (e instanceof YamlPrimitive)
+            return (T) e.getAsYamlPrimitive().getValue();
+        else if (e instanceof YamlArray)
+            return (T) toObjectList(e.getAsYamlArray().getList());
+        else if (e instanceof YamlObject)
+            return (T) $DataBridge.toDumpableMap(e.getAsYamlObject());
+        else return null;
+    }
+
+    public static boolean isPrimitive(Object o) {
+        return o instanceof Number || o instanceof Character || o instanceof Boolean || o instanceof String;
     }
 
     /**
@@ -71,14 +105,64 @@ public class $DataBridge {
     /**
      * @return A map that could be directly dumped by using snakeyaml's library
      */
-    public static Map<String, Object> toDumpableMap(Map<String, YamlElement> map) {
+    public static Map<String, Object> toDumpableMap(YamlObject object) {
         Map<String, Object> newMap = new LinkedHashMap<>();
-        map.forEach((k, v) -> newMap.put(k, toDumpableObject(v)));
+        object.forEach((k, v) -> newMap.put(k, toDumpableObject(v)));
         return newMap;
+    }
+
+    public static Map<String, Object> toDumpableMap(YamlObject object, FusionYAML fusionYAML) {
+        return toDumpableMap(removeNullIfEnabled(object, fusionYAML));
+    }
+
+    public static YamlObject removeNullIfEnabled(YamlObject object, FusionYAML yaml) {
+        if (!yaml.getYamlOptions().isExcludeNullVals()) return object;
+        return removeNull(object);
+    }
+
+    private static YamlObject removeNull(YamlObject object) {
+        YamlObject obj = new YamlObject();
+        for (String key : object.keySet()) {
+            YamlElement element = object.get(key);
+            System.out.println(element);
+            if (element != null && !element.isYamlNull()) {
+                if (element.isYamlObject()) {
+                    YamlObject removed = removeNull(element.getAsYamlObject());
+                    if (removed.size() != 0)
+                        obj.set(key, removed);
+                } else obj.set(key, element);
+
+            }
+        }
+        return obj;
     }
 
     public static DumperOptions getDumperOptions(YamlOptions options) {
         return options.dumperOptions();
+    }
+
+    public static YamlObject toYamlObject(Map<String, Object> map) {
+        YamlObject object = new YamlObject();
+        map.forEach((k, v) -> {
+            object.set(k, $DataBridge.toElement(v));
+        });
+        return object;
+    }
+
+    public static YamlObject toYamlObject(Map<String, Object> map, FusionYAML fusionYAML) {
+        return removeNullIfEnabled(toYamlObject(map), fusionYAML);
+    }
+
+    public static List<Object> toObjectList(Collection<YamlElement> list) {
+        List<Object> l = new LinkedList<>();
+        list.forEach(e -> l.add(toObject(e)));
+        return l;
+    }
+
+    public static YamlArray toYamlArray(List<Object> dumpable) {
+        List<YamlElement> elements = new LinkedList<>();
+        dumpable.forEach(o -> elements.add(toElement(o)));
+        return new YamlArray(elements);
     }
 
 }

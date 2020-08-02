@@ -2,7 +2,6 @@ package com.github.fusionyaml.io;
 
 import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
-import com.github.fusionyaml.document.Document;
 import com.github.fusionyaml.document.YamlComment;
 import com.github.fusionyaml.object.YamlObject;
 import com.google.common.base.Splitter;
@@ -34,7 +33,7 @@ public class DocumentWriter extends YamlWriter {
 
     @Override
     public void write(@NotNull YamlObject obj, FusionYAML fusionYAML, Set<YamlComment> comments) throws IOException {
-        Map<String, Object> dumpable = $DataBridge.toDumpableMap(obj.getMap());
+        Map<String, Object> dumpable = $DataBridge.toDumpableMap($DataBridge.removeNullIfEnabled(obj, fusionYAML));
         Yaml yaml = new Yaml($DataBridge.getDumperOptions(fusionYAML.getYamlOptions()));
         String dumped = yaml.dump(dumpable);
         if (comments.size() == 0) {
@@ -61,7 +60,7 @@ public class DocumentWriter extends YamlWriter {
         this.write(object, yaml, new HashSet<>());
     }
 
-    public void write(Document document) throws IOException {
-        this.write(document.toYamlObject(), document.getFusionYAML(), new HashSet<>(document.getComments()));
-    }
+    //public void write(DocumentX document) throws IOException {
+    //  this.write(document.toYamlElement(), document.getFusionYAML(), new HashSet<>(document.getComments()));
+    //}
 }

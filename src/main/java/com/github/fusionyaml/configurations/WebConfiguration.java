@@ -15,13 +15,13 @@ limitations under the License.
 */
 package com.github.fusionyaml.configurations;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.exceptions.YamlException;
 import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.parser.DefaultParser;
 import com.github.fusionyaml.parser.YamlParser;
 import com.github.fusionyaml.utils.URLUtils;
-import com.github.fusionyaml.utils.YamlUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,7 +35,7 @@ import java.util.Map;
  * For example, you created a new instance. You then called {@link #set(String, Object)}
  * and added data. If you checked the file on the {@link URL}, there won't be a change.
  * Instead, you would notice a change in the {@link YamlObject} object in the class, retrievable
- * by calling {@link #getContents()}
+ * by calling {@link #toYamlObject()}
  */
 public class WebConfiguration extends YamlConfiguration {
 
@@ -102,7 +102,7 @@ public class WebConfiguration extends YamlConfiguration {
         Map<String, Object> parsed = parser.map();
         if (parsed == null)
             throw new YamlException("parsed map is null");
-        object = new YamlObject(YamlUtils.toMap(parsed), parser.getYamlType());
+        object = $DataBridge.toYamlObject0(parsed);
     }
 
     /**

@@ -1,38 +1,9 @@
 package com.github.fusionyaml.document;
 
-import com.github.fusionyaml.FusionYAML;
-import com.github.fusionyaml.object.YamlObject;
+import com.github.fusionyaml.object.YamlElement;
 
-import java.util.ArrayList;
-import java.util.List;
+public class Document {
 
-/**
- * Represents one YAML document.
- */
-public interface Document {
-
-    /**
-     * @return A {@link YamlObject} containing all key and value
-     * pairs
-     */
-    YamlObject toYamlObject();
-
-    /**
-     * @return The comments in the document
-     */
-    List<YamlComment> getComments();
-
-    FusionYAML getFusionYAML();
-
-    @Override
-    String toString();
-
-    static Document newInstance(YamlObject object, List<YamlComment> comments, FusionYAML yaml) {
-        return new DocumentImpl(object, comments, yaml);
-    }
-
-    static Document newInstance(YamlObject object, FusionYAML yaml) {
-        return newInstance(object, new ArrayList<>(), yaml);
-    }
+    private YamlElement element;
 
 }

@@ -15,18 +15,17 @@ limitations under the License.
 */
 package com.github.fusionyaml;
 
+import com.github.fusionyaml.ex.YamlParser;
 import com.github.fusionyaml.exceptions.YamlDeserializationException;
 import com.github.fusionyaml.exceptions.YamlParseFailedException;
+import com.github.fusionyaml.io.DocumentReader;
 import com.github.fusionyaml.object.YamlElement;
 import com.github.fusionyaml.object.YamlNull;
 import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.object.YamlPrimitive;
 import com.github.fusionyaml.parser.DefaultParser;
-import com.github.fusionyaml.parser.YamlParser;
 import com.github.fusionyaml.serialization.*;
-import com.github.fusionyaml.utils.FileUtils;
 import com.github.fusionyaml.utils.ReflectionUtils;
-import com.github.fusionyaml.utils.YamlUtils;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -63,13 +62,15 @@ public class FusionYAML {
     // Constant static fields
     private static final Gson GSON_DEFAULT = new GsonBuilder().create();
     private static final Gson GSON_PRETTY_PRINTING = new GsonBuilder().setPrettyPrinting().create();
-    private static final Type MAP_TYPE = new TypeToken<LinkedHashMap<String, Object>>() {}.getType();
+    private static final Type MAP_TYPE = new TypeToken<LinkedHashMap<String, Object>>() {
+    }.getType();
     private static final String DOCUMENT_BEGIN = "---\n";
     private static final String DOCUMENT_END = "...\n";
-    private static final YamlParser DEFAULT_PARSER = new DefaultParser(DOCUMENT_BEGIN + DOCUMENT_END);
-    private static final YamlParser.YamlType DEFAULT_YAML_TYPE = YamlParser.YamlType.MAP;
+    //private static final YamlParser DEFAULT_PARSER = new DefaultParser(DOCUMENT_BEGIN + DOCUMENT_END);
+    //private static final YamlParser.YamlType DEFAULT_YAML_TYPE = YamlParser.YamlType.MAP;
     private static final DumperOptions YAML_DEFAULT_DUMPER_OPTIONS = defaultDumperOptions();
     private static final YamlOptions YAML_DEFAULT_OPTIONS = new YamlOptions();
+    private final YamlParser PARSER = new YamlParser(this);
 
     // Constant type adapters
     public static final ObjectTypeAdapter<Object> OBJECT_TYPE_ADAPTER = new ObjectTypeAdapter();
@@ -144,8 +145,7 @@ public class FusionYAML {
      * @return The {@link YamlObject} loaded from a raw YAML {@link String}
      */
     public YamlObject fromYaml(String raw) {
-        Map<String, YamlElement> mem = YamlUtils.toMap(parseYAML(raw));
-        return new YamlObject(mem, DEFAULT_PARSER.getYamlType());
+        return PARSER.loadAsMap(raw);
     }
 
     /**
@@ -160,68 +160,16 @@ public class FusionYAML {
      * @return A {@link YamlObject} loaded from the reader
      * @throws IOException If an IO error had occurred while reading
      */
-    public YamlObject fromYaml(Reader reader) throws IOException {
-        return fromYaml(FileUtils.readToString(reader));
-    }
-
-    /**
-     * Parses YAML using a {@link YamlParser} into a {@link Map} of {@link String}s and {@link Object}s.
-     * The parser passed in will first be reloaded using {@link YamlParser#reload(Map)} before mapping it
-     * into a {@link Map} of {@link String}s and {@link Object}s.
-     * <p>
-     * {@link YamlParseFailedException} may be thrown if an error occurred
-     * while parsing. If the raw YAML {@link String} violates the YAML syntax,
-     * {@link YamlParseFailedException} will be thrown.
-     *
-     * @param raw    The raw YAML {@link String}
-     * @param parser The {@link YamlParser} that will be used to parse the raw YAML {@link String}
-     *               passed into the method.
-     * @return A {@link Map} of {@link String}s and {@link Object}s, parsed from a raw YAML {@link String}
-     * using a {@link YamlParser}
-     */
-    public Map<String, Object> parseYAML(String raw, YamlParser parser) {
-        parser.reload(raw);
-        return parser.map();
-    }
-
-    /**
-     * Parses YAML using a {@link YamlParser} into a {@link Map} of {@link String}s and {@link Object}s.
-     * The parser passed in will first be reloaded using {@link YamlParser#reload(Map)} before mapping it
-     * into a {@link Map} of {@link String}s and {@link Object}s.
-     * <p>
-     * {@link YamlParseFailedException} may be thrown if an error occurred
-     * while parsing. If the raw YAML {@link String} violates the YAML syntax,
-     * {@link YamlParseFailedException} will be thrown.
-     *
-     * @param raw The raw YAML {@link String}
-     * @return A {@link Map} of {@link String}s and {@link Object}s, parsed from a {@link DefaultParser} object.
-     */
-    public Map<String, Object> parseYAML(String raw) {
-        return parseYAML(raw, DEFAULT_PARSER);
+    public YamlObject fromYAML(Reader reader) throws IOException {
+        try (DocumentReader docReader = new DocumentReader(reader)) {
+            return docReader.toYamlObject(this);
+        }
     }
 
     /**
      * Loads the JSON {@link String} into a {@link YamlObject}. The raw JSON {@link String} will first be
      * converted to a {@link Map} of {@link String}s and {@link Object}s before loading it to a {@link YamlObject}
-     * via {@link #fromYaml(Map, YamlParser.YamlType)}.
-     * <p>
-     * The {@link YamlParser.YamlType} is also needed because YAML is saved to
-     * a {@link String} or a {@link java.io.File} (etc), the structure of the YAML will be the same as what
-     * {@link YamlParser.YamlType} is passed in.
-     *
-     * @param raw  The raw JSON {@link String}
-     * @param type The {@link YamlParser.YamlType} of the YAML
-     * @return The {@link YamlObject} loaded from a raw JSON {@link String}
-     */
-    public YamlObject fromJSON(String raw, YamlParser.YamlType type) {
-        Map<String, Object> contents = GSON_DEFAULT.fromJson(raw, MAP_TYPE);
-        return fromYaml(contents, type);
-    }
-
-    /**
-     * Loads the JSON {@link String} into a {@link YamlObject}. The raw JSON {@link String} will first be
-     * converted to a {@link Map} of {@link String}s and {@link Object}s before loading it to a {@link YamlObject}
-     * via {@link #fromYaml(Map, YamlParser.YamlType)}.
+     * via {@link #fromYaml(Map)}.
      * <p>
      * The {@link YamlParser.YamlType} will be set to a default YAML type, which is
      * map type.
@@ -230,23 +178,7 @@ public class FusionYAML {
      * @return The {@link YamlObject} loaded from a raw JSON {@link String}
      */
     public YamlObject fromJSON(String raw) {
-        return fromJSON(raw, DEFAULT_YAML_TYPE);
-    }
-
-    /**
-     * Loads a {@link JsonObject} and converts it to {@link YamlObject}. The method also requires a
-     * {@link YamlParser.YamlType}, which is required because when YAML
-     * is saved to disk, the structure of the YAML will be adjusted depending on the
-     * {@link YamlParser.YamlType}
-     *
-     * @param object The {@link JsonObject}
-     * @param type The {@link YamlParser.YamlType}
-     * @return The {@link YamlObject} converted from a {@link JsonObject}
-     */
-    public YamlObject fromJSON(JsonObject object, YamlParser.YamlType type) {
-        Map<String, Object> map = GSON_DEFAULT.fromJson(object, MAP_TYPE);
-        Map<String, YamlElement> converted = YamlUtils.toMap(map);
-        return new YamlObject(converted, type);
+        return fromJSON(raw);
     }
 
     /**
@@ -257,39 +189,8 @@ public class FusionYAML {
      * @return The {@link YamlObject} converted from a {@link JsonObject}
      */
     public YamlObject fromJSON(JsonObject object) {
-        return fromJSON(object, DEFAULT_YAML_TYPE);
-    }
-
-    /**
-     * Loads a {@link Map} of {@link String}s and {@link Object}s into a {@link YamlObject}. Since it is
-     * nearly impossible to infer what {@link YamlParser.YamlType} the user
-     * wants reading from a {@link Map}, the {@link YamlParser.YamlType} is
-     * required.
-     * <p>
-     * The {@link YamlParser.YamlType} is useful for knowing what structure
-     * will the YAML be written in.
-     *
-     * @param map The {@link Map} of {@link String}s and {@link Object}s that contain YAML data that
-     *            is yet to be loaded into a {@link YamlObject}
-     * @param type The {@link YamlParser.YamlType}
-     * @return The {@link YamlObject} loaded from a {@link Map} of {@link String}s and {@link Object}s
-     */
-    public YamlObject fromYaml(Map<String, Object> map, YamlParser.YamlType type) {
-        Map<String, YamlElement> mem = YamlUtils.toMap(map);
-        return new YamlObject(mem, type);
-    }
-
-    /**
-     * Loads a {@link Map} of {@link String}s and {@link Object}s into a {@link YamlObject}. The
-     * {@link YamlParser.YamlType} of the {@link YamlObject} will be
-     * of map type, the default {@link YamlParser.YamlType}.
-     *
-     * @param map The {@link Map} of {@link String}s and {@link Object}s that contain YAML data that
-     *            is yet to be loaded into a {@link YamlObject}
-     * @return The {@link YamlObject} loaded from a {@link Map} of {@link String}s and {@link Object}s
-     */
-    public YamlObject fromYaml(Map<String, Object> map) {
-        return this.fromYaml(map, DEFAULT_YAML_TYPE);
+        Map<String, Object> map = GSON_DEFAULT.fromJson(object, MAP_TYPE);
+        return $DataBridge.toYamlObject(map, this);
     }
 
     /**
@@ -355,38 +256,7 @@ public class FusionYAML {
      * during deserializing
      */
     public <T> T deserialize(String yaml, Class<T> as) {
-        return deserialize(parseYAML(yaml), as);
-    }
-
-    /**
-     * Deserializes a {@link Map} of {@link String}s and {@link Object}s into an object of type {@link T}.
-     * The method will look for the appropriate {@link TypeAdapter} for that object. If an appropriate
-     * {@link TypeAdapter} is found, the method will the {@link TypeAdapter} object to deserialize the map.
-     * <p>
-     * If no appropriate {@link TypeAdapter} is found, {@link ObjectTypeAdapter} will be used instead. The
-     * {@link ObjectTypeAdapter} deserializes an object by creating an object instance (of type {@link T}) and
-     * initializing the fields depending on the map's entries.
-     * <p>
-     * In {@link ObjectTypeAdapter}, every entry on the map represents a field. The entry's key will be treated as a
-     * field's name and the value will be treated as the field's value. The {@link ObjectTypeAdapter} will also look
-     * for a valid {@link TypeAdapter} for the field type and deserialize the value on the map to an {@link Object} of
-     * the field's type.
-     * <p>
-     * If an error occurred while deserializing, {@link YamlDeserializationException}
-     * will be thrown.
-     *
-     * @param map The {@link Map} containing key-value pairs. Each key represents a path, and each value represents
-     *            the value to the path. The value can also be a map, which makes the key of the map a nested path.
-     * @param as The class object to deserialize into
-     * @param <T> The object type
-     * @return The {@link Map} deserialized into an object of type {@link T}
-     * @throws YamlDeserializationException Thrown when an error occurred during
-     * deserializing
-     */
-    public <T> T deserialize(Map<String, Object> map, Class<T> as) {
-        Map<String, YamlElement> converted = YamlUtils.toMap(map);
-        YamlObject object = new YamlObject(converted);
-        return deserialize(object, as);
+        return deserialize(PARSER.loadAsMap(yaml), as);
     }
 
     /**
@@ -398,7 +268,7 @@ public class FusionYAML {
      * @return The JSON {@link String}, which is converted from the {@link YamlObject} object.
      */
     public String toJSON(YamlObject object, Gson gson) {
-        Map<String, Object> converted = YamlUtils.toMap0(object);
+        Map<String, Object> converted = $DataBridge.toDumpableMap(object, this);
         return gson.toJson(converted);
     }
 
@@ -438,7 +308,7 @@ public class FusionYAML {
      * @return The JSON {@link String} converted from a YAML {@link String}
      */
     public String toJSON(String yaml, Gson gson) {
-        return gson.toJson(parseYAML(yaml));
+        return gson.toJson(PARSER.loadAsMap(yaml));
     }
 
     /**
@@ -448,7 +318,7 @@ public class FusionYAML {
      * @return The {@link JsonObject} converted from a {@link YamlObject} object
      */
     public JsonObject toJSONObject(YamlObject object) {
-        Map<String, Object> map = YamlUtils.toMap0(object);
+        Map<String, Object> map = $DataBridge.toDumpableMap(object);
         return GSON_DEFAULT.toJsonTree(map).getAsJsonObject();
     }
 
@@ -511,20 +381,6 @@ public class FusionYAML {
         return adapter;
     }
 
-    private static Map<String, Object> toMap(Map<Type, TypeAdapter> classTypeAdapterMap, ObjectTypeAdapter typeAdapter, Object o, Type typeOfO) {
-        TypeAdapter adapter = getTypeAdapter(classTypeAdapterMap, o.getClass());
-        YamlElement serialized;
-        if (adapter != null)
-            serialized = adapter.serialize(o, typeOfO);
-        else serialized = typeAdapter.serialize(o, typeOfO);
-        if (!serialized.isYamlObject()) {
-            Map<String, YamlElement> map = new LinkedHashMap<>();
-            map.put(o.hashCode() + "", serialized);
-            serialized = new YamlObject(map);
-        }
-        return YamlUtils.toMap0(serialized.getAsYamlObject());
-    }
-
     /**
      * Serializes an {@link Object} into a YAML {@link String}. The method will look for an appropriate
      * {@link TypeAdapter} for the {@link Object}, and use its serialize method to serialize it to a
@@ -543,8 +399,14 @@ public class FusionYAML {
      * @return The serialized {@link Object}
      */
     public String toYAML(Object o) {
-        return yaml.dump(toMap(classTypeAdapterMap, OBJECT_TYPE_ADAPTER, o, o.getClass()));
+        return yaml.dump(serialize(o, o.getClass()));
     }
+
+
+    public String toYAML(YamlObject object) {
+        return yaml.dump($DataBridge.toDumpableMap(object, this));
+    }
+
 
     /**
      * Gets the appropriate {@link TypeAdapter} for the class. If no appropriate {@link TypeAdapter} is found, the
@@ -603,9 +465,6 @@ public class FusionYAML {
                 adapter instanceof PrimitiveTypeAdapter;
     }
 
-    public String toYAML(YamlObject object) {
-        return yaml.dump($DataBridge.toDumpableMap(object.getMap()));
-    }
 
     /**
      * A builder for the {@link FusionYAML} class

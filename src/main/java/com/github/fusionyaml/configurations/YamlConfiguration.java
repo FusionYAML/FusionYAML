@@ -21,7 +21,6 @@ import com.github.fusionyaml.document.YamlComment;
 import com.github.fusionyaml.events.ConfigurationChangeListener;
 import com.github.fusionyaml.events.FileSaveListener;
 import com.github.fusionyaml.events.Listener;
-import com.github.fusionyaml.exceptions.UnsupportedYamlException;
 import com.github.fusionyaml.exceptions.YamlDeserializationException;
 import com.github.fusionyaml.io.DocumentWriter;
 import com.github.fusionyaml.io.YamlWriter;
@@ -29,19 +28,16 @@ import com.github.fusionyaml.object.YamlElement;
 import com.github.fusionyaml.object.YamlNull;
 import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.object.YamlPrimitive;
-import com.github.fusionyaml.parser.YamlParser;
 import com.github.fusionyaml.serialization.TypeAdapter;
 import com.github.fusionyaml.utils.FileUtils;
 import com.github.fusionyaml.utils.YamlUtils;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -244,14 +240,10 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public void save(DumperOptions options, @NotNull File file) throws IOException {
-        Map<String, Object> map = YamlUtils.toMap0(object);
+        Map<String, Object> map = $DataBridge.toDumpableMap(object);
         Yaml yaml = new Yaml((options != null) ? options : defOptions);
         String data;
-        if (object.getYamlType() == YamlParser.YamlType.MAP)
-            data = yaml.dump(map);
-        else if (object.getYamlType() == YamlParser.YamlType.LIST)
-            data = yaml.dump(YamlUtils.toList(map));
-        else throw new UnsupportedYamlException("The YAML type is unsupported");
+        data = yaml.dump(map);
         FileUtils.writeToFile(data, new FileWriter(file), 8192);
         if (saveListener != null)
             saveListener.onSave(this, file);
@@ -378,11 +370,11 @@ public class YamlConfiguration implements Configuration {
             object.set(path, null);
             return;
         }
-        if (!YamlUtils.isPrimitive(value) && !(value instanceof Map) && !(value instanceof Collection)) {
+        if (!$DataBridge.isPrimitive(value) && !(value instanceof Map) && !(value instanceof Collection)) {
             object.set(path, fusionYAML.serialize(value, value.getClass()));
             return;
         }
-        YamlElement converted = YamlUtils.toElement(value);
+        YamlElement converted = $DataBridge.toElement(value);
         YamlElement data = (converted != null) ? converted : new YamlPrimitive(value.toString());
         object.set(path, data);
         if (changeListener != null)
@@ -447,7 +439,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public void set(@NotNull List<String> path, YamlElement value) {
-        set(path, (Object) value);
+        object.set(path, value);
     }
 
     /**
@@ -566,7 +558,7 @@ public class YamlConfiguration implements Configuration {
      * @return Gets the {@link YamlObject} for the configuration
      */
     @Override
-    public YamlObject getContents() {
+    public YamlObject toYamlObject() {
         return object;
     }
 
@@ -585,7 +577,8 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
-        Object obj = YamlUtils.getObject(object.getMap(), path, new HashMap(), path.get(0), true, 0);
+        Object obj = YamlUtils.getObject($DataBridge.toYamlElementMap(object), path,
+                new HashMap(), path.get(0), true, 0);
         if (obj == null || obj == YamlNull.NULL) return null;
         Object found = fusionYAML.deserialize((YamlElement) obj, obj.getClass());
         return (found != null) ? found : defValue;
@@ -792,8 +785,8 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull List<String> path, YamlElement defValue) {
-        Object obj = getObject(path, defValue);
-        return $DataBridge.toElement(obj);
+        Object nested = YamlUtils.getObjectInYamlObject(object, path, new YamlObject(), path.get(0), true, 0);
+        return $DataBridge.toElement(nested);
     }
 
     /**
@@ -1704,7 +1697,7 @@ public class YamlConfiguration implements Configuration {
     @Override
     public <T> T toObject(List<String> path, Type type) {
         Object obj =
-                YamlUtils.getObject(object.getMap(), path, new HashMap(), path.get(0), true, 0);
+                YamlUtils.getObject($DataBridge.toYamlElementMap(object), path, new HashMap(), path.get(0), true, 0);
         return fusionYAML.deserialize((YamlElement) obj, type);
     }
 
@@ -1732,9 +1725,137 @@ public class YamlConfiguration implements Configuration {
         return options;
     }
 
+    public void addComment(List<String> path, String text, boolean inline) {
+        int line = 0;
+        int col = (path.size() - 1) * fusionYAML.getYamlOptions().getIndent();
+        if (path.size() == 1) {
+            List<String> list = new LinkedList<>(object.keySet());
+            for (int i = 0; i < list.size(); i++) {
+                YamlElement element = object.get(i);
+                if (list.get(i).equals(path.get(0))) {
+                    line = i;
+                    break;
+                } else if (element.isYamlObject()) {
+                    line += element.getAsYamlObject().keySet().size();
+                }
+            }
+        } else {
+            line = computeLines(getElement(path.get(0)).getAsYamlObject());
+        }
+        line += cmtLines(line);
+        this.addComment(new YamlComment(inline, line, col, text));
+    }
+
+    /**
+     * Adds a comment near the path. The comment will be on a separate line (not inline)
+     * <p>
+     * Depending on how many entries there are on the list, the comment may be indented by
+     * the size of the path minus one multiplied by the indent set in a {@link FusionYAML} object.
+     *
+     * @param path The path
+     * @param text The comment text
+     */
+    @Override
+    public void addComment(List<String> path, String text) {
+        this.addComment(path, text, false);
+    }
+
+    /**
+     * Adds the comment near the path. If a character in the path matches the
+     * separator, the {@link Configuration} will look for the value under the
+     * portion of the path that was mentioned before it.
+     * <p>
+     * Depending on the boolean value passed in, the comment may or may not
+     * be on the same line as the key-value pair.
+     *
+     * @param path      The path
+     * @param separator The separator, where each occurrence signals a shift
+     *                  to the path nested under the portion that were mentioned
+     *                  before the separator.
+     * @param text      The comment text
+     * @param inline    Whether the comment stays on the same line as the path
+     */
+    @Override
+    public void addComment(String path, char separator, String text, boolean inline) {
+        this.addComment(Splitter.on(separator).splitToList(path), text, inline);
+    }
+
+    /**
+     * Adds the comment near the path. If a character in the path matches the
+     * separator, the {@link Configuration} will look for the value under the
+     * portion of the path that was mentioned before it.
+     * <p>
+     * By default the comment doesn't stay next to the key-value pair (not inline)
+     *
+     * @param path      The path
+     * @param separator The separator, where each occurrence signals a shift
+     *                  to the path nested under the portion that were mentioned
+     *                  before the separator.
+     * @param text      The comment text
+     */
+    @Override
+    public void addComment(String path, char separator, String text) {
+        this.addComment(path, separator, text, false);
+    }
+
+    /**
+     * Adds the comment near the path. Depending on the boolean value passed in,
+     * the comment may or may not be on the same line as the key-value pair.
+     *
+     * @param path   The path
+     * @param text   The comment text
+     * @param inline Whether the comment stays on the same line as the path
+     */
+    @Override
+    public void addComment(String path, String text, boolean inline) {
+        this.addComment(Collections.singletonList(path), text, inline);
+    }
+
+    /**
+     * Adds the comment near the path. By default the comment doesn't stay on the
+     * same line as the key-value pair (not inline)
+     *
+     * @param path The path
+     * @param text The comment text
+     */
+    @Override
+    public void addComment(String path, String text) {
+        this.addComment(path, text, false);
+    }
+
+    private int cmtLines(int line) {
+        int ln = 0;
+        for (YamlComment comment : comments)
+            if (comment.getLineNumber() <= line) {
+                int nl = CharMatcher.is('\n').countIn(comment.getText());
+                ln += 1 + (nl);
+            }
+        return ln;
+    }
+
+    private int computeLines(YamlObject object) {
+        int lines = 0;
+        for (int i = 0; i < object.size(); i++) {
+            YamlElement element = object.get(i);
+            if (element.isYamlObject())
+                lines += computeLines(element.getAsYamlObject());
+            else lines++;
+        }
+        return lines;
+    }
+
     @Override
     public String toString() {
-        return object.toString();
+        StringWriter strWriter = new StringWriter();
+        try {
+            try (DocumentWriter writer = new DocumentWriter(strWriter)) {
+                writer.write(object, fusionYAML, new HashSet<>(comments));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return strWriter.toString();
     }
 
 }

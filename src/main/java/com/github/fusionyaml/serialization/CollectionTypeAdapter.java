@@ -1,9 +1,9 @@
 package com.github.fusionyaml.serialization;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.object.YamlArray;
 import com.github.fusionyaml.object.YamlElement;
-import com.github.fusionyaml.utils.YamlUtils;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -31,7 +31,7 @@ public class CollectionTypeAdapter<T> extends TypeAdapter<Collection<T>>  {
         YamlArray list = element.getAsYamlArray();
         Collection<T> collection = new LinkedList<>();
         list.forEach(e -> {
-            Object o = YamlUtils.toObject0(e);
+            Object o = $DataBridge.toObject(e);
             collection.add(fusionYAML.deserialize(e, o.getClass()));
         });
         return collection;

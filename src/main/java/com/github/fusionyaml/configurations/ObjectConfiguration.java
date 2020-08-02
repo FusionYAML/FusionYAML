@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.github.fusionyaml.configurations;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.exceptions.YamlException;
 import com.github.fusionyaml.object.YamlElement;
@@ -22,7 +23,6 @@ import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.parser.DefaultParser;
 import com.github.fusionyaml.parser.YamlParser;
 import com.github.fusionyaml.serialization.TypeAdapter;
-import com.github.fusionyaml.utils.YamlUtils;
 import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,7 +63,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     public ObjectConfiguration(Object object, FusionYAML yaml) {
         super(yaml);
-        if (YamlUtils.isPrimitive(object) || object instanceof Collection || object instanceof Map)
+        if ($DataBridge.isPrimitive(object) || object instanceof Collection || object instanceof Map)
             throw new YamlException("This configuration is not intended for Primitive objects, " +
                     String.class + ", " + Collection.class + ", and " + Map.class);
         super.object = yaml.serialize(object, object.getClass()).getAsYamlObject();
@@ -91,7 +91,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     @Override
     public void set(@NotNull String path, Object value) {
-        if (getContents().getMap().containsKey(path))
+        if (toYamlObject().containsKey(path))
             super.set(path, value);
     }
 
@@ -146,7 +146,7 @@ public class ObjectConfiguration extends YamlConfiguration {
     public void set(@NotNull List<String> path, Object value) {
         if (value == null)
             return;
-        YamlParser parser = new DefaultParser(YamlUtils.toMap0(getContents()));
+        YamlParser parser = new DefaultParser($DataBridge.toDumpableMap(toYamlObject(), fusionYAML));
         parser.map();
         if (parser.getObject(path) != null)
             super.set(path, value);
@@ -192,7 +192,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     @Override
     public void set(@NotNull List<String> path, YamlElement value) {
-        Object o = YamlUtils.toElement(value);
+        Object o = $DataBridge.toElement(value);
         set(path, o);
     }
 

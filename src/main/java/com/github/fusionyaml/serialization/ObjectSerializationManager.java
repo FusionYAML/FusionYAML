@@ -1,15 +1,18 @@
 package com.github.fusionyaml.serialization;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.exceptions.YamlDeserializationException;
 import com.github.fusionyaml.exceptions.YamlSerializationException;
-import com.github.fusionyaml.object.YamlElement;
-import com.github.fusionyaml.utils.YamlUtils;
+import com.github.fusionyaml.object.YamlObject;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Responsible for creating an {@link Object} and for collecting info about
@@ -76,7 +79,7 @@ public class ObjectSerializationManager {
                     try {
                         field.setAccessible(true);
                         Object found = map.get(field.getName());
-                        Object deserialized = getTypeAdapter(field).deserialize(YamlUtils.toElement(found), field.getType());
+                        Object deserialized = getTypeAdapter(field).deserialize($DataBridge.toElement(found), field.getType());
                         if (deserialized == null) continue;
                         //if (deserialized instanceof Map)
                             //deserialized = objDeserializer.deserialize(YamlUtils.toElement(deserialized), field.getType());
@@ -89,20 +92,20 @@ public class ObjectSerializationManager {
         }
     }
 
-    public Map<String, YamlElement> toSerializedMap(Object o, Type type) {
+    public YamlObject toSerializedObject(Object o, Type type) {
         List<Field> fields = getFieldsForSerialization(type);
-        Map<String, YamlElement> map = new LinkedHashMap<>();
+        YamlObject object = new YamlObject();
         try {
             for (Field field : fields) {
                 boolean prev = field.isAccessible();
                 field.setAccessible(true);
-                map.put(getSerializedName(field), getTypeAdapter(field).serialize(field.get(o), field.getType()));
+                object.set(getSerializedName(field), getTypeAdapter(field).serialize(field.get(o), field.getType()));
                 field.setAccessible(prev);
             }
         } catch (Exception e) {
             throw new YamlSerializationException(e);
         }
-        return map;
+        return object;
     }
 
     public List<Field> getFields(Type type) {

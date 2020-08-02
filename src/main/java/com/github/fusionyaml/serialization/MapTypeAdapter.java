@@ -22,16 +22,16 @@ public class MapTypeAdapter<V> extends TypeAdapter<Map<String, V>> {
     public YamlElement serialize(Map<String, V> obj, Type typeOfV) {
         YamlObject o = new YamlObject();
         if (obj.values().size() == 0) return o;
-        Map<String, YamlElement> map = new LinkedHashMap<>();
-        obj.forEach((k, v) -> map.put(k, fusionYAML.serialize(v, v.getClass())));
-        return new YamlObject(map, fusionYAML);
+        YamlObject object = new YamlObject();
+        obj.forEach((k, v) -> object.set(k, fusionYAML.serialize(v, v.getClass())));
+        return object;
     }
 
     @Override
     public Map<String, V> deserialize(YamlElement element, Type type) {
         YamlObject object = element.getAsYamlObject();
         Map<String, V> map = new LinkedHashMap<>();
-        object.getMap().forEach((k, v) -> map.put(k, fusionYAML.deserialize(v, type)));
+        object.forEach((k, v) -> map.put(k, fusionYAML.deserialize(v, type)));
         return map;
     }
 

@@ -16,104 +16,23 @@ limitations under the License.
 package com.github.fusionyaml.utils;
 
 import com.github.fusionyaml.$DataBridge;
-import com.github.fusionyaml.object.*;
+import com.github.fusionyaml.object.YamlObject;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Class not intended for public usage
  */
 public class YamlUtils {
 
-    public static YamlElement toElement(Object o) {
-        if (o == null) return YamlNull.NULL;
-        if (o instanceof YamlElement)
-            return (YamlElement) o;
-        if (isPrimitive(o))
-            return new YamlPrimitive(o);
-        if (o instanceof List) {
-            return toYamlList((List<Object>) o);
-        }
-        if (o instanceof Map) {
-            return new YamlObject(toMap(toStrMap((Map) o)));
-        } else return YamlNull.NULL;
-    }
-
-    public static <T> T toObject0(YamlElement e) {
-        if (e instanceof YamlPrimitive)
-            return (T) e.getAsYamlPrimitive().getValue();
-        else if (e instanceof YamlArray)
-            return (T) toObjList(e.getAsYamlArray().getList());
-        else if (e instanceof YamlObject)
-            return (T) toMap0(e.getAsYamlObject().getMap());
-        else return null;
-    }
-
-    public static <K, V> Map<String, Object> toStrMap(Map<K, V> map) {
-        Map<String, Object> mp = new LinkedHashMap<>();
-        map.forEach((k, v) -> {
-            mp.put(k.toString(), v);
-        });
-        return mp;
-    }
-
-    public static Map<String, YamlElement> toMap(Map<String, Object> map) {
-        Map<String, YamlElement> map1 = new LinkedHashMap<>();
-        map.forEach((k, v) ->  {
-            map1.put(k, toElement(v));
-        });
-         return map1;
-    }
-
-    public static <T> YamlArray toYamlList(Collection<T> o) {
-        YamlArray list = new YamlArray();
-        o.forEach(b -> {
-            list.add(toElement(b));
-        });
-        return list;
-    }
-
-    public static List<Object> toObjList(Collection<YamlElement> list) {
-        List<Object> l = new LinkedList<>();
-        list.forEach(e -> l.add(toObject(e)));
-        return l;
-    }
-
-
-    private static Object toObject(YamlElement element) {
-        if (element.isYamlPrimitive()) {
-            YamlPrimitive primitive = element.getAsYamlPrimitive();
-            if (primitive.isNumber())
-                return primitive.getAsNumber();
-            else if (primitive.isCharacter())
-                return primitive.getAsChar();
-            else if (primitive.isBoolean())
-                return primitive.getAsBoolean();
-            else
-                return primitive.getAsString();
-        }
-        else if (element.isYamlArray())
-            return toObjList(((YamlArray) element).getList());
-        else if (element.isYamlObject())
-            return $DataBridge.toDumpableMap(element.getAsYamlObject().getMap());
-        else return null;
-    }
-
-    public static boolean isPrimitive(Object o) {
-        return o instanceof Number || o instanceof Character || o instanceof Boolean || o instanceof String;
-    }
-
     public static Map<String, Object> toMap0(YamlObject object) {
         Map<String, Object> empty = new LinkedHashMap<>();
-        object.getMap().forEach((k, v) -> empty.put(k, toObject(v)));
+        object.forEach((k, v) -> empty.put(k, $DataBridge.toObject(v)));
         return empty;
     }
 
-    private static Map<Object, Object> toMap0(Map<String, YamlElement> map) {
-        Map<Object, Object> empty = new LinkedHashMap<>();
-        map.forEach((k, v) -> empty.put(k, toObject(v)));
-        return empty;
-    }
 
     public static Map<String, Object> setNested(Map<String, Object> map, List<String> keys, Object value) {
         String key = keys.get(0);
@@ -177,37 +96,29 @@ public class YamlUtils {
         return null;
     }
 
+    public static Object getObjectInYamlObject(YamlObject init, List<String> paths, YamlObject newMap, String currentPath, boolean first, int loops) {
+        if (paths.size() == 1)
+            return init.get(paths.get(0));
+        YamlObject object = (first) ? init : newMap;
+        if (object == null) return null;
+        if (currentPath.equals(paths.get(paths.size() - 1))) {
+            Object o = object.get(currentPath);
+            return o;
+        }
+        for (Object o : object.keySet()) {
+            if (!o.equals(currentPath)) continue;
+            if (object.get(o.toString()) instanceof YamlObject) {
+                YamlObject objMap = (YamlObject) object.get(o.toString());
+                return getObjectInYamlObject(init, paths, objMap, paths.get(loops + 1), false, loops + 1);
+            }
+        }
+        return null;
+    }
+
     public static boolean mapConstructorException(Exception e) {
         return e.getMessage().startsWith("Can't construct a java object for tag:yaml.org,2002:java.util.Map; " +
                 "exception=No suitable constructor with 3 arguments found for interface java.util.Map");
     }
 
-
-    public static List<String> toList(String path, char separator) {
-        List<String> paths = new LinkedList<>();
-        char[] chars = path.toCharArray();
-        StringBuilder str = new StringBuilder();
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == separator || i + 1 == chars.length) {
-                if (i + 1 == chars.length)
-                    str.append(chars[i]);
-                paths.add(str.toString());
-                str = new StringBuilder();
-                continue;
-            }
-            str.append(chars[i]);
-        }
-        return paths;
-    }
-
-    public static <T> List<Map> toList(Map<String, T> map) {
-        List<Map> list = new LinkedList<>();
-        map.forEach((k, v) -> {
-            Map<String, T> map2 = new LinkedHashMap<>();
-            map2.put(k, v);
-            list.add(map2);
-        });
-        return list;
-    }
 
 }

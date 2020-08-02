@@ -1,12 +1,11 @@
 package com.github.fusionyaml.serialization;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.exceptions.YamlDeserializationException;
 import com.github.fusionyaml.exceptions.YamlSerializationException;
 import com.github.fusionyaml.object.YamlElement;
-import com.github.fusionyaml.object.YamlObject;
 import com.github.fusionyaml.utils.ReflectionUtils;
-import com.github.fusionyaml.utils.YamlUtils;
 import com.google.common.reflect.TypeToken;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
@@ -37,7 +36,7 @@ public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
         // obtain name & values from field, store them
         // and then create a YamlObject containing these values
         try {
-            return new YamlObject(instantiator.toSerializedMap(obj, type), fusionYAML);
+            return instantiator.toSerializedObject(obj, type);
         } catch (Exception e) {
             throw new YamlSerializationException(e);
         }
@@ -50,7 +49,7 @@ public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
         // No specific type adapter for this type. attempt to get values of fields
         // and try to assign to them if values are a map but field type is a nonessential
         // object, then the values in the inner map will be assigned to the object
-        Map<String, Object> map = YamlUtils.toMap0(element.getAsYamlObject());
+        Map<String, Object> map = $DataBridge.toDumpableMap(element.getAsYamlObject(), fusionYAML);
         T obj = genesis.newInstance((Class<T>) TypeToken.of(type).getRawType());
         List<Field> fields = ReflectionUtils.getNonStaticFields(obj);
         if (!ReflectionUtils.isMatch(map, fields))

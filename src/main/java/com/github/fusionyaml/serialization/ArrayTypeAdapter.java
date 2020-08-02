@@ -1,9 +1,9 @@
 package com.github.fusionyaml.serialization;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.FusionYAML;
 import com.github.fusionyaml.object.YamlArray;
 import com.github.fusionyaml.object.YamlElement;
-import com.github.fusionyaml.utils.YamlUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.reflect.TypeToken;
 
@@ -52,7 +52,7 @@ public class ArrayTypeAdapter<T> extends TypeAdapter<T[]> {
         LinkedList obj = new LinkedList<>();
         //Object o = adapter.deserialize(element, typeOfT);
         Type type = TypeToken.of(typeOfT).getRawType();
-        element.getAsYamlArray().forEach(e -> ((LinkedList) obj).add(fusionYAML.deserialize(e, YamlUtils.toObject0(e).getClass())));
+        element.getAsYamlArray().forEach(e -> ((LinkedList) obj).add(fusionYAML.deserialize(e, $DataBridge.toObject(e).getClass())));
         //if (!o.getClass().getName().equals("[" + ((Class) typeOfT).getName()))
           //  return null;
         return (T[]) obj.toArray();

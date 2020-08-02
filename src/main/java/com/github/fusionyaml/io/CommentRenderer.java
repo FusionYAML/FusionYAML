@@ -32,10 +32,13 @@ public abstract class CommentRenderer {
 
     public String[] splitComment(String text, int maxWidth) {
 
-        List<String> list = Splitter.on(' ').omitEmptyStrings().splitToList(text.replace('\n', ' '));
+        List<String> list = Splitter.on(' ').omitEmptyStrings().splitToList(text);
         List<String> finalList = new LinkedList<>();
         for (int i = 0; i < list.size(); i++) {
             String x = list.get(i);
+            if (x.contains("\n")) {
+
+            }
             if (x.length() < maxWidth && i + 1 != list.size()) {
                 StringBuilder toAdd = new StringBuilder(x);
                 for (int k = i + 1; k < list.size(); k++) {

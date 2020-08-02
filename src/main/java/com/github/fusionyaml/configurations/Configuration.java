@@ -212,6 +212,85 @@ public interface Configuration {
     void set(@NotNull List<String> path, YamlElement value);
 
     /**
+     * Adds a comment near the path. If inline is set to {@code false}, then the comment
+     * will most certainly be placed above the path. Otherwise, it'll be appended to the
+     * key-value pair, and depending on the length, may be split.
+     * <p>
+     * Depending on how many entries there are on the list, the comment may be indented by
+     * the size of the path minus one multiplied by the indent set in a {@link FusionYAML} object.
+     * <p>
+     *
+     * @param path   The path
+     * @param text   The comment text
+     * @param inline Whether the comment is in the same line as the key or not
+     */
+    void addComment(List<String> path, String text, boolean inline);
+
+    /**
+     * Adds a comment near the path. The comment will be on a separate line (not inline)
+     * <p>
+     * Depending on how many entries there are on the list, the comment may be indented by
+     * the size of the path minus one multiplied by the indent set in a {@link FusionYAML} object.
+     *
+     * @param path The path
+     * @param text The comment text
+     */
+    void addComment(List<String> path, String text);
+
+    /**
+     * Adds the comment near the path. If a character in the path matches the
+     * separator, the {@link Configuration} will look for the value under the
+     * portion of the path that was mentioned before it.
+     * <p>
+     * Depending on the boolean value passed in, the comment may or may not
+     * be on the same line as the key-value pair.
+     *
+     * @param path      The path
+     * @param separator The separator, where each occurrence signals a shift
+     *                  to the path nested under the portion that were mentioned
+     *                  before the separator.
+     * @param text      The comment text
+     * @param inline    Whether the comment stays on the same line as the path
+     *                  or not.
+     */
+    void addComment(String path, char separator, String text, boolean inline);
+
+    /**
+     * Adds the comment near the path. If a character in the path matches the
+     * separator, the {@link Configuration} will look for the value under the
+     * portion of the path that was mentioned before it.
+     * <p>
+     * By default the comment doesn't stay next to the key-value pair (not inline)
+     *
+     * @param path      The path
+     * @param separator The separator, where each occurrence signals a shift
+     *                  to the path nested under the portion that were mentioned
+     *                  before the separator.
+     * @param text      The comment text
+     */
+    void addComment(String path, char separator, String text);
+
+    /**
+     * Adds the comment near the path. Depending on the boolean value passed in,
+     * the comment may or may not be on the same line as the key-value pair.
+     *
+     * @param path   The path
+     * @param text   The comment text
+     * @param inline Whether the comment stays on the same line as the path
+     *               or not.
+     */
+    void addComment(String path, String text, boolean inline);
+
+    /**
+     * Adds the comment near the path. By default the comment doesn't stay on the
+     * same line as the key-value pair (not inline)
+     *
+     * @param path The path
+     * @param text The comment text
+     */
+    void addComment(String path, String text);
+
+    /**
      * Adds a {@link YamlComment} to the configuration. The comment will be
      * visible when dumped to a string or any {@link java.io.Writer}.
      * <p>
@@ -298,7 +377,7 @@ public interface Configuration {
     /**
      * @return Gets the {@link YamlObject} for the configuration
      */
-    YamlObject getContents();
+    YamlObject toYamlObject();
 
     /**
      * This method retrieves the {@link Object} in a {@link List} of paths with the specified

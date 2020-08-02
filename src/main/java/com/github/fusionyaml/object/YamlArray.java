@@ -17,10 +17,7 @@ package com.github.fusionyaml.object;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class represents a list structure under a given path in {@code yaml}.
@@ -32,13 +29,18 @@ public class YamlArray implements YamlElement, Iterable<YamlElement> {
     /**
      * The {@link List} of {@link YamlElement}s
      */
-    private Collection<YamlElement> list = new LinkedList<>();
+    private Collection<YamlElement> list = new ArrayList<>();
 
     /**
      * This constructor requires no objects to be passed into their parameters. An
      * empty {@link LinkedList} is created upon initialization.
      */
-    public YamlArray() {}
+    public YamlArray() {
+    }
+
+    public YamlArray(int capacity) {
+        this.list = new ArrayList<>(capacity);
+    }
 
     /**
      * This constructor requires a {@link List} of {@link YamlElement}s to be

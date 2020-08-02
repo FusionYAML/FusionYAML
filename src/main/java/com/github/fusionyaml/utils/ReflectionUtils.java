@@ -15,6 +15,7 @@ limitations under the License.
 */
 package com.github.fusionyaml.utils;
 
+import com.github.fusionyaml.$DataBridge;
 import com.github.fusionyaml.exceptions.YamlDeserializationException;
 import com.github.fusionyaml.serialization.ObjectTypeAdapter;
 import com.google.common.reflect.TypeToken;
@@ -131,10 +132,10 @@ public class ReflectionUtils {
                     try {
                         field.setAccessible(true);
                         Object found = map.get(field.getName());
-                        Object deserialized = objDeserializer.deserialize(YamlUtils.toElement(found), found.getClass());
+                        Object deserialized = objDeserializer.deserialize($DataBridge.toElement(found), found.getClass());
                         if (deserialized == null) continue;
                         if (deserialized instanceof Map)
-                            deserialized = objDeserializer.deserialize(YamlUtils.toElement(deserialized), field.getType());
+                            deserialized = objDeserializer.deserialize($DataBridge.toElement(deserialized), field.getType());
                         field.set(o, deserialized);
                     } catch (IllegalAccessException e) {
                         throw new YamlDeserializationException(e);
