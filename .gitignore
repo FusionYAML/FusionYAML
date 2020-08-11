@@ -49,3 +49,7 @@ build/docs/
 src/main/java/io/github/fusionyaml/Test.java
 src/main/java/io/github/fusionyaml/test/*
 lb/*
+
+*.index
+*.hprof
+*.threads
