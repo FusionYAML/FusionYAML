@@ -20,16 +20,14 @@ public class DateTypeAdapter extends TypeAdapter<Date> {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
 
     private final Calendar CALENDAR = Calendar.getInstance();
+    private final FusionYAML fusionYAML;
+
 
     /**
      * @param yaml The {@link FusionYAML} object, which will be used to retrieve the {@link org.yaml.snakeyaml.DumperOptions}
      */
     public DateTypeAdapter(FusionYAML yaml) {
-        super(yaml);
-    }
-
-    public DateTypeAdapter() {
-        this(new FusionYAML());
+        fusionYAML = yaml;
     }
 
 

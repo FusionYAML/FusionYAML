@@ -9,14 +9,12 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class CollectionTypeAdapter<T> extends TypeAdapter<Collection<T>>  {
+public class CollectionTypeAdapter<T> extends TypeAdapter<Collection<T>> {
+
+    private final FusionYAML fusionYAML;
 
     public CollectionTypeAdapter(FusionYAML yaml) {
-        super(yaml);
-    }
-
-    public CollectionTypeAdapter() {
-        this(new FusionYAML());
+        fusionYAML = yaml;
     }
 
     @Override

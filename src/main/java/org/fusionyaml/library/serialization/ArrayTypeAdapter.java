@@ -23,13 +23,10 @@ import java.util.List;
  */
 public class ArrayTypeAdapter<T> extends TypeAdapter<T[]> {
 
+    private final FusionYAML fusionYAML;
 
     public ArrayTypeAdapter(FusionYAML fusionYAML) {
-        super(fusionYAML);
-    }
-
-    public ArrayTypeAdapter() {
-        this(new FusionYAML());
+        this.fusionYAML = fusionYAML;
     }
 
     @Override

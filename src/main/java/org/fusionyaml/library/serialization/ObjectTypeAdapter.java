@@ -14,15 +14,14 @@ import java.util.Map;
 public class ObjectTypeAdapter<T> extends TypeAdapter<T> {
 
     private final Objenesis genesis = new ObjenesisStd();
-    private final ObjectSerializationManager instantiator = new ObjectSerializationManager(fusionYAML);
+    private final ObjectSerializationManager instantiator;
+    private final FusionYAML fusionYAML;
 
     public ObjectTypeAdapter(FusionYAML yaml) {
-        super(yaml);
+        this.fusionYAML = yaml;
+        this.instantiator = new ObjectSerializationManager(fusionYAML);
     }
 
-    public ObjectTypeAdapter() {
-        this(new FusionYAML());
-    }
 
     @Override
     public YamlElement serialize(T obj, Type type) {

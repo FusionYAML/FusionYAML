@@ -10,12 +10,10 @@ import java.util.Map;
 
 public class MapTypeAdapter<V> extends TypeAdapter<Map<String, V>> {
 
-    public MapTypeAdapter(FusionYAML yaml) {
-        super(yaml);
-    }
+    private final FusionYAML fusionYAML;
 
-    public MapTypeAdapter() {
-        this(new FusionYAML());
+    public MapTypeAdapter(FusionYAML fusionYAML) {
+        this.fusionYAML = fusionYAML;
     }
 
     @Override

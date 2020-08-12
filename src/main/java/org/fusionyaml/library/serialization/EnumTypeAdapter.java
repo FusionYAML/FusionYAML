@@ -10,14 +10,13 @@ import java.lang.reflect.Type;
 
 public class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
 
-    private final ObjectSerializationManager instantiator = new ObjectSerializationManager(fusionYAML);
+    private final FusionYAML fusionYAML;
+    private final ObjectSerializationManager instantiator;
+
 
     public EnumTypeAdapter(FusionYAML fusionYAML) {
-        super(fusionYAML);
-    }
-
-    public EnumTypeAdapter() {
-        this(new FusionYAML());
+        this.fusionYAML = fusionYAML;
+        this.instantiator = new ObjectSerializationManager(fusionYAML);
     }
 
     @Override

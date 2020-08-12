@@ -11,13 +11,12 @@ import java.lang.reflect.Type;
 
 public class PrimitiveTypeAdapter extends TypeAdapter<Object> {
 
+    private final FusionYAML fusionYAML;
+
     public PrimitiveTypeAdapter(FusionYAML fusionYAML) {
-        super(fusionYAML);
+        this.fusionYAML = fusionYAML;
     }
 
-    public PrimitiveTypeAdapter() {
-        this(new FusionYAML());
-    }
 
     @Override
     public YamlElement serialize(Object obj, Type type) {

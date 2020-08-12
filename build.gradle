@@ -18,14 +18,8 @@ dependencies {
     // Google's Gson library
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
 
-    // Apache IO commons library
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
-
     // JetBrains annotations library
     compile group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
-
-    // Molten Json's library
-    compile 'io.github.moltenjson:MoltenJSON:2.4.7'
 
     // Objnesis
     compile group: 'org.objenesis', name: 'objenesis', version: '3.0.1'
@@ -54,6 +48,16 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
+}
+
+task customFatJar(type: Jar) {
+    classifier = 'shaded'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+build {
+
 }
 
 artifacts {
