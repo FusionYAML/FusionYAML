@@ -207,6 +207,7 @@ public class YamlConfiguration implements Configuration {
      * calling in this object.
      *
      * @param object The {@link YamlObject} instance
+     * @param yaml   A {@link FusionYAML} object
      */
     public YamlConfiguration(YamlObject object, FusionYAML yaml) {
         this.object = object;
@@ -240,7 +241,7 @@ public class YamlConfiguration implements Configuration {
         data = yaml.dump(obj);
         Files.write(data, file, Charset.defaultCharset());
         if (saveListener != null)
-            saveListener.onSave(this, file);
+            saveListener.onSave(this, new FileWriter(file));
     }
 
     /**
@@ -255,6 +256,8 @@ public class YamlConfiguration implements Configuration {
         try (YamlWriter docWriter = new DocumentWriter(writer, buffer)) {
             docWriter.write(object, fusionYAML);
         }
+        if (saveListener != null)
+            saveListener.onSave(this, writer);
     }
 
     /**

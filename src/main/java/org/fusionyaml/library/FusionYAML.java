@@ -61,19 +61,7 @@ public class FusionYAML {
     // Constant static fields
     private static final Gson GSON_DEFAULT = new GsonBuilder().create();
     private static final Gson GSON_PRETTY_PRINTING = new GsonBuilder().setPrettyPrinting().create();
-    private static final Type MAP_TYPE = new TypeToken<LinkedHashMap<String, Object>>() {
-    }.getType();
-    private static final String DOCUMENT_BEGIN = "---\n";
-    private static final String DOCUMENT_END = "...\n";
     private static final YamlOptions YAML_DEFAULT_OPTIONS = new YamlOptions();
-
-    // Constant type adapters
-    public static final ObjectTypeAdapter<Object> OBJECT_TYPE_ADAPTER = new ObjectTypeAdapter();
-    public static final CollectionTypeAdapter COLLECTION_TYPE_ADAPTER = new CollectionTypeAdapter();
-    public static final MapTypeAdapter MAP_TYPE_ADAPTER = new MapTypeAdapter();
-    public static final PrimitiveTypeAdapter PRIMITIVE_TYPE_ADAPTER = new PrimitiveTypeAdapter();
-    public static final DateTypeAdapter DATE_TYPE_ADAPTER = new DateTypeAdapter();
-
 
     // Constant object fields
     private final Map<Type, TypeAdapter> classTypeAdapterMap;
@@ -114,17 +102,6 @@ public class FusionYAML {
      * @return The YAML options
      */
     public YamlOptions getYamlOptions() {
-        return options;
-    }
-
-    /**
-     * Creates a {@link DumperOptions} with its default flow style set to block flow style.
-     *
-     * @return The default dumper options
-     */
-    private static DumperOptions defaultDumperOptions() {
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         return options;
     }
 
@@ -174,8 +151,48 @@ public class FusionYAML {
     }
 
     /**
-     * Loads a raw YAML {@link String} into a {@link Map} of {@link String}s and {@link Object}s,
-     * and then converts it to a {@link YamlElement}.
+     * Reads YAML from the {@link Reader} provided and then loads it into an
+     * {@link Object} to be then loaded to a {@link YamlElement} depending on its
+     * type
+     * <p>
+     * {@link YamlParseFailedException} may be thrown if an error
+     * occurred while parsing or if the parser can't construe elements in the string.
+     * {@link IOException} may also be thrown if an IO error occurred.
+     *
+     * @param reader The reader from which the contents will be extracted
+     * @return A {@link YamlObject} loaded from the reader
+     * @throws YamlParseFailedException If an IO error had occurred while reading
+     */
+    public YamlElement fromYAML(Reader reader) throws YamlParseFailedException {
+        try (DocumentReader docReader = new DocumentReader(reader)) {
+            return docReader.readDocument();
+        } catch (IOException e) {
+            throw new YamlParseFailedException(e);
+        }
+    }
+
+    private static Type adjPrimitive(Type type) {
+        if (type.getTypeName().equals("int")) return Integer.class;
+        if (type.getTypeName().equals("double")) return Double.class;
+        if (type.getTypeName().equals("float")) return Float.class;
+        if (type.getTypeName().equals("char")) return Character.class;
+        if (type.getTypeName().equals("byte")) return Byte.class;
+        if (type.getTypeName().equals("long")) return Long.class;
+        if (type.getTypeName().equals("short")) return Short.class;
+        if (type.getTypeName().equals("boolean")) return Boolean.class;
+        return type;
+    }
+
+    private static boolean builtInAdapter(TypeAdapter<?> adapter) {
+        return adapter instanceof ArrayTypeAdapter || adapter instanceof CollectionTypeAdapter ||
+                adapter instanceof DateTypeAdapter || adapter instanceof EnumTypeAdapter ||
+                adapter instanceof MapTypeAdapter || adapter instanceof ObjectTypeAdapter ||
+                adapter instanceof PrimitiveTypeAdapter;
+    }
+
+    /**
+     * Loads a raw YAML {@link String} into an {@link Object}, and then converts it
+     * to a {@link YamlElement}.
      * <p>
      * {@link YamlParseFailedException} may be thrown if an error
      * occurred while parsing. If the raw YAML {@link String} violates the YAML syntax,
@@ -196,13 +213,42 @@ public class FusionYAML {
     }
 
     /**
+     * Deserializes a raw YAML {@link String} into an object of type {@link T}. Please note that the {@link String}
+     * should contain only one document or {@link YamlParseFailedException} will
+     * be thrown. The method will look for appropriate {@link TypeAdapter}s for the {@link Class} of type {@link T}
+     * and then use the {@link TypeAdapter} to deserialize.
+     * <p>
+     * If no such {@link TypeAdapter} is found, {@link ObjectTypeAdapter} will be used to deserialize the YAML
+     * {@link String} into a {@link Class} of type {@link T}. The type adapter will create a new instance of
+     * {@link T} without calling a constructor, even the default one.
+     * <p>
+     * If an error occurred during parsing, {@link YamlParseFailedException} will
+     * be thrown. One of the most common causes of thus exception is invalid YAML syntax, which is detected during
+     * mapping.
+     * <p>
+     * If an error occurred while deserializing, {@link YamlDeserializationException}
+     * will be thrown.
+     *
+     * @param yaml The raw YAML {@link String}
+     * @param as   The {@link Class} of type {@link T} to deserialize into
+     * @param <T>  The type
+     * @return The {@link String} YAML deserialized into an {@link Object} of {@link T}
+     * @throws YamlParseFailedException     Thrown when something wrong occurred during parsing
+     * @throws YamlDeserializationException Thrown when an error occurred
+     *                                      during deserializing
+     */
+    public <T> T deserialize(String yaml, Class<T> as) {
+        return deserialize(fromYAML(yaml), as);
+    }
+
+    /**
      * Deserializes a {@link YamlElement} into a class of type {@link T}. The method calls the appropriate
-     * type adapter for this object type. If on suitable type adapter is found, an {@link ObjectTypeAdapter}
+     * type adapter for this object type. If no suitable type adapter is found, an {@link ObjectTypeAdapter}
      * will be used to deserialize the {@link YamlElement} into a class of type {@link T}.
      * <p>
      * If the {@link YamlElement} is a {@link YamlObject}, and there is no appropriate type adapter for class
-     * type {@link T}, the {@link ObjectTypeAdapter} will create a new instance. No constructors will be called
-     * upon initialization, so even default class constructor will have no effect.
+     * type {@link T}, the {@link ObjectTypeAdapter} will create a new instance. No constructor will be called
+     * upon initialization, so even default class constructors will not be called.
      * <p>
      * Next, the {@link ObjectTypeAdapter} will treat every entry in the {@link YamlObject} as a field. The
      * each entry's path represents a field's name. The field's value, since it is a {@link YamlElement}, will
@@ -231,6 +277,13 @@ public class FusionYAML {
         return adapter.deserialize(element, as);
     }
 
+    /**
+     * Reads a {@link YamlElement} from the file.
+     *
+     * @param file The file
+     * @return A {@link YamlElement}, representative of the data
+     * in the file.
+     */
     public YamlElement fromYAML(File file) {
         try {
             return this.fromYAML(new FileReader(file));
@@ -240,129 +293,25 @@ public class FusionYAML {
     }
 
     /**
-     * Reads YAML from the {@link Reader} provided and then loads it into an
-     * {@link Object} to be then loaded to a {@link YamlElement} depending on its
-     * type
-     * <p>
-     * {@link YamlParseFailedException} may be thrown if an error
-     * occurred while parsing or if the parser can't construe elements in the string.
-     * {@link IOException} may also be thrown if an IO error occurred.
-     *
-     * @param reader The reader from which the contents will be extracted
-     * @return A {@link YamlObject} loaded from the reader
-     * @throws YamlParseFailedException If an IO error had occurred while reading
-     */
-    public YamlElement fromYAML(Reader reader) throws YamlParseFailedException {
-        try (DocumentReader docReader = new DocumentReader(reader)) {
-            return docReader.readDocument();
-        } catch (IOException e) {
-            throw new YamlParseFailedException(e);
-        }
-    }
-
-    /**
-     * Loads the JSON {@link String} into a {@link YamlElement}. The raw JSON {@link String} will first be
-     * converted to a {@link Map} of {@link String}s and {@link Object}s before loading it to a {@link YamlElement}
+     * Loads the JSON {@link String} into a {@link YamlElement}.
      *
      * @param raw The raw JSON {@link String}
      * @return The {@link YamlElement} loaded from a raw JSON {@link String}
      */
     public YamlElement fromJSON(String raw) {
-        Map<String, Object> map = GSON_DEFAULT.fromJson(raw, MAP_TYPE);
-        return Utilities.toYamlObject(map);
+        Object o = GSON_DEFAULT.fromJson(raw, Object.class);
+        return Utilities.toElement(o);
     }
 
     /**
-     * Deserializes a raw YAML {@link String} into an object of type {@link T}. Please note that the {@link String}
-     * should contain only one document or {@link YamlParseFailedException} will
-     * be thrown. The method will look for appropriate {@link TypeAdapter}s for the {@link Class} of type {@link T}
-     * and then use the {@link TypeAdapter} to deserialize.
-     * <p>
-     * If no such {@link TypeAdapter} is found, {@link ObjectTypeAdapter} will be used to deserialize the YAML
-     * {@link String} into a {@link Class} of type {@link T}. The type adapter will create a new instance of
-     * {@link T} without calling a constructor, even the default one.
-     * <p>
-     * If an error occurred during parsing, {@link YamlParseFailedException} will
-     * be thrown. One of the most common causes of thus exception is invalid YAML syntax, which is detected during
-     * mapping.
-     * <p>
-     * If an error occurred while deserializing, {@link YamlDeserializationException}
-     * will be thrown.
+     * Converts a {@link YamlElement} to a dumpable {@link Object} and then utilize
+     * snakeyaml's dumper to dump the object
      *
-     * @param yaml The raw YAML {@link String}
-     * @param as The {@link Class} of type {@link T} to deserialize into
-     * @param <T> The type
-     * @return The {@link String} YAML deserialized into an {@link Object} of {@link T}
-     * @throws YamlParseFailedException Thrown when something wrong occurred during parsing
-     * @throws YamlDeserializationException Thrown when an error occurred
-     * during deserializing
+     * @param element The element
+     * @return A YAML string
      */
-    public <T> T deserialize(String yaml, Class<T> as) {
-        return deserialize(fromYAML(yaml), as);
-    }
-
-    /**
-     * Converts a {@link YamlElement} to a JSON {@link String}. The method also requires a {@link Gson} instance, which
-     * will be used to convert the retrieved map from the {@link YamlElement} object to a JSON {@link String}.
-     *
-     * @param element The {@link YamlElement}
-     * @param gson    The {@link Gson} instance
-     * @return The JSON {@link String}, which is converted from the {@link YamlElement} object.
-     */
-    public String toJSON(YamlElement element, Gson gson) {
-        return gson.toJson(Utilities.toObject(element));
-    }
-
-    /**
-     * Converts a {@link YamlElement} to a JSON {@link String}. The method also requires a {@link Gson} instance, which
-     * will be used to convert the retrieved map from the {@link YamlElement} object to a JSON {@link String}.
-     *
-     * @param element The {@link YamlElement}
-     * @param pretty  Whether the method should use {@link Gson}'s pretty printing or not
-     * @return The JSON {@link String}, which is converted from the {@link YamlObject} object.
-     */
-    public String toJSON(YamlElement element, boolean pretty) {
-        final Gson gson = (pretty) ? GSON_PRETTY_PRINTING : GSON_DEFAULT;
-        return toJSON(element, gson);
-    }
-
-    /**
-     * Converts a YAML {@link String} to a JSON {@link String}. The method will first parse the YAML and convert it
-     * to a {@link Map} of {@link String}s and {@link Object}s. Next, the method will use the {@link Gson}'s pretty
-     * print-enabled object to convert it to a JSON {@link String} if the {@code boolean} passed in was true.
-     *
-     * @param yaml   The YAML {@link String}
-     * @param pretty Whether the JSON {@link String} should be prettified or not
-     * @return The JSON {@link String} converted from a YAML {@link String}
-     */
-    public String toJSON(String yaml, boolean pretty) {
-        final Gson gson = (pretty) ? GSON_PRETTY_PRINTING : GSON_DEFAULT;
-        return toJSON(yaml, gson);
-    }
-
-    /**
-     * Converts a {@link YamlElement} to a JSON {@link String}. The method also requires a {@link Gson} instance, which
-     * will be used to convert the retrieved map from the {@link YamlElement} object to a JSON {@link String}.
-     * The method will use default {@link Gson} to convert the {@link Map} of {@link String}s and {@link Object}s to
-     * a JSON string.
-     *
-     * @param element The {@link YamlElement}
-     * @return The JSON {@link String}, which is converted from the {@link YamlObject} object.
-     */
-    public String toJSON(YamlElement element) {
-        return toJSON(element, false);
-    }
-
-    private static Type adjPrimitive(Type type) {
-        if (type.getTypeName().equals("int")) return Integer.class;
-        if (type.getTypeName().equals("double")) return Double.class;
-        if (type.getTypeName().equals("float")) return Float.class;
-        if (type.getTypeName().equals("char")) return Character.class;
-        if (type.getTypeName().equals("byte")) return Byte.class;
-        if (type.getTypeName().equals("long")) return Long.class;
-        if (type.getTypeName().equals("short")) return Short.class;
-        if (type.getTypeName().equals("boolean")) return Boolean.class;
-        return type;
+    public String toYAML(YamlElement element) {
+        return yaml.dump(Utilities.toObject(element));
     }
 
     /**
@@ -403,6 +352,12 @@ public class FusionYAML {
         return toJSON(yaml, false);
     }
 
+    /**
+     * Dumps a {@link YamlElement} to a {@link Writer}
+     *
+     * @param element The element
+     * @param out     The writer
+     */
     public void toYAML(YamlElement element, Writer out) {
         try (DocumentWriter writer = new DocumentWriter(out)) {
             writer.write(element, this);
@@ -412,36 +367,28 @@ public class FusionYAML {
     }
 
     /**
-     * Converts a {@link YamlElement} to a dumpable {@link Object} and then utilize
-     * snakeyaml's dumper to dump the object
+     * Converts a {@link YamlElement} to a JSON {@link String}. The method also requires a {@link Gson} instance, which
+     * will be used to convert the {@link YamlElement} object to a JSON {@link String}.
      *
-     * @param element The element
-     * @return A YAML string
+     * @param element The {@link YamlElement}
+     * @param gson    The {@link Gson} instance
+     * @return The JSON {@link String}, which is converted from the {@link YamlElement} object.
      */
-    public String toYAML(YamlElement element) {
-        return yaml.dump(Utilities.toObject(element));
+    public String toJSON(YamlElement element, Gson gson) {
+        return gson.toJson((Object) Utilities.toObject(element));
     }
 
-    public Iterable<YamlElement> fromMultidocYAML(Reader reader) {
-        try {
-            try (MultiDocumentReader multiDocumentReader = new MultiDocumentReader(reader)) {
-                return multiDocumentReader.readDocuments();
-            }
-        } catch (IOException e) {
-            throw new YamlParseFailedException(e);
-        }
-    }
-
-    public Iterable<YamlElement> fromMultidocYAML(File file) {
-        try {
-            return this.fromMultidocYAML(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            throw new YamlParseFailedException(e);
-        }
-    }
-
-    public Iterable<YamlElement> fromMultidocYAML(String string) {
-        return fromMultidocYAML(new StringReader(string));
+    /**
+     * Converts a {@link YamlElement} to a JSON {@link String}. The method also requires a {@link Gson} instance, which
+     * will be used to convert the {@link YamlElement} object to a JSON {@link String}.
+     *
+     * @param element The {@link YamlElement}
+     * @param pretty  Whether the method should use {@link Gson}'s pretty printing or not
+     * @return The JSON {@link String}, which is converted from the {@link YamlObject} object.
+     */
+    public String toJSON(YamlElement element, boolean pretty) {
+        final Gson gson = (pretty) ? GSON_PRETTY_PRINTING : GSON_DEFAULT;
+        return toJSON(element, gson);
     }
 
     /**
@@ -493,14 +440,81 @@ public class FusionYAML {
         return adapter.serialize(o, type);
     }
 
-
-    private static boolean builtInAdapter(TypeAdapter<?> adapter) {
-        return adapter instanceof ArrayTypeAdapter || adapter instanceof CollectionTypeAdapter ||
-                adapter instanceof DateTypeAdapter || adapter instanceof EnumTypeAdapter ||
-                adapter instanceof MapTypeAdapter || adapter instanceof ObjectTypeAdapter ||
-                adapter instanceof PrimitiveTypeAdapter;
+    /**
+     * Converts a YAML {@link String} to a JSON {@link String}. The method will first parse the YAML and convert it
+     * to a {an {@link Object}. Next, the method will use the {@link Gson}'s pretty print-enabled object to
+     * convert it to a JSON {@link String} if the {@code boolean} passed in was true.
+     *
+     * @param yaml   The YAML {@link String}
+     * @param pretty Whether the JSON {@link String} should be prettified or not
+     * @return The JSON {@link String} converted from a YAML {@link String}
+     */
+    public String toJSON(String yaml, boolean pretty) {
+        final Gson gson = (pretty) ? GSON_PRETTY_PRINTING : GSON_DEFAULT;
+        return toJSON(yaml, gson);
     }
 
+    /**
+     * Converts a {@link YamlElement} to a JSON {@link String}. The method also requires a {@link Gson} instance, which
+     * will be used to convert the {@link YamlElement} object to a JSON {@link String}.
+     *
+     * @param element The {@link YamlElement}
+     * @return The JSON {@link String}, which is converted from the {@link YamlObject} object.
+     */
+    public String toJSON(YamlElement element) {
+        return toJSON(element, false);
+    }
+
+    /**
+     * Reads multiple yaml documents from the reader.
+     *
+     * @param reader The reader
+     * @return A {@link List} of {@link YamlElement}, each representing a
+     * document.
+     */
+    public Iterable<YamlElement> fromMultidocYAML(Reader reader) {
+        try {
+            try (MultiDocumentReader multiDocumentReader = new MultiDocumentReader(reader)) {
+                return multiDocumentReader.readDocuments();
+            }
+        } catch (IOException e) {
+            throw new YamlParseFailedException(e);
+        }
+    }
+
+    /**
+     * Reads multiple documents from the file.
+     *
+     * @param file A file to read from
+     * @return A {@link List} of {@link YamlElement}, each representing a
+     * document.
+     */
+    public Iterable<YamlElement> fromMultidocYAML(File file) {
+        try {
+            return this.fromMultidocYAML(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            throw new YamlParseFailedException(e);
+        }
+    }
+
+    /**
+     * Reads multiple documents from a string.
+     *
+     * @param string The string to read from
+     * @return A {@link List} of {@link YamlElement}, each representing a document.
+     */
+    public Iterable<YamlElement> fromMultidocYAML(String string) {
+        return fromMultidocYAML(new StringReader(string));
+    }
+
+    /**
+     * Writes multiple documents included in the {@link Iterable} object passed
+     * in to the {@link Writer} passed in.
+     *
+     * @param elements A {@link Iterable} object of {@link YamlElement}s, each
+     *                 treated as a whole document.
+     * @param out      The writer to write to.
+     */
     public void toMultidocYAML(Iterable<YamlElement> elements, Writer out) {
         try {
             try (MultiDocumentWriter writer = new MultiDocumentWriter(out)) {
@@ -511,6 +525,14 @@ public class FusionYAML {
         }
     }
 
+    /**
+     * Writes multiple documents found in the {@link Iterable} object passed
+     * in to a {@link String}
+     *
+     * @param elements An {@link Iterable} of {@link YamlElement}, each
+     *                 representing a document.
+     * @return A string containing the documents
+     */
     public String toMultidocYAML(Iterable<YamlElement> elements) {
         StringWriter writer = new StringWriter();
         toMultidocYAML(elements, writer);
@@ -518,7 +540,8 @@ public class FusionYAML {
     }
 
     /**
-     * A builder for the {@link FusionYAML} class
+     * A builder for the {@link FusionYAML} class. For a description of default
+     * values. Take a look on {@link YamlOptions}
      */
     public static class Builder {
 
@@ -555,93 +578,162 @@ public class FusionYAML {
             return this;
         }
 
+        /**
+         * @param onlyExposed Whether only fields in objects with @{@link Expose} be
+         *                    serialized/deserialized or not.
+         * @return This instance
+         */
         public Builder onlyExposed(boolean onlyExposed) {
             builder.setOnlyExposed(onlyExposed);
             return this;
         }
 
+        /**
+         * @param onlyEnumNameMentioned Whether serializing enums result in a string only containing
+         *                              its name (excluding its path) or not
+         * @return This instance
+         */
         public Builder enumNameMentioned(boolean onlyEnumNameMentioned) {
             builder.setMentionEnumName(onlyEnumNameMentioned);
             return this;
         }
 
+        /**
+         * @param excl Whether {@code null} values should be excluded or not
+         * @return This instance
+         */
         public Builder excludeNullValues(boolean excl) {
             builder.setExcludeNullValues(excl);
             return this;
         }
 
+        /**
+         * @param canonical Whether yaml will be converted into a canonical document
+         *                  or not.
+         * @return This instance
+         */
         public Builder canonical(boolean canonical) {
             builder.setCanonical(canonical);
             return this;
         }
 
+        /**
+         * @param allowUnicode Whether unicode values will be allowed or not
+         * @return This instance
+         */
         public Builder allowUnicode(boolean allowUnicode) {
             builder.setAllowUnicode(allowUnicode);
             return this;
         }
 
+        /**
+         * @param prettyFlow Whether the yaml is prettified before dumping or
+         *                   not (its flow style should be set to FLOW)
+         * @return This instance
+         */
         public Builder prettyFlow(boolean prettyFlow) {
             builder.setPrettyFlow(prettyFlow);
             return this;
         }
 
+        /**
+         * @param splitLines Whether (or not) lines should be split if it's
+         *                   greater than the width.
+         * @return This instance
+         */
         public Builder splitLinesOverWidth(boolean splitLines) {
             builder.setSplitLines(splitLines);
             return this;
         }
 
-        public Builder allowDocStartAndEnd(boolean docStartAndEnd) {
-            builder.setAllowDocStartAndEnd(docStartAndEnd);
-            return this;
-        }
-
+        /**
+         * @param indent The indent (preferably a multiple of 2)
+         * @return This instance
+         */
         public Builder indent(int indent) {
             builder.setIndent(indent);
             return this;
         }
 
+        /**
+         * @param width The preferred width
+         * @return This instance
+         */
         public Builder width(int width) {
             builder.setWidth(width);
             return this;
         }
 
+        /**
+         * @param maxKeyLength The maximum key length
+         * @return This instance
+         */
         public Builder maxKeyLength(int maxKeyLength) {
             builder.setMaxKeyLength(maxKeyLength);
             return this;
         }
 
+        /**
+         * @param timeZone The time zone
+         * @return This instance
+         */
         public Builder timezone(TimeZone timeZone) {
             builder.setTimezone(timeZone);
             return this;
         }
 
+        /**
+         * @param scalarStyle The scalar style
+         * @return This instance
+         */
         public Builder scalarStyle(DumperOptions.ScalarStyle scalarStyle) {
             builder.setScalarStyle(scalarStyle);
             return this;
         }
 
+        /**
+         * @param version The yaml version
+         * @return This instance
+         */
         public Builder version(DumperOptions.Version version) {
             builder.setVersion(version);
             return this;
         }
 
+        /**
+         * @param lineBreak The line break style
+         * @return This instance
+         */
         public Builder linebreak(DumperOptions.LineBreak lineBreak) {
             builder.setLineBreak(lineBreak);
             return this;
         }
 
+        /**
+         * @param nonPrintableStyle The non printable (chars that can't be printed) style
+         * @return This instance
+         */
         public Builder nonPrintableStyle(DumperOptions.NonPrintableStyle nonPrintableStyle) {
             builder.setNonPrintableStyle(nonPrintableStyle);
             return this;
         }
 
+        /**
+         * @param flowStyle The flow style
+         * @return This instance
+         */
         public Builder flowStyle(DumperOptions.FlowStyle flowStyle) {
             builder.setFlowStyle(flowStyle);
             return this;
         }
 
+        /**
+         * Builds a {@link FusionYAML} object
+         *
+         * @return A new {@link FusionYAML} instance
+         */
         public FusionYAML build() {
-            return new FusionYAML(builder.build(), new LinkedHashMap<>());
+            return new FusionYAML(builder.build(), ctaMap);
         }
 
     }

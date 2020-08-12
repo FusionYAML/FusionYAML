@@ -105,6 +105,7 @@ public class Utilities {
     }
 
     /**
+     * @param object A {@link YamlObject}
      * @return A map that could be directly dumped by using snakeyaml's library
      */
     public static Map<String, Object> toDumpableMap(YamlObject object) {
@@ -143,8 +144,8 @@ public class Utilities {
 
     public static DumperOptions getDumperOptions(YamlOptions options) {
         DumperOptions dumperOptions = new DumperOptions();
-        dumperOptions.setExplicitStart(options.isAllowDocStartAndEnd());
-        dumperOptions.setExplicitEnd(options.isAllowDocStartAndEnd());
+        dumperOptions.setExplicitStart(false);
+        dumperOptions.setExplicitEnd(false);
         dumperOptions.setDefaultFlowStyle(options.getFlowStyle());
         dumperOptions.setAllowUnicode(options.isAllowUnicode());
         dumperOptions.setCanonical(options.isCanonical());

@@ -29,6 +29,7 @@ public class InputStreamConfiguration extends YamlConfiguration {
      * Reloads this configuration by re-reading the {@link InputStream}
      * passed in
      *
+     * @param stream An {@link InputStream}
      * @throws IOException If an IO error occurred
      */
     public void reload(InputStream stream) throws IOException {

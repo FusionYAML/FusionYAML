@@ -45,6 +45,7 @@ public class FileConfiguration extends YamlConfiguration {
      * To save the updated data, call {@link #save(DumperOptions, File)} or {@link #save(File)}
      *
      * @param file The file that will get its contents copied
+     * @param yaml a {@link FusionYAML} object
      * @throws IOException   If an IO error occurred
      * @throws YamlException If the parser map returns null
      */

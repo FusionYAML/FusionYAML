@@ -19,13 +19,12 @@ public class YamlOptions {
     private boolean allowUnicode = true;
     private boolean prettyFlow = false;
     private boolean splitLines = true;
-    private boolean allowStartAndEndIndicators = false;
     private int indent = 2;
     private int width = 80;
     private int maxKeyLength = 128;
     private TimeZone timeZone = TimeZone.getDefault();
     private DumperOptions.ScalarStyle scalarStyle = DumperOptions.ScalarStyle.PLAIN;
-    private DumperOptions.Version version = DumperOptions.Version.V1_1;
+    private DumperOptions.Version version = null;
     private DumperOptions.LineBreak lineBreak = DumperOptions.LineBreak.UNIX;
     private DumperOptions.NonPrintableStyle nonPrintableStyle = DumperOptions.NonPrintableStyle.BINARY;
     private DumperOptions.FlowStyle flowStyle = DumperOptions.FlowStyle.BLOCK;
@@ -59,10 +58,6 @@ public class YamlOptions {
 
     public boolean isSplitLines() {
         return splitLines;
-    }
-
-    public boolean isAllowDocStartAndEnd() {
-        return allowStartAndEndIndicators;
     }
 
     public boolean isExcludeNullVals() {
@@ -182,21 +177,6 @@ public class YamlOptions {
             options.options.setSplitLines(splitLines);
             return this;
         }
-
-        /**
-         * @param allowIndicators If set to true, yaml document start and end indicators will
-         *                        be placed. If there are more than one documents, however, the
-         *                        writer will include the indicators to avoid confusion regardless
-         *                        of the option set here.
-         * @return this object
-         */
-        public Builder setAllowDocStartAndEnd(boolean allowIndicators) {
-            options.allowStartAndEndIndicators = allowIndicators;
-            options.options.setExplicitStart(allowIndicators);
-            options.options.setExplicitEnd(allowIndicators);
-            return this;
-        }
-
 
         /**
          * @param indent Indentation from the margin

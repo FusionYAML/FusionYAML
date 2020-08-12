@@ -50,18 +50,18 @@ public class WebConfiguration extends YamlConfiguration {
      * When a {@link URL} object is passed, the contents will be copied into a {@link Map}, which
      * will then be used to convert the data to a {@link YamlObject} object.
      *
-     * @param url A {@link URL} that leads to a raw file
-     * @throws IOException If any IO error occurred
+     * @param url  A {@link URL} that leads to a raw file
+     * @param yaml A {@link FusionYAML} object
      * @throws YamlException If there is an error while converting the data into a map,
-     * which will then be used to convert it to a {@link YamlObject} instance.
+     *                       which will then be used to convert it to a {@link YamlObject} instance.
      * @see #WebConfiguration(String)
      */
-    public WebConfiguration(URL url, FusionYAML yaml) throws IOException, YamlException {
+    public WebConfiguration(URL url, FusionYAML yaml) throws YamlException {
         super(yaml);
         this.url = url;
     }
 
-    public WebConfiguration(URL url) throws IOException, YamlException {
+    public WebConfiguration(URL url) throws YamlException {
         this(url, new FusionYAML());
     }
 

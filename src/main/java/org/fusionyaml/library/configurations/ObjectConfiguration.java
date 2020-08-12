@@ -58,6 +58,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      * the serialized {@link Object} into {@link YamlElement}.
      *
      * @param object The {@link Object} that will be deserialized
+     * @param yaml A {@link FusionYAML} object
      */
     public ObjectConfiguration(Object object, FusionYAML yaml) {
         super(yaml);

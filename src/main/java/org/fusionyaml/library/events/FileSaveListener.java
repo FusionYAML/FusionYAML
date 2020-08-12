@@ -19,20 +19,21 @@ import org.fusionyaml.library.configurations.Configuration;
 import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.File;
+import java.io.Writer;
 
 /**
- * This {@link Listener} is called when a {@link Configuration} is saved to a {@link File}
- * through {@link Configuration#save(File)} or {@link Configuration#save(DumperOptions, File)}.
+ * This {@link Listener} is called when a {@link Configuration} is saved to a {@link Writer}
+ * through Configuration#save methods or {@link Configuration#save(DumperOptions, File)}.
  */
 public interface FileSaveListener extends Listener {
 
     /**
-     * This {@link Listener} is called when a {@link Configuration} is saved to a {@link File}
-     * through {@link Configuration#save(File)} or {@link Configuration#save(DumperOptions, File)}.
+     * This {@link Listener} is called when a {@link Configuration} is saved to a {@link Writer}
+     * through Configuration#save methods or {@link Configuration#save(DumperOptions, File)}.
      *
-     * @param configuration The {@link Configuration} that was saved to a {@link File}
-     * @param file The {@link File} the {@link Configuration} was saved into
+     * @param configuration The {@link Configuration} that was saved to a {@link Writer}
+     * @param writer        The {@link Writer}
      */
-    void onSave(Configuration configuration, File file);
+    void onSave(Configuration configuration, Writer writer);
 
 }
