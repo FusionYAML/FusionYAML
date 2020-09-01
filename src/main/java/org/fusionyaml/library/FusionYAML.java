@@ -415,7 +415,7 @@ public class FusionYAML {
      */
     public <V> TypeAdapter<V> getTypeAdapter(Type type) {
         TypeAdapter<V> adapter = getTypeAdapter(classTypeAdapterMap, type);
-        return adapter == null ? new ObjectTypeAdapter<>() : adapter;
+        return adapter == null ? new ObjectTypeAdapter<>(this) : adapter;
     }
 
     /**

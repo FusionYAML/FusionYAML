@@ -18,7 +18,7 @@ import java.lang.reflect.Type;
  * <p>
  * To create a type adapter of your own, extend your class and specify the type in
  * the generics. So, for example, if you are creating a FooTypeAdapter, you should
- * extend TypeAdapter<Foo>
+ * extend {@code TypeAdapter<Foo>}
  *
  * @param <T> The type
  */
