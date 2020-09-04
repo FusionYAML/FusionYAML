@@ -74,7 +74,7 @@ public class MultiDocumentReader extends YamlReader {
     public Iterable<YamlElement> readDocuments() {
         try {
             Yaml yaml = new Yaml();
-            Iterable<Object> iterable = yaml.loadAll(this);
+            Iterable<Object> iterable = yaml.loadAll(buffReader);
             List<YamlElement> elementLists = new LinkedList<>();
             iterable.forEach(o -> elementLists.add(Utilities.toElement(o)));
             return elementLists;

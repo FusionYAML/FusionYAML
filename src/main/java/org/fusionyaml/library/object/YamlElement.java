@@ -295,6 +295,8 @@ public interface YamlElement {
     default String getAsString() {
         throw new UnsupportedOperationException(getClass().getName());
     }
-
-
+    
+    @Override
+    boolean equals(Object o);
+    
 }

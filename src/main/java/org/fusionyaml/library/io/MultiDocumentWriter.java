@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -20,8 +21,16 @@ import java.io.Writer;
  * end indicators
  */
 public class MultiDocumentWriter extends YamlWriter {
-
-
+    /**
+     * Creates an instance of this class by copying the {@link BufferedWriter}
+     * from the class passed in.
+     *
+     * @param writer The {@link YamlWriter}
+     */
+    protected MultiDocumentWriter(YamlWriter writer) {
+        super(writer);
+    }
+    
     /**
      * Creates an instance of this class with buffer equal to the value
      * passed in.
@@ -77,8 +86,8 @@ public class MultiDocumentWriter extends YamlWriter {
         options.setExplicitEnd(true);
         options.setExplicitStart(true);
         Yaml yaml = new Yaml(options);
-        String str = yaml.dump(Utilities.toDumpableObject(element));
-        this.write(str);
+        String str = yaml.dump(Utilities.toDumpableObject(Utilities.removeNullIfEnabled(element, fusionYAML)));
+        buffedWriter.write(str);
     }
 
     /**

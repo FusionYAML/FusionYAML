@@ -16,13 +16,14 @@ import java.io.*;
  * element as something within a document ({@link DocumentWriter}) or
  * as something representative of a document ({@link MultiDocumentWriter})
  */
-public abstract class YamlWriter extends Writer implements AutoCloseable {
-
+public abstract class YamlWriter implements AutoCloseable {
+    
     protected BufferedWriter buffedWriter;
-    protected Writer writer;
     protected int buff;
-    protected int line;
-
+    
+    private YamlWriter() {
+    }
+    
     /**
      * Creates an instance of this class with buffer equal to the value
      * passed in.
@@ -30,21 +31,20 @@ public abstract class YamlWriter extends Writer implements AutoCloseable {
      * @param writer The writer
      * @param buff   The buffer
      */
-    public YamlWriter(Writer writer, int buff) {
-        this.writer = writer;
+    protected YamlWriter(Writer writer, int buff) {
         this.buff = buff;
         this.buffedWriter = new BufferedWriter(writer, buff);
     }
-
+    
     /**
      * Creates an instance of this class with buffer equal to 65536.
      *
      * @param writer The writer
      */
-    public YamlWriter(Writer writer) {
+    protected YamlWriter(Writer writer) {
         this(writer, 65536);
     }
-
+    
     /**
      * Creates an instance of this class with buffer equal to the one passed
      * in. The {@link File} will be written to.
@@ -52,24 +52,34 @@ public abstract class YamlWriter extends Writer implements AutoCloseable {
      * @param file The {@link File}
      * @param buff The buffer
      */
-    public YamlWriter(File file, int buff) {
+    protected YamlWriter(File file, int buff) {
         if (!file.exists())
             throw new YamlException(new FileNotFoundException("File doesn't exist"));
-        this.writer = createFW(file);
         this.buff = buff;
-        this.buffedWriter = new BufferedWriter(writer, buff);
+        this.buffedWriter = new BufferedWriter(createFW(file), buff);
     }
-
+    
     /**
      * Creates an instance of this class with buffer almost equal to the file's
      * length.
      *
      * @param file The {@link File}
      */
-    public YamlWriter(File file) {
+    protected YamlWriter(File file) {
         this(file, nearestBuff(file.length()));
     }
-
+    
+    /**
+     * Creates an instance of this class by copying the {@link BufferedWriter}
+     * from the class passed in.
+     *
+     * @param writer The {@link YamlWriter}
+     */
+    protected YamlWriter(YamlWriter writer) {
+        this.buffedWriter = writer.buffedWriter;
+        this.buff = writer.buff;
+    }
+    
     private static int nearestBuff(long num) {
         if (num > 524288) return 524288;
         int buff = 4096;
@@ -78,7 +88,7 @@ public abstract class YamlWriter extends Writer implements AutoCloseable {
         }
         return Math.min(buff, 524288);
     }
-
+    
     private static Writer createFW(File file) {
         try {
             return new FileWriter(file);
@@ -86,33 +96,6 @@ public abstract class YamlWriter extends Writer implements AutoCloseable {
             e.printStackTrace();
         }
         return null;
-    }
-
-    /**
-     * Writes a string.
-     *
-     * @param str String to be written
-     * @throws IOException If an I/O error occurs
-     */
-    @Override
-    public void write(@NotNull String str) throws IOException {
-        buffedWriter.write(str);
-    }
-
-    /**
-     * Writes a portion of an array of characters.
-     *
-     * @param cbuf Array of characters
-     * @param off  Offset from which to start writing characters
-     * @param len  Number of characters to write
-     * @throws IOException If an I/O error occurs
-     */
-    @Override
-    public void write(@NotNull char[] cbuf, int off, int len) throws IOException {
-        buffedWriter.write(cbuf, off, len);
-        for (char chars : cbuf) {
-            if (chars == '\n' || chars == '\0') line++;
-        }
     }
 
     /**
@@ -130,7 +113,6 @@ public abstract class YamlWriter extends Writer implements AutoCloseable {
      *
      * @throws IOException If an I/O error occurs
      */
-    @Override
     public void flush() throws IOException {
         buffedWriter.flush();
     }
@@ -173,5 +155,5 @@ public abstract class YamlWriter extends Writer implements AutoCloseable {
      * @see #write(YamlElement, FusionYAML)
      */
     public abstract void write(@NotNull YamlElement element) throws IOException;
-
+    
 }

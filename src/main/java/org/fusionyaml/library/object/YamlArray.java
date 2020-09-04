@@ -154,4 +154,11 @@ public class YamlArray implements YamlElement, Iterable<YamlElement> {
         list.forEach(e -> array.add(e.deepCopy()));
         return array;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof YamlArray)) return false;
+        YamlArray array = (YamlArray) obj;
+        return list.equals(array.list);
+    }
 }

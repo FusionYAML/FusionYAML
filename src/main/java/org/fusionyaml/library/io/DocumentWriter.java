@@ -4,7 +4,6 @@ import org.fusionyaml.library.FusionYAML;
 import org.fusionyaml.library.object.YamlElement;
 import org.fusionyaml.library.utils.Utilities;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -21,8 +20,7 @@ import java.io.Writer;
  * {@link org.fusionyaml.library.object.YamlObject}s
  */
 public class DocumentWriter extends YamlWriter {
-
-
+    
     /**
      * Creates an instance of this class with buffer equal to the value
      * passed in.
@@ -53,7 +51,7 @@ public class DocumentWriter extends YamlWriter {
     public DocumentWriter(File file, int buff) {
         super(file, buff);
     }
-
+    
     /**
      * Creates an instance of this class with buffer almost equal to the file's
      * length.
@@ -63,7 +61,17 @@ public class DocumentWriter extends YamlWriter {
     public DocumentWriter(File file) {
         super(file);
     }
-
+    
+    /**
+     * Creates an instance of this class by copying the {@link java.io.BufferedWriter}
+     * from the class passed in.
+     *
+     * @param writer The {@link YamlWriter}
+     */
+    protected DocumentWriter(YamlWriter writer) {
+        super(writer);
+    }
+    
     /**
      * Writes a {@link YamlElement} into a document. The {@link FusionYAML} object
      * passed in will be used for the dumper options.
@@ -74,15 +82,12 @@ public class DocumentWriter extends YamlWriter {
      */
     @Override
     public void write(@NotNull YamlElement element, FusionYAML fusionYAML) throws IOException {
-        Object dumpable = Utilities.toDumpableObject(Utilities.removeNullIfEnabled(element, fusionYAML));
-        DumperOptions options = Utilities.getDumperOptions(fusionYAML.getYamlOptions());
-        options.setExplicitEnd(false);
-        options.setExplicitStart(false);
-        Yaml yaml = new Yaml();
-        String dumped = yaml.dump(dumpable);
-        this.write(dumped);
+        Yaml yaml = new Yaml(Utilities.getDumperOptions(fusionYAML.getYamlOptions()));
+        Object converted = Utilities.toDumpableObject(Utilities.removeNullIfEnabled(element, fusionYAML));
+        String dumped = yaml.dump(converted);
+        buffedWriter.write(dumped);
     }
-
+    
     /**
      * Writes a {@link YamlElement} into a document.
      *
@@ -93,5 +98,17 @@ public class DocumentWriter extends YamlWriter {
     public void write(@NotNull YamlElement element) throws IOException {
         this.write(element, new FusionYAML());
     }
-
+    
+    
+    /**
+     * Closes the stream, flushing it first. Once the stream has been closed,
+     * further write() or flush() invocations will cause an IOException to be
+     * thrown. Closing a previously closed stream has no effect.
+     *
+     * @throws IOException If an I/O error occurs
+     */
+    @Override
+    public void close() throws IOException {
+        super.close();
+    }
 }

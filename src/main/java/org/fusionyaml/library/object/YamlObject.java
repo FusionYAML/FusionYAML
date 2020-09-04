@@ -232,7 +232,14 @@ public class YamlObject implements YamlElement {
         map.forEach((k, v) -> object.set(k, v.deepCopy()));
         return object;
     }
-
+    
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof YamlObject)) return false;
+        YamlObject object = (YamlObject) o;
+        return object.map.equals(map);
+    }
+    
     private YamlObject setNestedYamlObject(List<String> keys, YamlElement value) {
         String key = keys.get(0);
         List<String> nextKeys = keys.subList(1, keys.size());

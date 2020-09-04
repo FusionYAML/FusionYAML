@@ -65,7 +65,7 @@ public class DocumentReader extends YamlReader {
     public DocumentReader(File file) {
         super(file);
     }
-
+    
     /**
      * Reads and returns the document.
      *
@@ -74,7 +74,7 @@ public class DocumentReader extends YamlReader {
     public YamlElement readDocument() {
         try {
             Yaml snakeYAML = new Yaml();
-            Object read = snakeYAML.load(this);
+            Object read = snakeYAML.load(buffReader);
             return Utilities.toElement(read);
         } catch (Exception e) {
             throw new YamlParseFailedException(e);
