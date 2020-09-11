@@ -22,7 +22,6 @@ import com.google.gson.internal.LazilyParsedNumber;
  * datum in {@code YAML}. A primitive value can be one of the following:
  * <ul>
  * <li>boolean</li>
- * <li>char</li>
  * <li>byte</li>
  * <li>short</li>
  * <li>float</li>
@@ -94,7 +93,6 @@ public class YamlPrimitive implements YamlElement {
      */
     @Override
     public YamlPrimitive deepCopy() {
-        // primitive aren't copied
         return new YamlPrimitive(this.value);
     }
 

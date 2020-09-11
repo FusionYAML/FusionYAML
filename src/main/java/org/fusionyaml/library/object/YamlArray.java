@@ -105,7 +105,7 @@ public class YamlArray implements YamlElement, Iterable<YamlElement> {
     public void add(@NotNull Number number) {
         list.add(new YamlPrimitive(number));
     }
-
+    
     /**
      * Removes a {@link YamlElement} entry in a given index.
      *
@@ -115,14 +115,58 @@ public class YamlArray implements YamlElement, Iterable<YamlElement> {
     public void remove(int index) {
         list.remove(index);
     }
-
+    
+    /**
+     * Replaces a {@link YamlElement} at the specified position with
+     * another {@link YamlElement}
+     *
+     * @param index The index
+     * @param value The value
+     */
+    public void set(int index, YamlElement value) {
+        list.set(index, value);
+    }
+    
+    /**
+     * Replaces a {@code boolean} at the specified position with
+     * another {@code boolean}
+     *
+     * @param index The index
+     * @param value The value
+     */
+    public void set(int index, boolean value) {
+        set(index, new YamlPrimitive(value));
+    }
+    
+    /**
+     * Replaces a {@link String} at the specified position with
+     * another {@link String}
+     *
+     * @param index The index
+     * @param value The value
+     */
+    public void set(int index, String value) {
+        set(index, new YamlPrimitive(value));
+    }
+    
+    /**
+     * Replaces a {@link Number} at the specified position with
+     * another {@link Number}
+     *
+     * @param index  The index
+     * @param number The value
+     */
+    public void set(int index, Number number) {
+        set(index, new YamlPrimitive(number));
+    }
+    
     /**
      * @return The {@link Collection} of {@link YamlElement}s
      */
     public Collection<YamlElement> getList() {
         return list;
     }
-
+    
     /**
      * Returns an iterator over elements of type {@code T}.
      *

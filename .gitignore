@@ -53,3 +53,5 @@ lb/*
 *.index
 *.hprof
 *.threads
+*.yaml
+*.json

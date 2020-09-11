@@ -200,15 +200,19 @@ public class YamlObject implements YamlElement {
             action.accept(key, value);
         }
     }
-
+    
     public int size() {
         return map.size();
     }
-
+    
     public YamlElement get(int index) {
         return map.get(new LinkedList<>(keySet()).get(index));
     }
-
+    
+    public LinkedHashMap<String, YamlElement> toLinkedMap() {
+        return (LinkedHashMap<String, YamlElement>) map;
+    }
+    
     /**
      * Sets the {@link EntryChangeListener} for the object. When an entry changed by adding,
      * removing, or modifying data, {@link EntryChangeListener#onChange(YamlObject, List, Object)}
@@ -259,6 +263,5 @@ public class YamlObject implements YamlElement {
         else set(key, newValue);
         return this;
     }
-
 
 }
