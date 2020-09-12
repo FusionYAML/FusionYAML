@@ -270,11 +270,25 @@ public class YamlOptions {
             options.options.setDefaultFlowStyle(flowStyle);
             return this;
         }
-
+    
         public YamlOptions build() {
             return options;
         }
-
+    
     }
-
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof YamlOptions))
+            return false;
+        YamlOptions options2 = (YamlOptions) obj;
+        return (this.allowUnicode && options2.allowUnicode) && (options2.canonical && this.canonical) &&
+                (this.excludeNullValues && options2.excludeNullValues) && (this.mentionEnumName && options2.mentionEnumName) &&
+                (this.onlyExposed && options2.onlyExposed) && (this.prettyFlow && options2.prettyFlow) && (this.splitLines &&
+                options2.splitLines) && (this.flowStyle == options2.flowStyle) && (this.indent == options2.indent) &&
+                (this.lineBreak == options2.lineBreak) && (this.maxKeyLength == options2.maxKeyLength)
+                && (this.nonPrintableStyle == options2.nonPrintableStyle) && (this.scalarStyle == options2.scalarStyle)
+                && (this.timeZone.getID().equals(options2.timeZone.getID())) && (this.version == options2.getVersion())
+                && (this.width == options2.width);
+    }
 }

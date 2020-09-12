@@ -291,7 +291,22 @@ public class FusionYAML {
             throw new YamlParseFailedException(e);
         }
     }
-
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof FusionYAML))
+            return false;
+        FusionYAML other = (FusionYAML) obj;
+        for (Map.Entry<Type, TypeAdapter> entry : classTypeAdapterMap.entrySet()) {
+            TypeAdapter<?> found = other.getTypeAdapter(entry.getKey());
+            if (found == null)
+                return false;
+            if (!found.getClass().equals(entry.getValue().getClass()))
+                return false;
+        }
+        return this.options.equals(other.options);
+    }
+    
     /**
      * Loads the JSON {@link String} into a {@link YamlElement}.
      *

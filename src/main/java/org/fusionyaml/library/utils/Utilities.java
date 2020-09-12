@@ -197,7 +197,7 @@ public class Utilities {
         dumpable.forEach(o -> elements.add(toElement(o)));
         return new YamlArray(elements);
     }
-
+    
     public static YamlObject arrayToYamlObject(YamlArray array) {
         Map<String, YamlElement> map = new LinkedHashMap<>();
         array.forEach(e -> {
@@ -206,6 +206,44 @@ public class Utilities {
             else map.put(e.toString(), null);
         });
         return toYamlObjectFromElement(map);
+    }
+    
+    public static Object getObjectInYamlObject(YamlObject init, List<String> paths, YamlObject newMap, String currentPath, boolean first, int loops) {
+        if (paths.size() == 1)
+            return init.get(paths.get(0));
+        YamlObject object = (first) ? init : newMap;
+        if (object == null) return null;
+        if (currentPath.equals(paths.get(paths.size() - 1))) {
+            Object o = object.get(currentPath);
+            return o;
+        }
+        for (Object o : object.keySet()) {
+            if (!o.equals(currentPath)) continue;
+            if (object.get(o.toString()) instanceof YamlObject) {
+                YamlObject objMap = (YamlObject) object.get(o.toString());
+                return getObjectInYamlObject(init, paths, objMap, paths.get(loops + 1), false, loops + 1);
+            }
+        }
+        return null;
+    }
+    
+    public static Object getObject(Map<?, ?> init, List<String> paths, Map newMap, String currentPath, boolean first, int loops) {
+        if (paths.size() == 1)
+            return init.get(paths.get(0));
+        Map object = (first) ? init : newMap;
+        if (object == null) return null;
+        if (currentPath.equals(paths.get(paths.size() - 1))) {
+            Object o = object.get(currentPath);
+            return o;
+        }
+        for (Object o : object.keySet()) {
+            if (!o.equals(currentPath)) continue;
+            if (object.get(o) instanceof Map) {
+                Map objMap = (Map) object.get(o);
+                return getObject(init, paths, objMap, paths.get(loops + 1), false, loops + 1);
+            }
+        }
+        return null;
     }
     
     

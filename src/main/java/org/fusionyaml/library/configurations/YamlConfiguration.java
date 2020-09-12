@@ -30,7 +30,6 @@ import org.fusionyaml.library.object.YamlNull;
 import org.fusionyaml.library.object.YamlObject;
 import org.fusionyaml.library.serialization.TypeAdapter;
 import org.fusionyaml.library.utils.Utilities;
-import org.fusionyaml.library.utils.YamlUtils;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -502,7 +501,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
-        Object obj = YamlUtils.getObject(Utilities.toYamlElementMap(object), path,
+        Object obj = Utilities.getObject(Utilities.toYamlElementMap(object), path,
                 new LinkedHashMap(), path.get(0), true, 0);
         if (obj == null || obj == YamlNull.NULL) return null;
         Object found = fusionYAML.deserialize((YamlElement) obj, obj.getClass());
@@ -710,7 +709,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public YamlElement getElement(@NotNull List<String> path, YamlElement defValue) {
-        Object nested = YamlUtils.getObjectInYamlObject(object, path, new YamlObject(), path.get(0), true, 0);
+        Object nested = Utilities.getObjectInYamlObject(object, path, new YamlObject(), path.get(0), true, 0);
         return Utilities.toElement(nested);
     }
 
@@ -1622,7 +1621,7 @@ public class YamlConfiguration implements Configuration {
     @Override
     public <T> T toObject(List<String> path, Type type) {
         Object obj =
-                YamlUtils.getObject(Utilities.toYamlElementMap(object), path, new HashMap(), path.get(0), true, 0);
+                Utilities.getObject(Utilities.toYamlElementMap(object), path, new HashMap(), path.get(0), true, 0);
         return fusionYAML.deserialize((YamlElement) obj, type);
     }
 
