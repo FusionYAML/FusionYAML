@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import org.fusionyaml.library.exceptions.YamlDeserializationException;
+import org.fusionyaml.library.exceptions.YamlException;
 import org.fusionyaml.library.exceptions.YamlParseFailedException;
 import org.fusionyaml.library.io.DocumentReader;
 import org.fusionyaml.library.io.DocumentWriter;
@@ -55,7 +56,6 @@ import java.util.*;
  * you can utilize the {@link Builder} present in this class, allowing you to customize
  * a {@link FusionYAML} object.
  */
-@SuppressWarnings("UnstableApiUsage")
 public class FusionYAML {
 
     // Constant static fields
@@ -521,7 +521,7 @@ public class FusionYAML {
                 writer.writeDocuments(elements, this);
             }
         } catch (IOException e) {
-            throw new YamlParseFailedException(e);
+            throw new YamlException(e);
         }
     }
 
@@ -538,7 +538,8 @@ public class FusionYAML {
         toMultidocYAML(elements, writer);
         return writer.toString();
     }
-
+    
+    
     /**
      * A builder for the {@link FusionYAML} class. For a description of default
      * values. Take a look on {@link YamlOptions}

@@ -1,11 +1,35 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+}
+
 plugins {
     id 'java'
 }
 
-group 'org.fusionyaml'
-version '1.0-SNAPSHOT'
+apply plugin: 'maven-publish'
 
+group 'org.fusionyaml'
+version '2.1.1-STABLE'
 sourceCompatibility = 1.8
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task shadedJar(type: Jar) {
+    classifier = 'shaded'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
 dependencies {
 
@@ -24,8 +48,10 @@ dependencies {
     // Objnesis
     compile group: 'org.objenesis', name: 'objenesis', version: '3.0.1'
 
-
 }
+
+
+
 
 repositories {
     mavenCentral()
@@ -36,24 +62,9 @@ sourceSets {
         java {
             srcDir 'src'
             exclude 'src/main/java/examples'
+            exclude 'src/test'
         }
     }
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-task customFatJar(type: Jar) {
-    classifier = 'shaded'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
 }
 
 build {
@@ -63,4 +74,6 @@ build {
 artifacts {
     archives sourcesJar
     archives javadocJar
+    archives shadedJar
 }
+

@@ -12,6 +12,16 @@ public final class InvalidReference implements Reference {
     private InvalidReference() {
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof InvalidReference;
+    }
+    
+    @Override
+    public int hashCode() {
+        return InvalidReference.class.hashCode();
+    }
+    
     /**
      * @return The referenced {@link YamlElement}
      */

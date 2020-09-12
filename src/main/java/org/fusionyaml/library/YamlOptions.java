@@ -177,7 +177,7 @@ public class YamlOptions {
             options.options.setSplitLines(splitLines);
             return this;
         }
-
+    
         /**
          * @param indent Indentation from the margin
          * @return this object

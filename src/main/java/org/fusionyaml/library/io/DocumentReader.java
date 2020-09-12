@@ -1,7 +1,6 @@
 package org.fusionyaml.library.io;
 
 import org.fusionyaml.library.FusionYAML;
-import org.fusionyaml.library.exceptions.YamlParseFailedException;
 import org.fusionyaml.library.object.YamlElement;
 import org.fusionyaml.library.utils.Utilities;
 import org.yaml.snakeyaml.Yaml;
@@ -72,13 +71,9 @@ public class DocumentReader extends YamlReader {
      * @return A document
      */
     public YamlElement readDocument() {
-        try {
-            Yaml snakeYAML = new Yaml();
-            Object read = snakeYAML.load(buffReader);
-            return Utilities.toElement(read);
-        } catch (Exception e) {
-            throw new YamlParseFailedException(e);
-        }
+        Yaml snakeYAML = new Yaml();
+        Object read = snakeYAML.load(buffReader);
+        return Utilities.toElement(read);
     }
 
     /**

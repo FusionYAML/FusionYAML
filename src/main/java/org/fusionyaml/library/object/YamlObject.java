@@ -35,7 +35,7 @@ public class YamlObject implements YamlElement {
     /**
      * The {@link EntryChangeListener} for this object
      */
-    private EntryChangeListener listener;
+    protected EntryChangeListener listener;
 
     /**
      * A {@link LinkedHashMap} containing key-value pairs which essentially are where
@@ -209,10 +209,6 @@ public class YamlObject implements YamlElement {
         return map.get(new LinkedList<>(keySet()).get(index));
     }
     
-    public LinkedHashMap<String, YamlElement> toLinkedMap() {
-        return (LinkedHashMap<String, YamlElement>) map;
-    }
-    
     /**
      * Sets the {@link EntryChangeListener} for the object. When an entry changed by adding,
      * removing, or modifying data, {@link EntryChangeListener#onChange(YamlObject, List, Object)}
@@ -236,6 +232,7 @@ public class YamlObject implements YamlElement {
         map.forEach((k, v) -> object.set(k, v.deepCopy()));
         return object;
     }
+    
     
     @Override
     public boolean equals(Object o) {
