@@ -24,6 +24,9 @@ import org.fusionyaml.library.configurations.Configuration;
  * <p>
  * The listener should extend this interface and provide one method. That method will be called
  * if a certain event happened
+ *
+ * @deprecated The event listener system will be replaced with a better system
  */
+@Deprecated
 public interface Listener {
 }

@@ -2,8 +2,8 @@ package org.fusionyaml.library.io;
 
 import org.fusionyaml.library.FusionYAML;
 import org.fusionyaml.library.exceptions.YamlParseFailedException;
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.object.YamlElement;
-import org.fusionyaml.library.utils.Utilities;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
@@ -73,10 +73,11 @@ public class MultiDocumentReader extends YamlReader {
      */
     public Iterable<YamlElement> readDocuments() {
         try {
+            Converter converter = new Converter();
             Yaml yaml = new Yaml();
             Iterable<Object> iterable = yaml.loadAll(buffReader);
             List<YamlElement> elementLists = new LinkedList<>();
-            iterable.forEach(o -> elementLists.add(Utilities.toElement(o)));
+            iterable.forEach(o -> elementLists.add(converter.toElement(o)));
             return elementLists;
         } catch (Exception e) {
             throw new YamlParseFailedException(e);

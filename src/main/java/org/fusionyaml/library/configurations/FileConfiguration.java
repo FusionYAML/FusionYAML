@@ -54,11 +54,11 @@ public class FileConfiguration extends YamlConfiguration {
         this.file = file;
         this.reload();
     }
-
+    
     public FileConfiguration(File file) throws IOException, YamlException {
         this(file, new FusionYAML());
     }
-
+    
     public void reload() throws IOException {
         try (DocumentReader reader = new DocumentReader(file)) {
             YamlElement element = reader.readDocument();
@@ -67,7 +67,7 @@ public class FileConfiguration extends YamlConfiguration {
             else object = element.getAsYamlObject();
         }
     }
-
+    
     public void save() throws IOException {
         this.save(file);
     }

@@ -17,7 +17,6 @@
  *     <li>NullReference (reference to a null element)</li>
  *     <li>InvalidReference (references that can't be parsed because of some syntax errors)</li>
  * </ol>
- * <p>
  *
  * @see org.fusionyaml.library.reference.References
  */

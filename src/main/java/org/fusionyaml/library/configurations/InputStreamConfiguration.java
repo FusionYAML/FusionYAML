@@ -15,12 +15,15 @@ import java.io.Reader;
  * object is created. This configuration can be reloaded by calling {@link #reload(InputStream)}
  */
 public class InputStreamConfiguration extends YamlConfiguration {
-
+    
+    private final InputStream stream;
+    
     public InputStreamConfiguration(InputStream stream, FusionYAML yaml) throws IOException {
         super(yaml);
         this.reload(stream);
+        this.stream = stream;
     }
-
+    
     public InputStreamConfiguration(InputStream stream) throws IOException {
         this(stream, new FusionYAML());
     }
@@ -40,5 +43,9 @@ public class InputStreamConfiguration extends YamlConfiguration {
             else this.object = element.getAsYamlObject();
         }
     }
-
+    
+    public InputStream getStream() {
+        return stream;
+    }
+    
 }

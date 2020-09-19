@@ -214,8 +214,9 @@ public class YamlObject implements YamlElement {
      * removing, or modifying data, {@link EntryChangeListener#onChange(YamlObject, List, Object)}
      * will be called.
      *
-     * @param listener The {@link EntryChangeListener}
+     * @param listener The {@link EntryChangeListener
      */
+    @Deprecated
     public void setOnEntryChange(EntryChangeListener listener) {
         this.listener = listener;
     }

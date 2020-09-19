@@ -26,6 +26,8 @@ import java.util.List;
  * <p>
  * This {@link Listener} usually gets called when one of the setters in {@link Configuration} is
  * invoked. Methods that remove path also will cause {@code this} {@link Listener} to be called.
+ *
+ * @deprecated The event listener system will be replaced with a better system
  */
 public interface ConfigurationChangeListener extends Listener {
 

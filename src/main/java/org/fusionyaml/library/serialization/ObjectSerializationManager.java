@@ -3,8 +3,8 @@ package org.fusionyaml.library.serialization;
 import org.fusionyaml.library.FusionYAML;
 import org.fusionyaml.library.exceptions.YamlDeserializationException;
 import org.fusionyaml.library.exceptions.YamlSerializationException;
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.object.YamlObject;
-import org.fusionyaml.library.utils.Utilities;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -72,6 +72,7 @@ public class ObjectSerializationManager {
     }
 
     public void assignFields(Object o, Map map, Type type) throws YamlDeserializationException {
+        Converter converter = new Converter();
         List<Field> fields = getFieldsForDeserialization(type);
         for (Object key : map.keySet()) {
             for (Field field : fields) {
@@ -80,7 +81,7 @@ public class ObjectSerializationManager {
                     try {
                         field.setAccessible(true);
                         Object found = map.get(fieldName);
-                        Object deserialized = getTypeAdapter(field).deserialize(Utilities.toElement(found), field.getType());
+                        Object deserialized = getTypeAdapter(field).deserialize(converter.toElement(found), field.getType());
                         if (deserialized == null) continue;
                         //if (deserialized instanceof Map)
                         //deserialized = objDeserializer.deserialize(YamlUtils.toElement(deserialized), field.getType());

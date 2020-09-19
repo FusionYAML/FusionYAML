@@ -23,7 +23,10 @@ import java.util.List;
  * This {@link Listener} is called when data is modified in a {@link YamlObject} object. Setters
  * in {@link YamlObject} cause this to be called. Methods that remove path(s) also calls this
  * {@link Listener}.
+ *
+ * @deprecated The event listener system will be replaced with a better system
  */
+@Deprecated
 public interface EntryChangeListener extends Listener {
 
     /**

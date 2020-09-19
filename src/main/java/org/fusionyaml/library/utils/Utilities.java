@@ -14,12 +14,12 @@ import java.util.*;
 public class Utilities {
 
     /**
-     * This is, by no means, equivalent to deserializing the element using its
+     * This is, by no means, equivalent to serialized the element using its
      * {@link TypeAdapter}. The returned object will be able to be dumped using
      * snakeyaml's library
      *
      * @param element The element to be converted
-     * @return An object that could be dumped using smakeyaml's library
+     * @return An object that could be dumped using snakeyaml's library
      */
     public static Object toDumpableObject(YamlElement element) {
         if (element == null) return null;

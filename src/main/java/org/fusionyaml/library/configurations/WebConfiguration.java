@@ -56,15 +56,16 @@ public class WebConfiguration extends YamlConfiguration {
      *                       which will then be used to convert it to a {@link YamlObject} instance.
      * @see #WebConfiguration(String)
      */
-    public WebConfiguration(URL url, FusionYAML yaml) throws YamlException {
+    public WebConfiguration(URL url, FusionYAML yaml) throws YamlException, IOException {
         super(yaml);
         this.url = url;
+        reload();
     }
-
-    public WebConfiguration(URL url) throws YamlException {
+    
+    public WebConfiguration(URL url) throws YamlException, IOException {
         this(url, new FusionYAML());
     }
-
+    
     /**
      * This constructor requires a URL. The URL should lead to a raw file containing data expressed in
      * a {@code yaml} syntax.

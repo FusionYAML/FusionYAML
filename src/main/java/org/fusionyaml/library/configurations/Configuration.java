@@ -1274,6 +1274,7 @@ public interface Configuration {
      * @param listener The {@link Listener} that will be
      *                 called when the {@link Configuration} is saved to a {@link File}
      */
+    @Deprecated
     void setOnFileSave(FileSaveListener listener);
 
     /**
@@ -1285,6 +1286,7 @@ public interface Configuration {
      *
      * @param listener The {@link ConfigurationChangeListener}
      */
+    @Deprecated
     void setOnConfigChange(ConfigurationChangeListener listener);
 
     @Override

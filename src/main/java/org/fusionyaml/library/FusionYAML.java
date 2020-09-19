@@ -22,6 +22,9 @@ import com.google.gson.JsonElement;
 import org.fusionyaml.library.exceptions.YamlDeserializationException;
 import org.fusionyaml.library.exceptions.YamlException;
 import org.fusionyaml.library.exceptions.YamlParseFailedException;
+import org.fusionyaml.library.internal.Converter;
+import org.fusionyaml.library.internal.YamlDumper;
+import org.fusionyaml.library.internal.YamlLoader;
 import org.fusionyaml.library.io.DocumentReader;
 import org.fusionyaml.library.io.DocumentWriter;
 import org.fusionyaml.library.io.MultiDocumentReader;
@@ -31,7 +34,6 @@ import org.fusionyaml.library.object.YamlNull;
 import org.fusionyaml.library.object.YamlObject;
 import org.fusionyaml.library.object.YamlPrimitive;
 import org.fusionyaml.library.serialization.*;
-import org.fusionyaml.library.utils.Utilities;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -57,18 +59,25 @@ import java.util.*;
  * a {@link FusionYAML} object.
  */
 public class FusionYAML {
-
+    
     // Constant static fields
     private static final Gson GSON_DEFAULT = new GsonBuilder().create();
     private static final Gson GSON_PRETTY_PRINTING = new GsonBuilder().setPrettyPrinting().create();
     private static final YamlOptions YAML_DEFAULT_OPTIONS = new YamlOptions();
-
+    
     // Constant object fields
     private final Map<Type, TypeAdapter> classTypeAdapterMap;
     private final YamlOptions options;
+    
     private final Yaml yaml;
-
-
+    private final YamlDumper dumper = new YamlDumper();
+    private final Converter converter = new Converter();
+    private final YamlLoader loader = new YamlLoader();
+    
+    public FusionYAML(YamlOptions options) {
+        this(options, new HashMap<>(10));
+    }
+    
     FusionYAML(YamlOptions options, Map<Type, TypeAdapter> adapterMap) {
         classTypeAdapterMap = adapterMap;
         this.options = options != null ? options : YAML_DEFAULT_OPTIONS;
@@ -95,7 +104,7 @@ public class FusionYAML {
      * block flow style.
      */
     public FusionYAML() {
-        this(YAML_DEFAULT_OPTIONS, new HashMap<>());
+        this(YAML_DEFAULT_OPTIONS, new HashMap<>(10));
     }
 
     /**
@@ -315,7 +324,7 @@ public class FusionYAML {
      */
     public YamlElement fromJSON(String raw) {
         Object o = GSON_DEFAULT.fromJson(raw, Object.class);
-        return Utilities.toElement(o);
+        return converter.toElement(o);
     }
 
     /**
@@ -326,7 +335,7 @@ public class FusionYAML {
      * @return A YAML string
      */
     public String toYAML(YamlElement element) {
-        return yaml.dump(Utilities.toObject(element));
+        return yaml.dump((element));
     }
 
     /**
@@ -350,7 +359,7 @@ public class FusionYAML {
      * @return The {@link JsonElement} converted from a {@link YamlElement} object
      */
     public JsonElement toJSONElement(YamlElement element) {
-        return GSON_DEFAULT.toJsonTree(Utilities.toDumpableObject(element)).getAsJsonObject();
+        return GSON_DEFAULT.toJsonTree(converter.toSnakeYAML(element)).getAsJsonObject();
     }
 
     /**
@@ -390,7 +399,7 @@ public class FusionYAML {
      * @return The JSON {@link String}, which is converted from the {@link YamlElement} object.
      */
     public String toJSON(YamlElement element, Gson gson) {
-        return gson.toJson((Object) Utilities.toObject(element));
+        return gson.toJson(converter.toSnakeYAML(element));
     }
 
     /**
@@ -554,20 +563,47 @@ public class FusionYAML {
         return writer.toString();
     }
     
+    /**
+     * @return A copy of the map that contains the {@link TypeAdapter}
+     */
+    public Map<Type, TypeAdapter> getTypeAdapterMap() {
+        return new LinkedHashMap<>(classTypeAdapterMap);
+    }
+    
     
     /**
      * A builder for the {@link FusionYAML} class. For a description of default
      * values. Take a look on {@link YamlOptions}
      */
     public static class Builder {
-
+        
         // type and type adapter map, used to store type adapters and pairing
         // then to a specific type
-        private final Map<Type, TypeAdapter> ctaMap = new LinkedHashMap<>();
-
+        private final Map<Type, TypeAdapter> ctaMap;
+        
         // An instance of YamlOption's builder
-        private final YamlOptions.Builder builder = new YamlOptions.Builder();
-
+        private final YamlOptions.Builder builder;
+        
+        public Builder() {
+            ctaMap = new LinkedHashMap<>();
+            builder = new YamlOptions.Builder();
+        }
+        
+        /**
+         * Copies the given field
+         *
+         * @param builder The {@link FusionYAML.Builder}
+         */
+        public Builder(FusionYAML.Builder builder) {
+            if (builder != null) {
+                this.ctaMap = builder.ctaMap;
+                this.builder = builder.builder;
+            } else {
+                this.ctaMap = new LinkedHashMap<>();
+                this.builder = new YamlOptions.Builder();
+            }
+        }
+        
         /**
          * @param adapter The {@link TypeAdapter} that'll be paired with the type
          * @param type    The {@link Type} that'll be serialized or deserialized

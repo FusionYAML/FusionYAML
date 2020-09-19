@@ -1,11 +1,12 @@
 package org.fusionyaml.library.io;
 
 import org.fusionyaml.library.FusionYAML;
+import org.fusionyaml.library.internal.Converter;
+import org.fusionyaml.library.internal.YamlDumper;
 import org.fusionyaml.library.object.YamlElement;
 import org.fusionyaml.library.utils.Utilities;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -82,11 +83,12 @@ public class MultiDocumentWriter extends YamlWriter {
      */
     @Override
     public void write(@NotNull YamlElement element, FusionYAML fusionYAML) throws IOException {
-        DumperOptions options = Utilities.getDumperOptions(fusionYAML.getYamlOptions());
+        Converter converter = new Converter();
+        DumperOptions options = converter.toDumperOptions(fusionYAML.getYamlOptions());
         options.setExplicitEnd(true);
         options.setExplicitStart(true);
-        Yaml yaml = new Yaml(options);
-        String str = yaml.dump(Utilities.toDumpableObject(Utilities.removeNullIfEnabled(element, fusionYAML)));
+        YamlDumper dumper = new YamlDumper();
+        String str = dumper.dump(Utilities.removeNullIfEnabled(element, fusionYAML), fusionYAML);
         buffedWriter.write(str);
     }
 

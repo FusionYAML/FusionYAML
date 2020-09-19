@@ -1,8 +1,8 @@
 package org.fusionyaml.library.io;
 
 import org.fusionyaml.library.FusionYAML;
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.object.YamlElement;
-import org.fusionyaml.library.utils.Utilities;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
@@ -72,8 +72,9 @@ public class DocumentReader extends YamlReader {
      */
     public YamlElement readDocument() {
         Yaml snakeYAML = new Yaml();
+        Converter converter = new Converter();
         Object read = snakeYAML.load(buffReader);
-        return Utilities.toElement(read);
+        return converter.toElement(read);
     }
 
     /**

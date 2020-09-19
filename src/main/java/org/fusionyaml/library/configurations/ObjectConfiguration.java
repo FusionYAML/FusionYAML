@@ -18,6 +18,7 @@ package org.fusionyaml.library.configurations;
 import com.google.common.base.Splitter;
 import org.fusionyaml.library.FusionYAML;
 import org.fusionyaml.library.exceptions.YamlException;
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.object.YamlElement;
 import org.fusionyaml.library.object.YamlObject;
 import org.fusionyaml.library.serialization.TypeAdapter;
@@ -44,7 +45,9 @@ import java.util.Map;
  */
 @Deprecated
 public class ObjectConfiguration extends YamlConfiguration {
-
+    
+    private final Converter converter = new Converter();
+    
     /**
      * This constructor requires an {@link Object} that is:
      * <ul>
@@ -188,7 +191,7 @@ public class ObjectConfiguration extends YamlConfiguration {
      */
     @Override
     public void set(@NotNull List<String> path, YamlElement value) {
-        Object o = Utilities.toElement(value);
+        Object o = converter.toElement(value);
         set(path, o);
     }
 

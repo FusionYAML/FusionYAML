@@ -1,6 +1,7 @@
 package org.fusionyaml.library.io;
 
 import org.fusionyaml.library.FusionYAML;
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.object.YamlElement;
 import org.fusionyaml.library.utils.Utilities;
 import org.jetbrains.annotations.NotNull;
@@ -82,8 +83,12 @@ public class DocumentWriter extends YamlWriter {
      */
     @Override
     public void write(@NotNull YamlElement element, FusionYAML fusionYAML) throws IOException {
-        Yaml yaml = new Yaml(Utilities.getDumperOptions(fusionYAML.getYamlOptions()));
-        Object converted = Utilities.toDumpableObject(Utilities.removeNullIfEnabled(element, fusionYAML));
+        Converter converter = new Converter();
+        Yaml yaml = new Yaml(converter.toDumperOptions(fusionYAML.getYamlOptions()));
+        Object converted = Utilities.toDumpableObject(
+                // todo create remove null if enabled method
+                Utilities.removeNullIfEnabled(element, fusionYAML)
+        );
         String dumped = yaml.dump(converted);
         buffedWriter.write(dumped);
     }

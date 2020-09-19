@@ -23,6 +23,7 @@ import org.fusionyaml.library.events.ConfigurationChangeListener;
 import org.fusionyaml.library.events.FileSaveListener;
 import org.fusionyaml.library.events.Listener;
 import org.fusionyaml.library.exceptions.YamlDeserializationException;
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.io.DocumentWriter;
 import org.fusionyaml.library.io.YamlWriter;
 import org.fusionyaml.library.object.YamlElement;
@@ -54,23 +55,28 @@ public class YamlConfiguration implements Configuration {
      * The {@link FileSaveListener} for this object
      */
     private FileSaveListener saveListener;
-
+    
     /**
      * The {@link FusionYAML} instance, which is used for deserialization
      */
     protected FusionYAML fusionYAML;
-
+    
     /**
      * The local {@link YamlObject} that contains class data
      */
     protected YamlObject object;
-
+    
+    /**
+     * A {@link Converter} object
+     */
+    private final Converter converter = new Converter();
+    
     /**
      * The default {@link DumperOptions}. If {@link #save(File)} is called, this object will
      * be used to call {@link #save(DumperOptions, File)}
      */
     private static final DumperOptions defOptions = defOptions();
-
+    
     /**
      * Deserializes the whole configuration into an {@link Object}. If the configuration contains
      * keys the {@link Object} doesn't have, {@link YamlDeserializationException}
@@ -170,7 +176,11 @@ public class YamlConfiguration implements Configuration {
     public <T> T toObject(String[] path, Class<T> clazz) {
         return toObject(new LinkedList<>(Arrays.asList(path)), (Type) clazz);
     }
-
+    
+    public YamlConfiguration() {
+        this(new YamlObject());
+    }
+    
     /**
      * This method requires a {@link FileSaveListener} object to be passed into the method's
      * parameter. {@link FileSaveListener} is called when {@code this} {@link Configuration}
@@ -181,22 +191,9 @@ public class YamlConfiguration implements Configuration {
      *                 called when the {@link Configuration} is saved to a {@link File}
      */
     @Override
+    @Deprecated
     public void setOnFileSave(FileSaveListener listener) {
         this.saveListener = listener;
-    }
-
-    /**
-     * This method requires a {@link ConfigurationChangeListener} object to be passed into the method's
-     * parameter. {@link ConfigurationChangeListener} is called when an entry in {@code this}
-     * {@link Configuration} is modified. For example, calling setters and adding, removing, or
-     * modifying the value calls this listener.
-     *
-     *
-     * @param listener The {@link ConfigurationChangeListener}
-     */
-    @Override
-    public void setOnConfigChange(ConfigurationChangeListener listener) {
-        this.changeListener = listener;
     }
 
 
@@ -212,15 +209,29 @@ public class YamlConfiguration implements Configuration {
         this.object = object;
         this.fusionYAML = yaml;
     }
-
+    
     protected YamlConfiguration(FusionYAML yaml) {
         this(new YamlObject(), yaml);
     }
-
+    
     public YamlConfiguration(YamlObject obj) {
         this(obj, new FusionYAML());
     }
-
+    
+    /**
+     * This method requires a {@link ConfigurationChangeListener} object to be passed into the method's
+     * parameter. {@link ConfigurationChangeListener} is called when an entry in {@code this}
+     * {@link Configuration} is modified. For example, calling setters and adding, removing, or
+     * modifying the value calls this listener.
+     *
+     * @param listener The {@link ConfigurationChangeListener}
+     */
+    @Override
+    @Deprecated
+    public void setOnConfigChange(ConfigurationChangeListener listener) {
+        this.changeListener = listener;
+    }
+    
     /**
      * This method saves the contents into a {@link File} specified.
      *
@@ -234,7 +245,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public void save(DumperOptions options, @NotNull File file) throws IOException {
-        Object obj = Utilities.toDumpableObject(object);
+        Object obj = converter.toSnakeYAML(object);
         Yaml yaml = new Yaml((options != null) ? options : defOptions);
         String data;
         data = yaml.dump(obj);
@@ -370,7 +381,7 @@ public class YamlConfiguration implements Configuration {
             object.set(path, fusionYAML.serialize(value, value.getClass()));
             return;
         }
-        YamlElement converted = Utilities.toElement(value);
+        YamlElement converted = converter.toElement(value);
         object.set(path, converted);
         if (changeListener != null)
             changeListener.onChange(this, path, value);
@@ -501,6 +512,7 @@ public class YamlConfiguration implements Configuration {
      */
     @Override
     public Object getObject(@NotNull List<String> path, Object defValue) {
+        // todo find some way to increase performance
         Object obj = Utilities.getObject(Utilities.toYamlElementMap(object), path,
                 new LinkedHashMap(), path.get(0), true, 0);
         if (obj == null || obj == YamlNull.NULL) return null;
@@ -710,9 +722,9 @@ public class YamlConfiguration implements Configuration {
     @Override
     public YamlElement getElement(@NotNull List<String> path, YamlElement defValue) {
         Object nested = Utilities.getObjectInYamlObject(object, path, new YamlObject(), path.get(0), true, 0);
-        return Utilities.toElement(nested);
+        return converter.toElement(nested);
     }
-
+    
     /**
      * This method retrieves the {@link YamlElement} in a {@link List} of paths. Every index in the
      * list represents a parent that has one or more children excluding the last index.

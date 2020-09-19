@@ -1,7 +1,7 @@
 package org.fusionyaml.library.io;
 
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.object.YamlElement;
-import org.fusionyaml.library.utils.Utilities;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
@@ -94,10 +94,11 @@ public class ElementReader extends YamlReader {
     }
     
     private LinkedList<YamlElement> createList() {
+        Converter converter = new Converter();
         Iterable<Object> loaded = new Yaml().loadAll(buffReader);
         LinkedList<YamlElement> created = new LinkedList<>();
         loaded.forEach(e -> {
-            YamlElement converted = Utilities.toElement(e);
+            YamlElement converted = converter.toElement(e);
             if (converted.isYamlObject()) {
                 converted.getAsYamlObject().forEach((k, v) -> created.add(v));
             }

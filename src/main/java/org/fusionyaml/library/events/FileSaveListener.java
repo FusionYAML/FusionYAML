@@ -24,7 +24,10 @@ import java.io.Writer;
 /**
  * This {@link Listener} is called when a {@link Configuration} is saved to a {@link Writer}
  * through Configuration#save methods or {@link Configuration#save(DumperOptions, File)}.
+ *
+ * @deprecated The event listener system will be replaced with a better system
  */
+@Deprecated
 public interface FileSaveListener extends Listener {
 
     /**

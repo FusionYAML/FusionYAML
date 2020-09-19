@@ -3,9 +3,9 @@ package org.fusionyaml.library.serialization;
 import com.google.common.base.CharMatcher;
 import com.google.common.reflect.TypeToken;
 import org.fusionyaml.library.FusionYAML;
+import org.fusionyaml.library.internal.Converter;
 import org.fusionyaml.library.object.YamlArray;
 import org.fusionyaml.library.object.YamlElement;
-import org.fusionyaml.library.utils.Utilities;
 
 import java.lang.reflect.Type;
 import java.util.LinkedList;
@@ -22,13 +22,14 @@ import java.util.List;
  *           it is recommended to pass {@link T}.
  */
 public class ArrayTypeAdapter<T> extends TypeAdapter<T[]> {
-
+    
     private final FusionYAML fusionYAML;
-
+    private final Converter converter = new Converter();
+    
     public ArrayTypeAdapter(FusionYAML fusionYAML) {
         this.fusionYAML = fusionYAML;
     }
-
+    
     @Override
     public YamlElement serialize(T[] obj, Type typeOfT) {
         List<YamlElement> elementList = new LinkedList<>();
@@ -49,7 +50,7 @@ public class ArrayTypeAdapter<T> extends TypeAdapter<T[]> {
         LinkedList obj = new LinkedList<>();
         //Object o = adapter.deserialize(element, typeOfT);
         Type type = TypeToken.of(typeOfT).getRawType();
-        element.getAsYamlArray().forEach(e -> obj.add(fusionYAML.deserialize(e, Utilities.toObject(e).getClass())));
+        element.getAsYamlArray().forEach(e -> obj.add(fusionYAML.deserialize(e, converter.toSnakeYAML(e).getClass())));
         //if (!o.getClass().getName().equals("[" + ((Class) typeOfT).getName()))
           //  return null;
         return (T[]) obj.toArray();

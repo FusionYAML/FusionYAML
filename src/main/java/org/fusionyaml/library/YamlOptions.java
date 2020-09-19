@@ -282,9 +282,9 @@ public class YamlOptions {
         if (!(obj instanceof YamlOptions))
             return false;
         YamlOptions options2 = (YamlOptions) obj;
-        return (this.allowUnicode && options2.allowUnicode) && (options2.canonical && this.canonical) &&
-                (this.excludeNullValues && options2.excludeNullValues) && (this.mentionEnumName && options2.mentionEnumName) &&
-                (this.onlyExposed && options2.onlyExposed) && (this.prettyFlow && options2.prettyFlow) && (this.splitLines &&
+        return (this.allowUnicode == options2.allowUnicode) && (options2.canonical == this.canonical) &&
+                (this.excludeNullValues == options2.excludeNullValues) && (this.mentionEnumName == options2.mentionEnumName) &&
+                (this.onlyExposed == options2.onlyExposed) && (this.prettyFlow == options2.prettyFlow) && (this.splitLines ==
                 options2.splitLines) && (this.flowStyle == options2.flowStyle) && (this.indent == options2.indent) &&
                 (this.lineBreak == options2.lineBreak) && (this.maxKeyLength == options2.maxKeyLength)
                 && (this.nonPrintableStyle == options2.nonPrintableStyle) && (this.scalarStyle == options2.scalarStyle)
