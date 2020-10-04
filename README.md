@@ -35,7 +35,7 @@ dependencies {
 <h3>Gradle</h3>
 
 <h4>What is FusionYAML?</h4>
-FusionYAML, formally known as SimpleYAML, is a library that eases retrieving, creating, removing, and modifying data. FusionYAML 
+FusionYAML, formerly known as SimpleYAML, is a library that eases retrieving, creating, removing, and modifying data. FusionYAML 
 contains GSON-style classes and method for retrieving, creating, removing, and modifying data. FusionYAML was decided to be recreated
 from scratch to support flexibility.
 
@@ -139,15 +139,4 @@ Contact me via discord if you meet one of these requirements:
 <ul>
   <li>Atleast one pull request accepted from the user</li>
   <li>demonstrate appropriate java skills</li>
-  <li>if you're reflxction</li>
-</ul>
-
-<h2>Planned Features</h2>
-<ul>
-  <li>Support serialization and deserialization</li>
-  <li>Adding events</li>
-  <li>Asynchronous web configuration</li>
-  <li>Changing data directly on the webpage using FTP</li>
-  <li>String Literals in YAML</li>
-  <li>Supporting basic math operations in YAML</li>
 </ul>
